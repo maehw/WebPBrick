@@ -1,0 +1,37 @@
+// linebot2.nqc
+//	turn by reversing one tread
+
+// sensor and motors
+#define EYE		SENSOR_2
+#define LEFT	OUT_A
+#define RIGHT	OUT_C
+
+// thresholds
+#define LEFT_THRESHOLD  42
+#define RIGHT_THRESHOLD 53
+
+#define STRAIGHT_TIME 10
+
+task main()
+{
+	SetSensor(EYE, SENSOR_LIGHT);
+	On(LEFT+RIGHT);
+
+	while(true)
+	{
+		if (EYE <= LEFT_THRESHOLD)
+		{
+			Rev(LEFT);
+			until(EYE > LEFT_THRESHOLD);
+			Fwd(LEFT);
+			Wait(STRAIGHT_TIME);
+		}
+		else if (EYE >= RIGHT_THRESHOLD)
+		{
+			Rev(RIGHT);
+			until(EYE < RIGHT_THRESHOLD);
+			Fwd(RIGHT);
+			Wait(STRAIGHT_TIME);
+		}
+	}
+}

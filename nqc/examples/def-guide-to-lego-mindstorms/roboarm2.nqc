@@ -1,0 +1,47 @@
+// roboarm2.nqc
+//	program to put 4 hubs away
+
+// include the basic operations
+#include "roboarm.nqh"
+
+// threshold to detect a hub
+#define THRESHOLD	38
+
+// how far past "home" to spin
+#define SPIN_DELAY	50	
+
+// number of hubs to put away
+#define COUNT	4
+
+
+void detect()
+{
+	// spin until a piece is seen
+	On(SPINNER);
+	until(EYE >= THRESHOLD);
+	Off(SPINNER);
+}
+
+
+task main()
+{
+	// configure the sensors
+	SetSensor(LEVEL, SENSOR_TOUCH);
+	SetSensor(EYE, SENSOR_LIGHT);
+	SetSensor(HOME, SENSOR_TOUCH);
+
+	// for each piece...
+	repeat(COUNT)
+	{
+		detect();
+		grab();
+		up();
+		home();
+		release();
+		OnFor(SPINNER, SPIN_DELAY);
+		down();
+	}
+
+	// we're done
+	PlaySound(SOUND_FAST_UP);
+}

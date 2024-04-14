@@ -1,0 +1,117 @@
+// scanbot2.nqc
+//	A better SCANBOT program
+
+// sensors
+#define EYE	SENSOR_3
+#define ANGLE SENSOR_1
+
+// motors
+#define LEFT OUT_A
+#define HEAD OUT_B
+#define RIGHT OUT_C
+
+// other constants
+#define SLOP 2
+#define TURN 4
+
+#define CENTER 53
+#define SWEEP 48	// 135 degrees
+
+
+// variables
+int target, max;
+
+
+void align()
+{
+	int previous;
+	
+	OnRev(HEAD);	// begin turning left
+	
+	do
+	{
+		previous = ANGLE;	// save current position
+		Wait(10);
+	} while(ANGLE != previous);	// if position changed, keep going
+	
+	
+	Off(HEAD);
+	ClearSensor(ANGLE);	// make this position "0"
+}
+
+
+void check()
+{
+	int level = EYE;
+	if (level > max)
+	{
+		target = ANGLE;
+		max = level;
+	}
+}
+
+
+void scan()
+{
+	max = 0;
+
+	if (ANGLE > CENTER)
+	{
+		// look left
+		OnRev(HEAD);
+		while(ANGLE > CENTER-SWEEP)
+			check();
+	}
+	else
+	{
+		// look right
+		OnFwd(HEAD);
+		while(ANGLE < CENTER+SWEEP)
+			check();
+	}
+	
+	Off(HEAD);
+}
+
+
+void steer()
+{
+	int time;
+	
+	target -= CENTER;
+	
+	if (target > SLOP)
+	{
+		Rev(RIGHT);
+		time = TURN * target;
+	}
+	else if (target < -SLOP)
+	{
+		Rev(LEFT);
+		time = -TURN * target;
+	}
+	else
+		return;  // no need to steer, just return now
+
+	// turn for a little while, then go forward again
+	Wait(time);
+	Fwd(LEFT+RIGHT);
+}
+
+
+task main()
+{
+	// configure sensors
+	SetSensor(EYE, SENSOR_LIGHT);
+	SetSensor(ANGLE, SENSOR_ROTATION);
+	
+	align();
+	
+	// look and steer...
+	On(LEFT+RIGHT);
+	while(true)
+	{
+		scan();
+		steer();
+	}
+}

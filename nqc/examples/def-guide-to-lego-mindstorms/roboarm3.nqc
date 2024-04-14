@@ -1,0 +1,56 @@
+// roboarm3.nqc
+//	program to line up hubs
+
+// include the basic operations
+#include "roboarm.nqh"
+
+// threshold to detect a hub
+#define THRESHOLD	38
+
+// how far apart to place pieces
+#define SPACING 20
+
+task main()
+{
+	int count = 0;
+	
+	// configure sensors
+	SetSensor(LEVEL, SENSOR_TOUCH);
+	SetSensor(EYE, SENSOR_LIGHT);
+	SetSensor(HOME, SENSOR_TOUCH);
+
+	// spin past "home" position
+	On(SPINNER);
+	until(HOME==1);
+	
+	while(HOME==1)
+	{
+		if (EYE >= THRESHOLD)
+		{
+			// piece detected - grab it
+			Off(SPINNER);
+			grab();
+			up();
+			count++;
+
+			// rotate to next "spot"
+			OnRev(SPINNER);
+			until(HOME==0);
+			Fwd(SPINNER);
+			Wait(count * SPACING);
+			Off(SPINNER);
+			
+			// put the piece down
+			down();
+			release();
+			
+			// rotate past the piece
+			On(SPINNER);
+			Wait(SPACING);
+		}
+	}
+	
+	// our work is done...
+	Off(SPINNER);	
+	PlaySound(SOUND_FAST_UP);
+}

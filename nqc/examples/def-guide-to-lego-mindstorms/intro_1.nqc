@@ -1,0 +1,10 @@
+// intro_1.nqc - a very simple program
+
+task main()
+{
+	SetSensor(SENSOR_1, SENSOR_TOUCH);
+
+	On(OUT_A);
+	until(SENSOR_1 == 1);
+	Off(OUT_A);
+}

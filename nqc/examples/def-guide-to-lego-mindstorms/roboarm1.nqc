@@ -1,0 +1,25 @@
+// roboarm1.nqc
+//	program put RoboArm in "starting position"
+
+// include the basic operations
+#include "roboarm.nqh"
+
+task main()
+{
+	// configure the sensors
+	SetSensor(LEVEL, SENSOR_TOUCH);
+	SetSensor(EYE, SENSOR_LIGHT);
+	SetSensor(HOME, SENSOR_TOUCH);
+
+	// adjust arm height
+	if (LEVEL==0)
+		up();
+	down();
+
+	// close and open grabbers
+	grab();
+	release();
+
+	// spin if not already home...
+	home();
+}

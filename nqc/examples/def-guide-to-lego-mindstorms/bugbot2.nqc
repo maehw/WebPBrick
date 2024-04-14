@@ -1,0 +1,50 @@
+// bugbot2.nqc - syncrhonous behavior
+
+// sensors
+#define LBUMP SENSOR_1
+#define RBUMP SENSOR_3
+
+// motors
+#define LEFT OUT_A
+#define RIGHT OUT_C
+
+
+void check_left()
+{
+	if (LBUMP == 0)
+	{
+		Off(LEFT);
+		Rev(RIGHT);
+		until(LBUMP==1);
+		On(LEFT);
+		Fwd(RIGHT);
+	}
+}
+
+void check_right()
+{
+	if (RBUMP == 0)
+	{
+		Off(RIGHT);
+		Rev(LEFT);
+		until(RBUMP==1);
+		On(RIGHT);
+		Fwd(LEFT);
+	}
+}
+
+
+task main()
+{
+	// configure the sensor
+	SetSensor(LBUMP, SENSOR_TOUCH);
+	SetSensor(RBUMP, SENSOR_TOUCH);
+	
+	On(LEFT+RIGHT);
+	
+	while(true)
+	{
+		check_left();
+		check_right();
+	}
+}
