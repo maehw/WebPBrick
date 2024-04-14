@@ -1,0 +1,30 @@
+// tvlog.nqc
+//  program that logs television usage
+
+// some constants
+#define TV_SENSOR	SENSOR_1
+#define THRESHOLD		40
+#define DATALOG_SIZE	100
+
+task main()
+{
+	// setup sensors
+	SetSensor(TV_SENSOR, SENSOR_LIGHT);
+	
+	// create the datalog
+	CreateDatalog(0);
+	CreateDatalog(DATALOG_SIZE);
+	
+	while(true)
+	{
+		// wait for TV to be turned on and log it...
+		until(TV_SENSOR > THRESHOLD);
+		AddToDatalog(Watch());
+		PlaySound(SOUND_CLICK);
+		
+		// now wait for TV to be turned off...
+		until(TV_SENSOR < THRESHOLD);
+		AddToDatalog(Watch());
+		PlaySound(SOUND_CLICK);
+	}
+}

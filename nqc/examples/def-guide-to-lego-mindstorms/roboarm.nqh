@@ -1,0 +1,59 @@
+// roboarm.nqh
+//	basic operations for RoboArm
+
+// motors and sensors
+#define LIFTER	OUT_A
+#define GRABBER	OUT_B
+#define SPINNER OUT_C
+#define LEVEL	SENSOR_1
+#define EYE		SENSOR_2
+#define HOME 	SENSOR_3
+
+// various timing parameters
+#define UP_TIME		200
+#define DOWN_DELAY	10
+#define GRAB_TIME	100
+#define RELEASE_TIME	60
+
+
+void up()
+{
+	// raise arm
+	Fwd(LIFTER);
+	OnFor(LIFTER,UP_TIME);
+}
+
+
+void down()
+{
+	// lower arm until level
+	OnRev(LIFTER);
+	until(LEVEL==0);
+	Wait(DOWN_DELAY);
+	Off(LIFTER);
+}	
+
+
+void grab()
+{
+	// close the grabbers
+	Fwd(GRABBER);
+	OnFor(GRABBER, GRAB_TIME);
+}
+
+
+void release()
+{
+	// open the grabbers
+	Rev(GRABBER);
+	OnFor(GRABBER, RELEASE_TIME);
+}
+
+
+void home()
+{
+	// spin until home
+	On(SPINNER);
+	until(HOME==0);
+	Off(SPINNER);
+}

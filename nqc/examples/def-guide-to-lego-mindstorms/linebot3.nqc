@@ -1,0 +1,98 @@
+// linebot3.nqc
+//	improved tracking algorithm with stoppers
+
+// sensor and motors
+#define EYE		SENSOR_2
+#define LEFT	OUT_A
+#define RIGHT	OUT_C
+
+// light sensor thresholds
+#define LINE_THRESHOLD		51
+#define STOPPER_THRESHOLD	42
+
+// other constants
+#define TURN_SPEED 3
+#define INITIAL_TIME 4
+
+int direction, time, eye, ok_to_stop;
+
+
+void follow_line()
+{
+	// initialize the variables
+	direction = 1;
+	time = INITIAL_TIME;
+	ok_to_stop = 0;
+	
+	// start driving
+	OnFwd(LEFT+RIGHT);
+	
+	while(true)
+	{
+		// read the sensor value
+		eye = EYE;
+
+		if (eye < LINE_THRESHOLD)
+		{
+			// we are either over the line or a stopper
+			if (eye > STOPPER_THRESHOLD)
+				ok_to_stop = 1;
+			else if (ok_to_stop == 1)
+			{
+				// found a stopper
+				Off(RIGHT+LEFT);
+				return;
+			}
+			
+		}
+		else
+		{
+			// need to find the line again
+			ClearTimer(0);
+			if (direction == 1)
+			{
+				SetPower(RIGHT+LEFT, TURN_SPEED);
+				Rev(LEFT);
+			}
+			else
+			{
+				SetPower(RIGHT+LEFT, TURN_SPEED);
+				Rev(RIGHT);
+			}
+			
+			while(true)
+			{
+				// have we found the line?
+				if (EYE < LINE_THRESHOLD)
+				{
+					time = INITIAL_TIME;
+					break;
+				}
+				
+				if (Timer(0) > time)
+				{
+					// try the other direction
+					direction *= -1;
+					time *= 2;
+					break;
+				}
+			}
+			
+			SetPower(RIGHT+LEFT, OUT_FULL);
+			Fwd(RIGHT+LEFT);
+		}
+	}
+}
+
+
+task main()
+{
+	SetSensor(EYE, SENSOR_LIGHT);
+	
+	while(true)
+	{
+		follow_line();	
+		PlaySound(SOUND_FAST_UP);
+		Wait(100);
+	}
+}

@@ -1,0 +1,78 @@
+// diffbot.nqc
+//  remote control for DIFFBOT
+
+// motors and sensors
+#define DRIVE		OUT_A
+#define TURN		OUT_C
+#define FWD_BUTTON	SENSOR_1
+#define REV_BUTTON	SENSOR_2
+#define STEER		SENSOR_3
+
+// thresholds for steering control
+#define LEFT	47
+#define RIGHT	55
+
+task main()
+{
+	// configure sensors
+	SetSensor(FWD_BUTTON, SENSOR_TOUCH);
+	SetSensor(REV_BUTTON, SENSOR_TOUCH);
+	SetSensor(STEER, SENSOR_LIGHT);
+
+	// start all tasks
+	start steer_task;
+	start fwd_task;
+	start rev_task;
+	
+	// this task is done now...
+}
+
+
+
+task fwd_task()
+{
+	while(true)
+	{
+		// drive forward while button is pressed
+		until(FWD_BUTTON == 1);
+		OnFwd(DRIVE);
+		until(FWD_BUTTON == 0);
+		Off(DRIVE);
+	}
+}
+
+
+task rev_task()
+{
+	while(true)
+	{
+		// drive backwards while button is pressed
+		until(REV_BUTTON == 1);
+		OnRev(DRIVE);
+		until(REV_BUTTON == 0);
+		Off(DRIVE);
+	}
+}
+
+
+task steer_task()
+{
+	while(true)
+	{
+		// should we turn left?
+		if (STEER <= LEFT)
+		{
+			OnFwd(TURN);
+			until(STEER > LEFT);
+			Off(TURN);
+		}
+		
+		// should we turn right?
+		if (STEER >= RIGHT)
+		{
+			OnRev(TURN);
+			until(STEER < RIGHT);
+			Off(TURN);
+		}
+	}
+}

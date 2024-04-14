@@ -1,0 +1,22 @@
+// templog.nqc
+//	log temperature every 15 seconds for 6 hours
+
+#define SAMPLE_TIME		1500	// 15 seconds
+#define DATALOG_SIZE	1440	// 6 hours of data 
+
+task main()
+{
+	SetSensor(SENSOR_1, SENSOR_FAHRENHEIT);
+	SelectDisplay(1);
+
+	CreateDatalog(0);
+	CreateDatalog(DATALOG_SIZE);	
+
+	int i = 0;
+	while(i < DATALOG_SIZE)
+	{
+		AddToDatalog(SENSOR_1);
+		Wait(SAMPLE_TIME);
+		i++;
+	}
+}

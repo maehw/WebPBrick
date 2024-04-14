@@ -1,0 +1,45 @@
+// sorter.nqc
+//  program for Brick Sorter
+
+#define EYE		SENSOR_1
+#define NOTCH	SENSOR_3
+
+#define ARM	OUT_A
+
+// you may need to adjust these 
+#define NO_BRICKS  		46
+#define BRIGHT_BRICK    51
+#define BRICK_DELAY  	10
+
+task main()
+{
+	// configure sensors
+	SetSensor(EYE, SENSOR_LIGHT);
+	SetSensor(NOTCH, SENSOR_TOUCH);
+
+	// run until no more bricks
+	while(EYE >= NO_BRICKS)
+	{
+		// check color of brick
+		if (EYE > BRIGHT_BRICK)
+			Fwd(ARM);
+		else
+			Rev(ARM);
+		
+		// wait until arm has moved to end
+		On(ARM);
+		until(NOTCH == 1);
+		until(NOTCH == 0);
+		
+		// reverse direction arm and wait until centered
+		Toggle(ARM);
+		until(NOTCH==1);
+		until(NOTCH==0);
+		
+		// stop arm
+		Off(ARM);
+		
+		// wait a little while for next brick to slide down
+		Wait(BRICK_DELAY);
+	}
+}
