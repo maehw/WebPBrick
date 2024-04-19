@@ -44,3 +44,7 @@ This project is a collection of modules and open source software.
 | NQC example code by D. Baum and R. Zurcher | [Freeware License](./nqc/examples/def-guide-to-lego-mindstorms/LICENSE.txt) |
 | all others WebPBrick modules               | [GNU GPLv3](./LICENSE)                                                  |
 
+
+## Disclaimer
+
+LEGO® is a trademark of the LEGO Group of companies which does not sponsor, authorize or endorse this project.
