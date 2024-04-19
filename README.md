@@ -19,7 +19,7 @@ WebPBrick's toolchain consists of several modules:
 * WebNQC: The NQC compiler built as WebAssembly (WASM) for the web using emscripten.
 * RCX image parser written in Kaitai Struct and compiled to JavaScript to parse and split RCX image binary files so that they can be downloaded to the RCX in their bytecode chunks.
 * RCX communication libraries:
-  * Based on Web Serial API to be used with the LEGO IR Serial Tower and DIY IR serial towers
+  * Based on Web Serial API to be used with the LEGO IR Serial Tower and [DIY IR serial towers](https://github.com/maehw/DiyIrTower)
   * Based on WebUSB API to be used with LEGO IR USB Tower
 
 
