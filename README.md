@@ -45,6 +45,10 @@ This project is a collection of modules and open source software.
 | all others WebPBrick modules               | [GNU GPLv3](./LICENSE)                                                  |
 
 
+## Released versions
+
+Please find the CHANGELOG [here](./CHANGELOG.md). Please also note that WebPbrick.com may not be up-to-date with this repository on GitHub.
+
 ## Disclaimer
 
 LEGO® is a trademark of the LEGO Group of companies which does not sponsor, authorize or endorse this project.
