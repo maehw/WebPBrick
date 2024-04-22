@@ -270,7 +270,9 @@ async function unlockFirmware() {
 // Download firmware to RCX programmable brick
 async function downloadFirmware() {
     // TODO: add mechanism to choose between different firmware versions
-    let firmwareData = firm0328Data; // official LEGO firmware
+    //let firmwareData = firm0309Data; // official LEGO firmware (v03.09)
+    //let firmwareData = firm0328Data; // official LEGO firmware (v03.28)
+    let firmwareData = firm0332Data; // official LEGO firmware (v03.32)
     //let firmwareData = firmOhmmeterData; // 3rd-party firmware
 
     // prepare download
