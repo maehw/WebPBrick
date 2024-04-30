@@ -1,0 +1,36 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>BlockNQC</title>
+</head>
+<body>
+<div id="pageContainer">
+  <div id="blocklyDiv" style="height: 900px; width: 100%;"></div>
+  <div id="outputPane">
+    <button id="generateCodeBtn">Generate code</button>
+    <pre id="generatedCode"></pre>
+    <div id="output"></div>
+  </div>
+</div>
+<!-- Load Blockly core -->
+<script src="https://unpkg.com/blockly/blockly_compressed.js"></script>
+<!-- Load the default blocks -->
+<script src="https://unpkg.com/blockly/blocks_compressed.js"></script>
+<!-- Load a generator -->
+<script src="https://unpkg.com/blockly/javascript_compressed.js"></script>
+<!-- Load a message file -->
+<script src="https://unpkg.com/blockly/msg/en.js"></script>
+<!-- Load custom blocks for the RCX/NQC -->
+<script src="./customBlocks/outputBlocks.js"></script>
+<script src="./customBlocks/soundBlocks.js"></script>
+<script src="./customBlocks/controlsBlocks.js"></script>
+<script src="./customBlocks/sensorBlocks.js"></script>
+<script src="./customBlocks/miscBlocks.js"></script>
+<!-- Load JavaScript code generator -->
+<script src="https://unpkg.com/blockly/javascript_compressed"></script>
+<!-- Load the Blockly toolbox (with the blocks), the Blockly workspace and custom code generator -->
+<script src="./toolboxWorkspace.js"></script>
+<script src="./codeGenerator.js"></script>
+</body>
+</html>

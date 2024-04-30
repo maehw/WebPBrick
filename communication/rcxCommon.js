@@ -273,6 +273,8 @@ async function downloadFirmware() {
     //let firmwareData = firm0309Data; // official LEGO firmware (v03.09)
     //let firmwareData = firm0328Data; // official LEGO firmware (v03.28)
     let firmwareData = firm0332Data; // official LEGO firmware (v03.32)
+    //let firmwareData = firmPbForthData;
+    //let firmwareData = firmLeJosData;
     //let firmwareData = firmOhmmeterData; // 3rd-party firmware
 
     // prepare download
