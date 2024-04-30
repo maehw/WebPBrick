@@ -29,10 +29,6 @@ see https://developers.google.com/blockly/guides/get-started/get-the-code
 * Can the number of options of built-in blocks be reduced? E.g. `^` (JavaScript code generator generates `Math.pow()`) be removed from `math_arithmetic`?
 * How to implement the `task` feature properly? Only tasks should be started/stopped that exists (i.e. where their name has been declared).
 
-## Important TODOs
-
-Replace files taken from https://unpkg.com/blockly/ !
-
 ## Optional TODOs
 
 _(considered nice-to-have)_
