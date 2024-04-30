@@ -38,11 +38,11 @@ Open your webbrowser and navigate to http://localhost:8080/ide/
 
 This project is a collection of modules and open source software. 
 
-| Module                                     | License                                                                  |
-|--------------------------------------------|--------------------------------------------------------------------------|
-| NQC / WebNQC                               | [Mozilla Public License 2.0](./nqc/webnqc/LICENSE.md)                    |
-| NQC example code by D. Baum and R. Zurcher | [Freeware License](./nqc/examples/def-guide-to-lego-mindstorms/LICENSE.txt) |
-| all others WebPBrick modules               | [GNU GPLv3](./LICENSE)                                                  |
+| Module                                                   | License                                                                  |
+|----------------------------------------------------------|--------------------------------------------------------------------------|
+| NQC / WebNQC                                             | [Mozilla Public License 2.0](./nqc/webnqc/LICENSE.md)                    |
+| NQC example code by D. Baum and R. Zurcher               | [Freeware License](./nqc/examples/def-guide-to-lego-mindstorms/LICENSE.txt) |
+| all others WebPBrick modules (e.g. BlockNQC and the IDE) | [GNU GPLv3](./LICENSE)                                                  |
 
 
 ## Released versions
