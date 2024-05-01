@@ -1,5 +1,5 @@
 /*
- * WebPBrick
+ * WebPBrick / BlockNQC
  * Copyright (C) 2024 maehw
  *
  * This program is free software: you can redistribute it and/or modify
@@ -310,6 +310,6 @@ generateCodeBtn.addEventListener('click', () => {
     // Join the processed lines back together into a single string
     const nqcCode = nqcLines.join("\n");
 
-    generatedCodeField.innerText = nqcCode;
+    generatedCodeField.value = nqcCode;
   }
 });
