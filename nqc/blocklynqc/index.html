@@ -8,6 +8,8 @@
 <div id="pageContainer">
   <div id="blocklyDiv" style="height: 900px; width: 100%;"></div>
   <div id="outputPane">
+    <button id="saveBtn">Save program (to browser's local storage)</button>
+    <button id="loadBtn">Load program (from browser's local storage)</button>
     <button id="generateCodeBtn">Generate code</button>
     <pre id="generatedCode"></pre>
     <div id="output"></div>
@@ -27,8 +29,9 @@
 <script src="./customBlocks/controlsBlocks.js"></script>
 <script src="./customBlocks/sensorBlocks.js"></script>
 <script src="./customBlocks/miscBlocks.js"></script>
-<!-- Load the Blockly toolbox (with the blocks), the Blockly workspace and custom code generator -->
+<!-- Load the Blockly toolbox (with the blocks), the Blockly workspace, custom code generator and program storage handling -->
 <script src="./toolboxWorkspace.js"></script>
 <script src="./codeGenerator.js"></script>
+<script src="./programStorage.js"></script>
 </body>
 </html>
