@@ -18,26 +18,72 @@
 
 // This JavaScript code is used for saving/loading programs (storage).
 
-// Save program upon request (currently only to the web browser's "local storage").
-const saveBtn = document.getElementById('saveBtn');
-saveBtn.addEventListener('click', () => {
+// Serve a JSON file for download
+function downloadJsonFile(filename, text) {
+    var element = document.createElement('a');
+    element.setAttribute('href', 'data:application/json;charset=utf-8,' + encodeURIComponent(text));
+    element.setAttribute('download', filename);
+
+    element.style.display = 'none';
+    document.body.appendChild(element);
+
+    element.click();
+
+    document.body.removeChild(element);
+}
+
+// Save program upon request (only to the web browser's "local storage").
+document.getElementById('saveOnlineBtn').addEventListener('click', () => {
   if(workspace) {
     // Serialize the state.
     const state = Blockly.serialization.workspaces.save(workspace);
 
-    // Then you save the state, e.g. to local storage.
+    // Save the stringify-ed state to the web browser's local storage.
     localStorage.setItem('workspace-state', JSON.stringify(state));
   }
 });
 
-// Load program upon request (currently only from the web browser's "local storage")
-const loadBtn = document.getElementById('loadBtn');
-loadBtn.addEventListener('click', () => {
+// Load program upon request (only from the web browser's "local storage")
+document.getElementById('loadOnlineBtn').addEventListener('click', () => {
   if(workspace) {
-    // Get your saved state from somewhere, e.g. local storage.
+    // Load the parsed stringify-ed saved state from the web browser's local storage.
     const state = JSON.parse(localStorage.getItem('workspace-state'));
 
-    // Deserialize the state.
+    // Deserialize the state and load it to the workspace.
     Blockly.serialization.workspaces.load(state, workspace);
+  }
+});
+
+// Save program upon request (as a file to be downloaded).
+document.getElementById('saveOfflineBtn').addEventListener('click', () => {
+  if(workspace) {
+    // Serialize the state.
+    const state = Blockly.serialization.workspaces.save(workspace);
+
+    // Save the stringify-ed state as downloadable JSON file.
+    downloadJsonFile("BlockNQC.json", JSON.stringify(state));
+  }
+});
+
+// Load program upon request (a file to be "uploaded")
+document.getElementById('loadOfflineBtn').addEventListener('change', function () {
+  if(workspace) {
+    if (this.files && this.files[0]) {
+      var fileName = this.files[0];
+      var reader = new FileReader();
+      console.log(`Loading external file '${fileName.name}'...`);
+
+      reader.addEventListener('load', function (e) {
+        console.log(`Loaded external file.`);
+
+        // Load the parsed stringify-ed saved state from the file contents.
+        const state = JSON.parse(e.target.result);
+
+        // Deserialize the state and load it to the workspace.
+        Blockly.serialization.workspaces.load(state, workspace);
+      });
+
+      reader.readAsBinaryString(fileName);
+    }
   }
 });
