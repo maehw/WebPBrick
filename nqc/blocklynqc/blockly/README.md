@@ -7,6 +7,8 @@ The source for this module is in the [Blockly repo](http://github.com/google/blo
 
 Only some files have been taken from the release ([v10.4.3](https://github.com/google/blockly/releases/tag/blockly-v10.4.3)) artifact.
 
+Further reading: [What is Blockly?](https://developers.google.com/blockly/guides/get-started/what-is-blockly)
+
 ## License
 
 Apache 2.0
