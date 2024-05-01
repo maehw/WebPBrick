@@ -1,5 +1,5 @@
 /*
- * WebPBrick
+ * WebPBrick / BlockNQC
  * Copyright (C) 2024 maehw
  *
  * This program is free software: you can redistribute it and/or modify
@@ -42,6 +42,22 @@ Blockly.defineBlocksWithJsonArray([
             [
               "C",
               "OUT_C"
+            ],
+            [
+              "A + B",
+              "OUT_A+OUT_B"
+            ],
+            [
+              "A + C",
+              "OUT_A+OUT_C"
+            ],
+            [
+              "B + C",
+              "OUT_B+OUT_C"
+            ],
+            [
+              "A + B + C",
+              "OUT_A+OUT_B+OUT_C"
             ]
           ]
         },
@@ -78,6 +94,22 @@ Blockly.defineBlocksWithJsonArray([
             [
               "C",
               "OUT_C"
+            ],
+            [
+              "A + B",
+              "OUT_A+OUT_B"
+            ],
+            [
+              "A + C",
+              "OUT_A+OUT_C"
+            ],
+            [
+              "B + C",
+              "OUT_B+OUT_C"
+            ],
+            [
+              "A + B + C",
+              "OUT_A+OUT_B+OUT_C"
             ]
           ]
         },
@@ -127,6 +159,22 @@ Blockly.defineBlocksWithJsonArray([
             [
               "C",
               "OUT_C"
+            ],
+            [
+              "A + B",
+              "OUT_A+OUT_B"
+            ],
+            [
+              "A + C",
+              "OUT_A+OUT_C"
+            ],
+            [
+              "B + C",
+              "OUT_B+OUT_C"
+            ],
+            [
+              "A + B + C",
+              "OUT_A+OUT_B+OUT_C"
             ]
           ]
         },
@@ -172,6 +220,22 @@ Blockly.defineBlocksWithJsonArray([
             [
               "C",
               "OUT_C"
+            ],
+            [
+              "A + B",
+              "OUT_A+OUT_B"
+            ],
+            [
+              "A + C",
+              "OUT_A+OUT_C"
+            ],
+            [
+              "B + C",
+              "OUT_B+OUT_C"
+            ],
+            [
+              "A + B + C",
+              "OUT_A+OUT_B+OUT_C"
             ]
           ]
         },
@@ -203,6 +267,22 @@ Blockly.defineBlocksWithJsonArray([
             [
               "C",
               "OUT_C"
+            ],
+            [
+              "A + B",
+              "OUT_A+OUT_B"
+            ],
+            [
+              "A + C",
+              "OUT_A+OUT_C"
+            ],
+            [
+              "B + C",
+              "OUT_B+OUT_C"
+            ],
+            [
+              "A + B + C",
+              "OUT_A+OUT_B+OUT_C"
             ]
           ]
         },
@@ -234,6 +314,22 @@ Blockly.defineBlocksWithJsonArray([
             [
               "C",
               "OUT_C"
+            ],
+            [
+              "A + B",
+              "OUT_A+OUT_B"
+            ],
+            [
+              "A + C",
+              "OUT_A+OUT_C"
+            ],
+            [
+              "B + C",
+              "OUT_B+OUT_C"
+            ],
+            [
+              "A + B + C",
+              "OUT_A+OUT_B+OUT_C"
             ]
           ]
         },
