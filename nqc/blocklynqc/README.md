@@ -35,7 +35,7 @@ see https://developers.google.com/blockly/guides/get-started/get-the-code
 _(considered nice-to-have)_
 
 * Implement `Program()` and `SelectProgram()`
-* Implement functions and subroutines.
+* Implement functions and subroutines (code blocks can be copy-pasted).
 * Support `for` loops
 * Support `switch` statement
 * Implement resource access control (`acquire`, `monitor`)

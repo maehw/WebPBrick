@@ -247,6 +247,53 @@ Blockly.defineBlocksWithJsonArray([
       "tooltip": "",
       "helpUrl": ""
     },
+    // Block for switching motor/output off smoothly ("float" or "coast")
+    {
+      "type": "motion_float",
+      "message0": "switch output %1 off smoothly (float)",
+      "args0": [
+        {
+          "type": "field_dropdown",
+          "name": "OUTPUT",
+          "options": [
+            [
+              "A",
+              "OUT_A"
+            ],
+            [
+              "B",
+              "OUT_B"
+            ],
+            [
+              "C",
+              "OUT_C"
+            ],
+            [
+              "A + B",
+              "OUT_A+OUT_B"
+            ],
+            [
+              "A + C",
+              "OUT_A+OUT_C"
+            ],
+            [
+              "B + C",
+              "OUT_B+OUT_C"
+            ],
+            [
+              "A + B + C",
+              "OUT_A+OUT_B+OUT_C"
+            ]
+          ]
+        },
+      ],
+      "inputsInline": true,
+      "previousStatement": null,
+      "nextStatement": null,
+      "colour": outputsCategoryCol,
+      "tooltip": "",
+      "helpUrl": ""
+    },
     // Block for switching motor/output on
     {
       "type": "motion_on",

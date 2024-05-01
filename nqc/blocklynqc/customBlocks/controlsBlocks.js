@@ -22,10 +22,28 @@ tasksCategoryCol = "#FFC400";
 
 // Block definitions
 Blockly.defineBlocksWithJsonArray([
-    // Block for waiting for a specific amount of time
+    // Block for waiting for a specific amount of time (in multiple of seconds)
     {
       "type": "controls_wait",
       "message0": "wait for %1 seconds",
+      "args0": [
+        {
+          "type": "input_value",
+          "name": "DURATION",
+          "check": "Number"
+        }
+      ],
+      "inputsInline": true,
+      "previousStatement": null,
+      "nextStatement": null,
+      "colour": 120,
+      "tooltip": "",
+      "helpUrl": ""
+    },
+    // Block for waiting for a specific amount of time (in multiple of 1/100 seconds)
+    {
+      "type": "controls_waitfraction",
+      "message0": "wait for %1 × 1/100 seconds",
       "args0": [
         {
           "type": "input_value",

@@ -143,6 +143,20 @@ const toolbox = {
             },
           }
         },
+        {
+          type: 'controls_waitfraction',
+          kind: 'block',
+          inputs: {
+            'DURATION': {
+              'shadow': {
+                'type': 'math_number',
+                'fields': {
+                  'NUM': 100
+                }
+              }
+            },
+          }
+        },
       ], /* end of category contents */
     }, /* end of Loops & Control category */
     {
@@ -289,11 +303,15 @@ const toolbox = {
           kind: 'block',
         },
         {
+          type: 'motion_on',
+          kind: 'block',
+        },
+        {
           type: 'motion_off',
           kind: 'block',
         },
         {
-          type: 'motion_on',
+          type: 'motion_float',
           kind: 'block',
         },
       ],
