@@ -88,6 +88,19 @@ codeGenerator.forBlock['controls_wait'] = function(block, generator) {
   return code;
 }
 
+codeGenerator.forBlock['controls_waitfraction'] = function(block, generator) {
+  let waitTime = generator.valueToCode(block, 'DURATION', Blockly.JavaScript.ORDER_ATOMIC);
+
+  // round to full integers, if not an integer yet
+  if(!isNaN(waitTime)) {
+    waitTime = Math.round(waitTime);
+  }
+
+  const code = `Wait(${waitTime});\n`;
+
+  return code;
+}
+
 codeGenerator.forBlock['math_random_int0'] = function(block, generator) {
   const upperBound = block.getFieldValue('UPPER');
 
@@ -149,6 +162,13 @@ codeGenerator.forBlock['motion_onwithdirection'] = function(block, generator) {
 codeGenerator.forBlock['motion_off'] = function(block, generator) {
   const outputPort = block.getFieldValue('OUTPUT');
   const code = `Off(${outputPort});\n`;
+
+  return code;
+}
+
+codeGenerator.forBlock['motion_float'] = function(block, generator) {
+  const outputPort = block.getFieldValue('OUTPUT');
+  const code = `Float(${outputPort});\n`;
 
   return code;
 }
