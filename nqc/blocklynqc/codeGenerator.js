@@ -73,7 +73,15 @@ codeGenerator.forBlock['controls_repeat_ext'] = function(block, generator) {
 
 codeGenerator.forBlock['controls_wait'] = function(block, generator) {
   let waitTime = generator.valueToCode(block, 'DURATION', Blockly.JavaScript.ORDER_ATOMIC);
-  waitTime = Math.round(waitTime * 100);
+
+  // convert to multiples of 1/100 seconds
+  if(isNaN(waitTime)) {
+    // we have an expression here and not a numerical value itself
+    waitTime = `(${waitTime}) * 100`;
+  }
+  else {
+    waitTime = Math.round(waitTime * 100);
+  }
 
   const code = `Wait(${waitTime});\n`;
 
