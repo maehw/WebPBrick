@@ -98,6 +98,14 @@ codeGenerator.forBlock['math_change'] = function(block, generator) {
   return code;
 }
 
+codeGenerator.forBlock['math_abssign'] = function(block, generator) {
+  const operation = block.getFieldValue('OP');
+  const number = block.getFieldValue('NUMBER');
+  const code = `${operation}(${number})`;
+
+  return [code, Blockly.JavaScript.ORDER_ATOMIC];
+}
+
 codeGenerator.forBlock['motion_setdirection'] = function(block, generator) {
   const outputPort = block.getFieldValue('OUTPUT');
   const outputDirection = block.getFieldValue('DIRECTION');

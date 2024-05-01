@@ -225,6 +225,10 @@ const toolbox = {
           },
         },
         {
+          type: 'math_abssign',
+          kind: 'block',
+        },
+        {
           type: 'math_random_int0',
           kind: 'block',
         },

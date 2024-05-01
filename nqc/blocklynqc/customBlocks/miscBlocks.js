@@ -304,6 +304,38 @@ Blockly.defineBlocksWithJsonArray([
       "tooltip": "",
       "helpUrl": ""
     },
+    // Block for creating a random number
+    {
+      "type": "math_abssign",
+      "message0": "%1 of %2",
+      "args0": [
+        {
+          "type": "field_dropdown",
+          "name": "OP",
+          "options": [
+            [
+              "absolute value",
+              "abs"
+            ],
+            [
+              "sign of",
+              "sign"
+            ],
+          ]
+        },
+        {
+          "type": "field_number",
+          "name": "NUMBER",
+          "value": -18,
+          "precision": 1
+        },
+      ],
+      "inputsInline": true,
+      "output": "Number",
+      "colour": 230,
+      "tooltip": "",
+      "helpUrl": ""
+    },
     // Block for setting the sleep timeout
     {
       "type": "sleep_setsleeptime",
