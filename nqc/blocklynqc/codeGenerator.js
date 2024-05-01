@@ -16,7 +16,10 @@
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-// This JavaScript code is used for code generation.
+// This JavaScript code is used for code generation as its syntax is quite similar to C/NQC.
+// Most of the code here is for code generation of custom blocks.
+// Some code here also replaces code generation of built-in default blocks, where the generated JavaScript code is not
+// compatible with NQC.
 
 const codeGenerator = javascript.javascriptGenerator;
 
@@ -83,6 +86,16 @@ codeGenerator.forBlock['math_random_int0'] = function(block, generator) {
   const code = `Random(${upperBound})`;
 
   return [code, Blockly.JavaScript.ORDER_ATOMIC];
+}
+
+codeGenerator.forBlock['math_change'] = function(block, generator) {
+  const varId = block.getFieldValue('VAR');
+  const varName = Blockly.Variables.getVariable(workspace, varId).name;
+  const delta = generator.valueToCode(block, 'DELTA', Blockly.JavaScript.ORDER_ATOMIC);
+
+  const code = `${varName} += ${delta};\n`;
+
+  return code;
 }
 
 codeGenerator.forBlock['motion_setdirection'] = function(block, generator) {
@@ -300,7 +313,8 @@ generateCodeBtn.addEventListener('click', () => {
 
     // Process each line (for example, adding a prefix)
     const nqcLines = jsLines.map(line => {
-        // Process the line here
+        // Correct variable declarations:
+        // When the line begins with "var " replace it with "int "
         if(line.startsWith("var ")) {
             line = "int " + line.substring(4);
         }
