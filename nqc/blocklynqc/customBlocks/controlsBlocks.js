@@ -17,8 +17,9 @@
  */
 
 // This JavaScript code is used to define blocks of the "Control" category.
+// This includes blocks for waiting for a specific time but also task control.
 
-tasksCategoryCol = "#FFC400";
+controlsCategoryCol = 120; // hue value
 
 // Block definitions
 Blockly.defineBlocksWithJsonArray([
@@ -36,7 +37,7 @@ Blockly.defineBlocksWithJsonArray([
       "inputsInline": true,
       "previousStatement": null,
       "nextStatement": null,
-      "colour": 120,
+      "colour": controlsCategoryCol,
       "tooltip": "",
       "helpUrl": ""
     },
@@ -54,96 +55,7 @@ Blockly.defineBlocksWithJsonArray([
       "inputsInline": true,
       "previousStatement": null,
       "nextStatement": null,
-      "colour": 120,
-      "tooltip": "",
-      "helpUrl": ""
-    },
-    // Block for stopping all tasks
-    {
-      "type": "controls_stopalltasks",
-      "message0": "stop all tasks",
-      "inputsInline": true,
-      "previousStatement": null,
-      "nextStatement": null,
-      "colour": tasksCategoryCol,
-      "tooltip": "",
-      "helpUrl": ""
-    },
-    // Block for the definition of the main task
-    {
-      "type": "controls_taskmain",
-      "message0": "task main %1 %2",
-      "args0": [
-        {
-          "type": "input_dummy"
-        },
-        {
-          "type": "input_statement",
-          "name": "BODY"
-        }
-      ],
-      "inputsInline": false,
-      "colour": tasksCategoryCol,
-      "tooltip": "",
-      "helpUrl": ""
-    },
-    // Block for a task definition
-    {
-      "type": "controls_taskdef",
-      "message0": "task %1 %2 %3",
-      "args0": [
-        {
-          "type": "field_input",
-          "name": "NAME",
-          "text": "not_main"
-        },
-        {
-          "type": "input_dummy"
-        },
-        {
-          "type": "input_statement",
-          "name": "BODY"
-        }
-      ],
-      "inputsInline": false,
-      "colour": tasksCategoryCol,
-      "tooltip": "",
-      "helpUrl": ""
-    },
-    // Block for starting a task
-    {
-      "type": "controls_taskstart",
-      "message0": "start task %1",
-      "args0": [
-        {
-          "type": "field_input",
-          "name": "NAME",
-          "text": "not_main"
-        }
-      ],
-      "inputsInline": true,
-      "previousStatement": null,
-      "nextStatement": null,
-      "colour": tasksCategoryCol,
-      "tooltip": "",
-      "helpUrl": ""
-    },
-    // Block for stopping a task
-    {
-      "type": "controls_taskstop",
-      "message0": "stop task %1",
-      "args0": [
-        {
-          "type": "field_input",
-          "name": "NAME",
-          "text": "not_main"
-        }
-      ],
-      "inputsInline": true,
-      "previousStatement": null,
-      "nextStatement": null,
-      "colour": tasksCategoryCol,
-      "fill": "black",
+      "colour": controlsCategoryCol,
       "tooltip": "",
       "helpUrl": ""
     },

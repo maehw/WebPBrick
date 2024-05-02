@@ -24,7 +24,7 @@ outputsCategoryCol = "#FF5E00";
 Blockly.defineBlocksWithJsonArray([
     // Block for setting motor/output power
     {
-      "type": "motion_setpower",
+      "type": "output_setpower",
       "message0": "set output %1 power level to %2",
       "args0": [
         {
@@ -76,7 +76,7 @@ Blockly.defineBlocksWithJsonArray([
     },
     // Block for setting motor/output direction
     {
-      "type": "motion_setdirection",
+      "type": "output_setdirection",
       "message0": "set output %1 direction to %2",
       "args0": [
         {
@@ -141,7 +141,7 @@ Blockly.defineBlocksWithJsonArray([
     },
     // Block for switching motor/output on in a specific direction
     {
-      "type": "motion_onwithdirection",
+      "type": "output_onwithdirection",
       "message0": "switch output %1 on in %2 direction",
       "args0": [
         {
@@ -202,7 +202,7 @@ Blockly.defineBlocksWithJsonArray([
     },
     // Block for switching motor/output off
     {
-      "type": "motion_off",
+      "type": "output_off",
       "message0": "switch output %1 off",
       "args0": [
         {
@@ -249,7 +249,7 @@ Blockly.defineBlocksWithJsonArray([
     },
     // Block for switching motor/output off smoothly ("float" or "coast")
     {
-      "type": "motion_float",
+      "type": "output_float",
       "message0": "switch output %1 off smoothly (float)",
       "args0": [
         {
@@ -296,7 +296,7 @@ Blockly.defineBlocksWithJsonArray([
     },
     // Block for switching motor/output on
     {
-      "type": "motion_on",
+      "type": "output_on",
       "message0": "switch output %1 on",
       "args0": [
         {
@@ -343,7 +343,7 @@ Blockly.defineBlocksWithJsonArray([
     },
     // Block for setting motor/output mode
     {
-      "type": "motion_setmode",
+      "type": "output_setmode",
       "message0": "set output %1 mode to %2",
       "args0": [
         {

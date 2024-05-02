@@ -23,14 +23,14 @@
 
 const codeGenerator = javascript.javascriptGenerator;
 
-codeGenerator.forBlock['controls_taskmain'] = function(block, generator) {
+codeGenerator.forBlock['task_main'] = function(block, generator) {
   const innerCode = generator.statementToCode(block, 'BODY');
   const code = `task main() {\n${innerCode}}\n`;
 
   return code;
 }
 
-codeGenerator.forBlock['controls_taskdef'] = function(block, generator) {
+codeGenerator.forBlock['task_definition'] = function(block, generator) {
   let taskName = block.getFieldValue('NAME');
   taskName = (taskName === null) ? "" : taskName;
 
@@ -40,7 +40,7 @@ codeGenerator.forBlock['controls_taskdef'] = function(block, generator) {
   return code;
 }
 
-codeGenerator.forBlock['controls_taskstart'] = function(block, generator) {
+codeGenerator.forBlock['task_start'] = function(block, generator) {
   let taskName = block.getFieldValue('NAME');
   taskName = (taskName === null) ? "" : taskName;
 
@@ -49,7 +49,7 @@ codeGenerator.forBlock['controls_taskstart'] = function(block, generator) {
   return code;
 }
 
-codeGenerator.forBlock['controls_taskstop'] = function(block, generator) {
+codeGenerator.forBlock['task_stop'] = function(block, generator) {
   let taskName = block.getFieldValue('NAME');
   taskName = (taskName === null) ? "" : taskName;
 
@@ -58,7 +58,7 @@ codeGenerator.forBlock['controls_taskstop'] = function(block, generator) {
   return code;
 }
 
-codeGenerator.forBlock['controls_stopalltasks'] = function(block, generator) {
+codeGenerator.forBlock['task_stopall'] = function(block, generator) {
   return "StopAllTasks();\n";
 }
 
@@ -127,7 +127,7 @@ codeGenerator.forBlock['math_abssign'] = function(block, generator) {
   return [code, Blockly.JavaScript.ORDER_ATOMIC];
 }
 
-codeGenerator.forBlock['motion_setdirection'] = function(block, generator) {
+codeGenerator.forBlock['output_setdirection'] = function(block, generator) {
   const outputPort = block.getFieldValue('OUTPUT');
   const outputDirection = block.getFieldValue('DIRECTION');
   const code = `SetDirection(${outputPort}, ${outputDirection});\n`;
@@ -135,7 +135,7 @@ codeGenerator.forBlock['motion_setdirection'] = function(block, generator) {
   return code;
 }
 
-codeGenerator.forBlock['motion_setmode'] = function(block, generator) {
+codeGenerator.forBlock['output_setmode'] = function(block, generator) {
   const outputPort = block.getFieldValue('OUTPUT');
   const outputMode = block.getFieldValue('MODE');
   const code = `SetOutput(${outputPort}, ${outputMode});\n`;
@@ -143,7 +143,7 @@ codeGenerator.forBlock['motion_setmode'] = function(block, generator) {
   return code;
 }
 
-codeGenerator.forBlock['motion_setpower'] = function(block, generator) {
+codeGenerator.forBlock['output_setpower'] = function(block, generator) {
   const outputPort = block.getFieldValue('OUTPUT');
   const outputPower = generator.valueToCode(block, 'POWER', Blockly.JavaScript.ORDER_ATOMIC);
   const code = `SetPower(${outputPort}, ${outputPower});\n`;
@@ -151,7 +151,7 @@ codeGenerator.forBlock['motion_setpower'] = function(block, generator) {
   return code;
 }
 
-codeGenerator.forBlock['motion_onwithdirection'] = function(block, generator) {
+codeGenerator.forBlock['output_onwithdirection'] = function(block, generator) {
   const outputPort = block.getFieldValue('OUTPUT');
   const outputDirection = block.getFieldValue('DIRECTION');
   const code = `${outputDirection}(${outputPort});\n`;
@@ -159,21 +159,21 @@ codeGenerator.forBlock['motion_onwithdirection'] = function(block, generator) {
   return code;
 }
 
-codeGenerator.forBlock['motion_off'] = function(block, generator) {
+codeGenerator.forBlock['output_off'] = function(block, generator) {
   const outputPort = block.getFieldValue('OUTPUT');
   const code = `Off(${outputPort});\n`;
 
   return code;
 }
 
-codeGenerator.forBlock['motion_float'] = function(block, generator) {
+codeGenerator.forBlock['output_float'] = function(block, generator) {
   const outputPort = block.getFieldValue('OUTPUT');
   const code = `Float(${outputPort});\n`;
 
   return code;
 }
 
-codeGenerator.forBlock['motion_on'] = function(block, generator) {
+codeGenerator.forBlock['output_on'] = function(block, generator) {
   const outputPort = block.getFieldValue('OUTPUT');
   const code = `On(${outputPort});\n`;
 

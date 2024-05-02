@@ -18,6 +18,8 @@
 
 // This JavaScript code is used to define blocks of the "Sounds" category.
 
+soundCategoryCol = 192; // hue value
+
 // Block definitions
 Blockly.defineBlocksWithJsonArray([
     // Block for playing a sound
@@ -59,7 +61,7 @@ Blockly.defineBlocksWithJsonArray([
       "inputsInline": true,
       "previousStatement": null,
       "nextStatement": null,
-      "colour": 192,
+      "colour": soundCategoryCol,
       "tooltip": "",
       "helpUrl": ""
     },
@@ -88,7 +90,7 @@ Blockly.defineBlocksWithJsonArray([
       "inputsInline": true,
       "previousStatement": null,
       "nextStatement": null,
-      "colour": 192,
+      "colour": soundCategoryCol,
       "tooltip": "",
       "helpUrl": ""
     },

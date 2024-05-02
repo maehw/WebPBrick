@@ -18,6 +18,8 @@
 
 // This JavaScript code is used to define blocks of the "Sensors" category.
 
+sensorCategoryCol = 96; // hue value
+
 // Block definitions
 Blockly.defineBlocksWithJsonArray([
     // Block for sensor configuration
@@ -81,7 +83,7 @@ Blockly.defineBlocksWithJsonArray([
       "inputsInline": true,
       "previousStatement": null,
       "nextStatement": null,
-      "colour": 96,
+      "colour": sensorCategoryCol,
       "tooltip": "",
       "helpUrl": ""
     },
@@ -150,7 +152,7 @@ Blockly.defineBlocksWithJsonArray([
       "inputsInline": true,
       "previousStatement": null,
       "nextStatement": null,
-      "colour": 96,
+      "colour": sensorCategoryCol,
       "tooltip": "",
       "helpUrl": ""
     },
@@ -203,7 +205,7 @@ Blockly.defineBlocksWithJsonArray([
       "inputsInline": true,
       "previousStatement": null,
       "nextStatement": null,
-      "colour": 96,
+      "colour": sensorCategoryCol,
       "tooltip": "",
       "helpUrl": ""
     },
@@ -234,7 +236,7 @@ Blockly.defineBlocksWithJsonArray([
       "inputsInline": true,
       "previousStatement": null,
       "nextStatement": null,
-      "colour": 96,
+      "colour": sensorCategoryCol,
       "tooltip": "",
       "helpUrl": ""
     },
@@ -264,7 +266,7 @@ Blockly.defineBlocksWithJsonArray([
       ],
       "inputsInline": true,
       "output": "Number",
-      "colour": 96,
+      "colour": sensorCategoryCol,
       "tooltip": "",
       "helpUrl": ""
     },
@@ -294,7 +296,7 @@ Blockly.defineBlocksWithJsonArray([
       ],
       "inputsInline": true,
       "output": "Number",
-      "colour": 96,
+      "colour": sensorCategoryCol,
       "tooltip": "",
       "helpUrl": ""
     }
