@@ -16,44 +16,28 @@
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-// This JavaScript code is used to define blocks of the "Sounds" category.
+// This JavaScript code is used to define blocks for the infrared communication category.
 
-soundCategoryCol = 192; // hue value
+infraredCategoryCol = "#AC0E0E";
 
 // Block definitions
 Blockly.defineBlocksWithJsonArray([
-    // Block for playing a sound
+    // Block for setting infrared TX power
     {
-      "type": "sound_playsound",
-      "message0": "play sound %1",
+      "type": "infrared_txpower",
+      "message0": "set IR TX power level to %1",
       "args0": [
         {
           "type": "field_dropdown",
-          "name": "SOUND",
+          "name": "LEVEL",
           "options": [
             [
-              "click",
-              "SOUND_CLICK"
+              "low",
+              "TX_POWER_LO"
             ],
             [
-              "double beep",
-              "SOUND_DOUBLE_BEEP"
-            ],
-            [
-              "down",
-              "SOUND_DOWN"
-            ],
-            [
-              "up",
-              "SOUND_UP"
-            ],
-            [
-              "low beep",
-              "SOUND_LOW_BEEP"
-            ],
-            [
-              "fast up",
-              "SOUND_FAST_UP"
+              "high",
+              "TX_POWER_HI"
             ]
           ]
         }
@@ -61,37 +45,47 @@ Blockly.defineBlocksWithJsonArray([
       "inputsInline": true,
       "previousStatement": null,
       "nextStatement": null,
-      "colour": soundCategoryCol,
+      "colour": infraredCategoryCol,
       "tooltip": "",
       "helpUrl": ""
     },
-    // Block for playing a tone
+    // Block for sending IR message
     {
-      "type": "sound_playtone",
-      "message0": "play tone with frequency %1 Hz for %2 seconds",
+      "type": "infrared_msgsend",
+      "message0": "send IR message %1 via IR",
       "args0": [
         {
-          "type": "field_number",
-          "name": "FREQUENCY",
-          "value": 440,
-          "min": 1,
-          "max": 20000,
-          "precision": 1
-        },
-        {
-          "type": "field_number",
-          "name": "DURATION",
-          "value": 1,
-          "min": 1,
-          "max": 1000,
-          "precision": 0.01
-        },
+          "type": "input_value",
+          "name": "MESSAGE",
+          "check": "Number"
+        }
       ],
       "inputsInline": true,
       "previousStatement": null,
       "nextStatement": null,
-      "colour": soundCategoryCol,
+      "colour": infraredCategoryCol,
       "tooltip": "",
       "helpUrl": ""
+    },
+    // Block for clearing IR message
+    {
+      "type": "infrared_msgclear",
+      "message0": "clear last received IR message",
+      "inputsInline": true,
+      "previousStatement": null,
+      "nextStatement": null,
+      "colour": infraredCategoryCol,
+      "tooltip": "",
+      "helpUrl": ""
+    },
+    // Block for receiving an IR message
+    {
+      "type": "infrared_msgreceive",
+      "message0": "receive IR message",
+      "output": "Number",
+      "inputsInline": true,
+      "colour": infraredCategoryCol,
+      "tooltip": "",
+      "helpUrl": "",
     },
 ]);

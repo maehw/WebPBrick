@@ -16,79 +16,12 @@
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-// This JavaScript code is used to define blocks of the "MISC" category (e.g. holds infrared communication and time/data).
+// This JavaScript code is used to define blocks of the "MISC" category (e.g. time/data, datalog, system watch).
 
-infraredCategoryCol = "#AC0E0E";
 timeDataCategoryCol = "#79919F";
 
 // Block definitions
 Blockly.defineBlocksWithJsonArray([
-    // Block for setting infrared TX power
-    {
-      "type": "infrared_txpower",
-      "message0": "set IR TX power level to %1",
-      "args0": [
-        {
-          "type": "field_dropdown",
-          "name": "LEVEL",
-          "options": [
-            [
-              "low",
-              "TX_POWER_LO"
-            ],
-            [
-              "high",
-              "TX_POWER_HI"
-            ]
-          ]
-        }
-      ],
-      "inputsInline": true,
-      "previousStatement": null,
-      "nextStatement": null,
-      "colour": infraredCategoryCol,
-      "tooltip": "",
-      "helpUrl": ""
-    },
-    // Block for sending IR message
-    {
-      "type": "infrared_msgsend",
-      "message0": "send IR message %1 via IR",
-      "args0": [
-        {
-          "type": "input_value",
-          "name": "MESSAGE",
-          "check": "Number"
-        }
-      ],
-      "inputsInline": true,
-      "previousStatement": null,
-      "nextStatement": null,
-      "colour": infraredCategoryCol,
-      "tooltip": "",
-      "helpUrl": ""
-    },
-    // Block for clearing IR message
-    {
-      "type": "infrared_msgclear",
-      "message0": "clear last received IR message",
-      "inputsInline": true,
-      "previousStatement": null,
-      "nextStatement": null,
-      "colour": infraredCategoryCol,
-      "tooltip": "",
-      "helpUrl": ""
-    },
-    // Block for receiving an IR message
-    {
-      "type": "infrared_msgreceive",
-      "message0": "receive IR message",
-      "output": "Number",
-      "inputsInline": true,
-      "colour": infraredCategoryCol,
-      "tooltip": "",
-      "helpUrl": "",
-    },
     // Block for setting RCX' display mode
     {
       "type": "display_mode",
@@ -281,58 +214,6 @@ Blockly.defineBlocksWithJsonArray([
       "output": "Number",
       "inputsInline": true,
       "colour": timeDataCategoryCol,
-      "tooltip": "",
-      "helpUrl": ""
-    },
-    // Block for creating a random number
-    {
-      "type": "math_random_int0",
-      "message0": "random integer from 0 to %1",
-      "args0": [
-        {
-          "type": "field_number",
-          "name": "UPPER",
-          "value": 10,
-          "min": 0,
-          "max": 10000,
-          "precision": 1
-        },
-      ],
-      "inputsInline": true,
-      "output": "Number",
-      "colour": 230,
-      "tooltip": "",
-      "helpUrl": ""
-    },
-    // Block for creating a random number
-    {
-      "type": "math_abssign",
-      "message0": "%1 of %2",
-      "args0": [
-        {
-          "type": "field_dropdown",
-          "name": "OP",
-          "options": [
-            [
-              "absolute value",
-              "abs"
-            ],
-            [
-              "sign of",
-              "sign"
-            ],
-          ]
-        },
-        {
-          "type": "field_number",
-          "name": "NUMBER",
-          "value": -18,
-          "precision": 1
-        },
-      ],
-      "inputsInline": true,
-      "output": "Number",
-      "colour": 230,
       "tooltip": "",
       "helpUrl": ""
     },

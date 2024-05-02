@@ -70,19 +70,19 @@ const toolbox = {
       name: 'Tasks',
       contents: [
         {
-          type: 'controls_taskdef',
+          type: 'task_definition',
           kind: 'block',
         },
         {
-          type: 'controls_taskstart',
+          type: 'task_start',
           kind: 'block',
         },
         {
-          type: 'controls_taskstop',
+          type: 'task_stop',
           kind: 'block',
         },
         {
-          type: 'controls_stopalltasks',
+          type: 'task_stopall',
           kind: 'block',
         },
       ], /* end of category contents */
@@ -277,15 +277,15 @@ const toolbox = {
       /* custom: 'MOTION', -- only required for 'dynamic categories', seems to require callbacks */
       contents: [
         {
-          type: 'motion_setdirection',
+          type: 'output_setdirection',
           kind: 'block',
         },
         {
-          type: 'motion_setmode',
+          type: 'output_setmode',
           kind: 'block',
         },
         {
-          type: 'motion_setpower',
+          type: 'output_setpower',
           kind: 'block',
           inputs: {
             'POWER': {
@@ -299,19 +299,19 @@ const toolbox = {
           }
         },
         {
-          type: 'motion_onwithdirection',
+          type: 'output_onwithdirection',
           kind: 'block',
         },
         {
-          type: 'motion_on',
+          type: 'output_on',
           kind: 'block',
         },
         {
-          type: 'motion_off',
+          type: 'output_off',
           kind: 'block',
         },
         {
-          type: 'motion_float',
+          type: 'output_float',
           kind: 'block',
         },
       ],
@@ -458,8 +458,8 @@ const workspace = Blockly.inject('blocklyDiv', {
   renderer: 'Zelos',
   sounds: false,
   maxInstances: {
-    "controls_taskmain": 1,
-    "controls_taskdef": 9, /* up to 10 (1+9) concurrent tasks in total */
+    "task_main": 1,
+    "task_definition": 9, /* up to 10 (1+9) concurrent tasks in total */
   }
 });
 
@@ -467,7 +467,7 @@ const workspace = Blockly.inject('blocklyDiv', {
 workspace.addChangeListener(Blockly.Events.disableOrphans);
 
 // Make sure that there's a "main task" block in the workspace and also make sure it cannot be deleted
-const mainTask = Blockly.serialization.blocks.append({'type': 'controls_taskmain'}, workspace);
+const mainTask = Blockly.serialization.blocks.append({'type': 'task_main'}, workspace);
 mainTask.setDeletable(false);
 // Offset the block so that it's not directly placed on the border of the toolbox
 mainTask.moveTo(new Blockly.utils.Coordinate(100, 10));
