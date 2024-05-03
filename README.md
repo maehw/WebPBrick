@@ -10,9 +10,13 @@ This git repository provides the source codes for the **WebPBrick** project and 
 3. Connect to the yellow programmable RCX brick using an infrared tower (click the "Serial Connect" button)
 4. Download your compiled program to the RCX (click the "Download program to RCX" button)
 
+![WebPBrick IDE](./doc/webpbrick_ide.png)
+
 ## WebPBrick's BlockNQC
 
 A web-based visual programming editor called BlockNQC can be used to generate NQC code. BlockNQC is based on Google's Blockly. For details, see BlockNQC's separate [README](./nqc/blocknqc/README.md) file.
+
+![BlockNQC](./doc/blocknqc.png)
 
 ## Toolchain modules
 
