@@ -30,6 +30,18 @@ body, html {
   cursor: pointer;
 }
 
+.toolbar a {
+  background-color: #ffdb00;
+  color: #333;
+  border: none;
+  padding: 8px 16px;
+  margin-right: 10px;
+  cursor: pointer;
+  font-family: sans-serif;
+  font-size: 10pt;
+  text-decoration: none;
+}
+
 .toolbar button:last-child {
   margin-right: 0; /* Remove right margin from the last button */
 }

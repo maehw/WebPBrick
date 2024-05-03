@@ -6,7 +6,7 @@ The format is heavily inspired by [Keep a Changelog](https://keepachangelog.com/
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
 
-## Upcoming version (not released yet)
+## Upcoming version (release to be announced, not released yet)
 
 ### Known Issues
 
@@ -15,6 +15,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ### Added
 
 * Official LEGO firmware v03.09 and v03.32 (v03.28 already existed)
+* Initial version of BlockNQC - a visual programming editor that generates NQC code from custom blocks
 
 ### Changed
 
