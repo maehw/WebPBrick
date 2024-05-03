@@ -330,12 +330,13 @@ codeGenerator.forBlock['sleep_gosleep'] = function(block, generator) {
 }
 
 
+const codeArea = document.getElementById('codeArea');
+
 // Generate code upon request
 const generateCodeBtn = document.getElementById('generateCodeBtn');
 generateCodeBtn.addEventListener('click', () => {
   if (codeGenerator) {
     const jsCode = codeGenerator.workspaceToCode(workspace);
-    const generatedCodeField = document.getElementById('generatedCode');
 
     // replace untyped variable declarations (`var x`) with typed ones (`int x`);
     // "All variables in NQC are of one of two types - specifically 16 bit signed integers or
@@ -360,6 +361,35 @@ generateCodeBtn.addEventListener('click', () => {
     // Join the processed lines back together into a single string
     const nqcCode = nqcLines.join("\n");
 
-    generatedCodeField.value = nqcCode;
+    codeArea.value = nqcCode;
+
+    updateLineNumbers();
   }
 });
+
+
+// Update line numbers when generating code
+const lineNumbers = document.querySelector('.line-numbers');
+
+// Function to generate line numbers in IDE dynamically
+function updateLineNumbers() {
+  const lines = codeArea.value.split('\n').length;
+  lineNumbers.innerHTML = '';
+  for (let i = 1; i <= lines; i++) {
+    lineNumbers.innerHTML += `<div>${i}</div>`;
+  }
+}
+
+// Function to synchronize line numbers scrolling with code editor
+function syncScroll() {
+  lineNumbers.scrollTop = codeArea.scrollTop;
+}
+
+// Update line numbers when content changes
+codeArea.addEventListener('input', () => {
+  updateLineNumbers();
+});
+
+// Initial update of line numbers
+updateLineNumbers();
+

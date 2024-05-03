@@ -30,6 +30,17 @@ body, html {
   cursor: pointer;
 }
 
+.toolbar label {
+  background-color: #ffdb00;
+  color: #333;
+  border: none;
+  padding: 8px 16px;
+  margin-right: 10px;
+  cursor: pointer;
+  font-family: sans-serif;
+  font-size: 10pt;
+}
+
 .toolbar a {
   background-color: #ffdb00;
   color: #333;
@@ -46,10 +57,6 @@ body, html {
   margin-right: 0; /* Remove right margin from the last button */
 }
 
-#clearLogBtn {
-  margin-left: auto; /* Push the "Clear log" button to the right */
-}
-
 .split {
   display: flex;
   height: calc(100% - 100px); /* Leave some space for the footer overlay */
@@ -57,7 +64,7 @@ body, html {
 
 .code-wrapper {
   position: relative;
-  flex: 2;
+  flex: 1;
   overflow: auto; /* Allow code editor to scroll */
 }
 
@@ -72,8 +79,8 @@ body, html {
   margin-top: -1px; /* Move the code editor 1px up */
 }
 
-.log {
-  flex: 1.5;
+.blockArea {
+  flex: 2;
   border: 1px solid #ccc;
   padding: 10px;
   margin-left: 5px;
@@ -96,13 +103,6 @@ body, html {
   pointer-events: none;
   color: #666; /* Adjust line number color */
   text-align: right; /* Align line numbers to the right */
-}
-
-.not-supported {
-  padding: 1em;
-  background-color: red;
-  color: white;
-  display: none;log
 }
 
 footer {

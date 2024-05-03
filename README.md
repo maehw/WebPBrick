@@ -31,7 +31,7 @@ Start a local webserver, e.g. using Python:
 python -m http.server 8080
 ```
 
-Open your webbrowser and navigate to http://localhost:8080/ide/
+Open your web browser and navigate to http://localhost:8080/ide/
 
 
 ## Licenses

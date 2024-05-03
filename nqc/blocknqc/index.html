@@ -1,0 +1,57 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <title>BlockNQC</title>
+  <link rel="stylesheet" href="styles.css">
+</head>
+<body>
+  <div class="toolbar">
+    <div class="left-buttons">
+      <button id="generateCodeBtn">💻 Generate code</button>
+      <button id="saveOnlineBtn">🌐💾 Save program (web browser)</button>
+      <button id="loadOnlineBtn">🌐💾 Load program (web browser)</button>
+      <button id="saveOfflineBtn">🖥️💾 Save program to file</button>
+      <label for="loadOfflineBtn" class="customFileUpload">🖥️💾 Load program from file</label>
+      <input type="file" id="loadOfflineBtn" class="hidden">
+      <a href="https://www.webpbrick.com/ide" target="_blank">↗️🧱 Compile in WebPbrick IDE</a>
+    </div>
+  </div>
+  <div class="split">
+    <div class="blockArea">
+      <div id="blocklyDiv" style="width:100%; height:100%;"></div>
+    </div>
+    <div class="code-wrapper">
+      <div class="line-numbers"></div>
+      <textarea id="codeArea" class="code" readonly></textarea>
+    </div>
+  </div>
+  <footer>
+    <p>LEGO® is a trademark of the LEGO Group of companies which does not sponsor, authorize or endorse this site.</p>
+    <div class="footer-links">
+      <a href="https://github.com/maehw/WebPBrick/discussions">HELP?!</a> | <a href="https://github.com/maehw/WebPBrick">Source code</a> | <a href="https://github.com/maehw/WebPBrick/blob/main/CHANGELOG.md">Version: tba</a>
+    </div>
+  </footer>
+<!-- Load Blockly core -->
+<script src="./blockly/blockly_compressed.js"></script>
+<!-- Load the default blocks -->
+<script src="./blockly/blocks_compressed.js"></script>
+<!-- Load JavaScript code generator -->
+<script src="./blockly/javascript_compressed.js"></script>
+<!-- Load a message file -->
+<script src="./blockly/msg/en.js"></script>
+<!-- Load custom blocks for the RCX/NQC -->
+<script src="./customBlocks/outputBlocks.js"></script>
+<script src="./customBlocks/soundBlocks.js"></script>
+<script src="./customBlocks/controlsBlocks.js"></script>
+<script src="./customBlocks/sensorBlocks.js"></script>
+<script src="./customBlocks/infraredBlocks.js"></script>
+<script src="./customBlocks/mathBlocks.js"></script>
+<script src="./customBlocks/miscBlocks.js"></script>
+<script src="./customBlocks/taskBlocks.js"></script>
+<!-- Load the Blockly toolbox (with the blocks), the Blockly workspace, custom code generator and program storage handling -->
+<script src="./toolboxWorkspace.js"></script>
+<script src="./codeGenerator.js"></script>
+<script src="./programStorage.js"></script>
+</body>
+</html>
