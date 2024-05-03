@@ -6,7 +6,7 @@ The format is heavily inspired by [Keep a Changelog](https://keepachangelog.com/
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
 
-## Upcoming version (release to be announced, not released yet)
+## [0.2.0] - 2024-05-03
 
 ### Known Issues
 
