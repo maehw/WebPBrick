@@ -5,10 +5,14 @@ This git repository provides the source codes for the **WebPBrick** project and 
 
 ## WebPBrick How To
 
-1. Build your NQC code (click the "Build" button)
-2. Connect to the yellow programmable RCX brick using an infrared tower (click the "Serial Connect" button)
-3. Download your compiled program to the RCX (click the "Download program to RCX" button)
+1. Write NQC code _(or use BlockNQC to generate the code)_
+2. Build your NQC code (click the "Build" button)
+3. Connect to the yellow programmable RCX brick using an infrared tower (click the "Serial Connect" button)
+4. Download your compiled program to the RCX (click the "Download program to RCX" button)
 
+## WebPBrick's BlockNQC
+
+A web-based visual programming editor called BlockNQC can be used to generate NQC code. BlockNQC is based on Google's Blockly. For details, see BlockNQC's separate [README](./nqc/blocknqc/README.md) file.
 
 ## Toolchain modules
 
@@ -16,12 +20,14 @@ This git repository provides the source codes for the **WebPBrick** project and 
 
 WebPBrick's toolchain consists of several modules:
 
+* BlockNQC: Web-based visual programming editor called BlockNQC that can be used to generate NQC code (based on Google's Blockly).
 * WebNQC: The NQC compiler built as WebAssembly (WASM) for the web using emscripten.
 * RCX image parser written in Kaitai Struct and compiled to JavaScript to parse and split RCX image binary files so that they can be downloaded to the RCX in their bytecode chunks.
 * RCX communication libraries:
   * Based on Web Serial API to be used with the LEGO IR Serial Tower and [DIY IR serial towers](https://github.com/maehw/DiyIrTower)
   * Based on WebUSB API to be used with LEGO IR USB Tower
 
+Those modules could be used independently.
 
 ## Run
 
