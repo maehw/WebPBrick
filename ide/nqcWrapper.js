@@ -198,6 +198,8 @@ async function clickConvert() {
           logDebug("Binary output length: " + out.length);
           logDebug("Binary output as HEX: " + array2hex(out));
 
+          codeModified = false;
+
           // copy binary to global variable
           rcxBinary = out;
       }
