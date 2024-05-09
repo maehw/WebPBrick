@@ -26,6 +26,7 @@
 let serialPort;
 let serialReader;
 let serialWriter;
+let serialConnected = false;
 
 // define various control elements
 const log = document.getElementById('logArea');
@@ -127,26 +128,42 @@ async function transceiveCommand(opcode, params = new Uint8Array(), timeout = 50
  * Opens a Web Serial connection to an RCX programmable brick
  */
 async function serialConnect() {
+    let success = true; // think positive!
+
     // Request a port and open a connection.
-    serialPort = await navigator.serial.requestPort();
-    // Wait for the port to open.
-    // Configure 2400 baud, 8-O-1, increase buffer size instead of the default 255 bytes
-    // FIXME: Some buffer does not seem to be consumed or flushed properly?! Waiting for a line break?!
-    const serialParams = { baudRate: 2400, parity: "odd", bufferSize: 3*32*1024 };
-    await serialPort.open(serialParams);
+    try {
+      serialPort = await navigator.serial.requestPort();
+    }
+    catch(e) {
+      showErrorMsg("Failed to open serial port: '" + e.message + "'");
+      success = false;
+    }
 
-    const serialPortInfo = serialPort.getInfo();
-    showInfoMsg("Connected to serial device (baudrate: " + serialParams.baudRate + ").");
+    if(success) {
+      // Wait for the port to open.
+      // Configure 2400 baud, 8-O-1, increase buffer size instead of the default 255 bytes
+      // FIXME: Some buffer does not seem to be consumed or flushed properly?! Waiting for a line break?!
+      const serialParams = { baudRate: 2400, parity: "odd", bufferSize: 3*32*1024 };
+      await serialPort.open(serialParams);
 
-    serialReader = serialPort.readable.getReader();
-    serialWriter = serialPort.writable.getWriter();
-    let versionInfo = null;
+      const serialPortInfo = serialPort.getInfo();
+      showInfoMsg("Connected to serial device (baudrate: " + serialParams.baudRate + ").");
 
-    let success = await ping();
-    if(!success) {
+      serialReader = serialPort.readable.getReader();
+      serialWriter = serialPort.writable.getWriter();
+      let versionInfo = null;
+
+      success = await ping();
+
+      if(!success) {
         showErrorMsg("No communication with RCX possible.\n" +
-                     "RCX needs to be switched on and placed close to and in line of sight of the IR tower.");
-        disableDownloadsBtns();
+                     "RCX needs to be switched on and placed close to the IR tower and also in line of sight.");
+      }
+    }
+
+    if(!success) {
+      // Disable the download buttons if no communication is possible (no serial port or no ping from the RCX)
+      disableDownloadsBtns();
     }
 
     if(success) {
@@ -201,6 +218,16 @@ async function serialConnect() {
 
     // Allow the serial port to be closed later.
     serialWriter.releaseLock();
+
+    // Disconnect if connect has not been successful.
+    if(success) {
+      serialConnectBtn.innerHTML = '🔗 Serial Disconnect';
+    }
+    else {
+      serialDisconnect();
+    }
+
+    serialConnected = success;
 }
 
 async function serialReadWithTimeout(timeout) {
@@ -245,6 +272,7 @@ async function serialDisconnect() {
   // Close the port.
   await serialPort.close();
   serialPort = null;
+  serialConnectBtn.innerHTML = '🔗 Serial Connect';
 
   log.textContent += "Disconnected from serial device.\n";
 }
@@ -303,6 +331,11 @@ async function clickProgramDownload() {
     }
     else {
         showInfoMsg("Program download requested.");
+
+        // show an info message if the code has been touched after last build in the meantime
+        if(codeModified) {
+          showInfoMsg("❗ Code has been modified after last build. Consider re-building the current version of the code!");
+        }
 
         serialWriter = serialPort.writable.getWriter();
 

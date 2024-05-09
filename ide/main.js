@@ -30,7 +30,7 @@ const logArea = document.getElementById('logArea');
 const lineNumbers = document.querySelector('.line-numbers');
 
 let usbConnected = false;
-let serialConnected = false;
+let codeModified = true; // code modified after build?
 
 // Helper to check if browser supports WASM
 const wasmSupported = (() => {
@@ -97,6 +97,7 @@ function syncScroll() {
 // Update line numbers when content changes
 codeArea.addEventListener('input', () => {
   updateLineNumbers();
+  codeModified = true;
 });
 
 // Synchronize scrolling
@@ -197,14 +198,10 @@ usbConnectBtn.addEventListener('click', () => {
 
 serialConnectBtn.addEventListener('click', () => {
   if (!serialConnected) {
-    serialConnected = true;
-    serialConnectBtn.innerHTML = '🔗 Serial Disconnect';
     disableUsbConnectBtn();
     enableDownloadBtn();
     enableDownloadFirmwareBtn();
   } else {
-    serialConnected = false;
-    serialConnectBtn.innerHTML = '🔗 Serial Connect';
     enableUsbConnectBtn();
     disableDownloadBtn();
     disableDownloadFirmwareBtn();
