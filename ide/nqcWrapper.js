@@ -176,41 +176,54 @@ async function clickConvert() {
     }
     //logDebug("Calling WebNQC with arguments: " + args);
 
-    let retval = nqc.callMain(args);
+    // initialize return value and exception flag
+    let exceptionOccurred = false;
+    let retval = 0;
 
-     // nqc.FS.isFile(outputFilename))  // TODO: can we check for file existence?!
-    if(retval == 0) {
-        const out = nqc.FS.readFile(outputFilename);
-        logDebug("Compiled NQC code successfully using WebNQC.");
-
-        logDebug("Binary output length: " + out.length);
-        logDebug("Binary output as HEX: " + array2hex(out));
-
-        // copy binary to global variable
-        rcxBinary = out;
+    try {
+      retval = nqc.callMain(args);
     }
-    else {
-      // copy global variable into local one and reset the global one
-      const errorLine = firstErrorLine;
-      firstErrorLine = null;
-      logDebug("Return value from WebNQC call: " + retval);
-
-      if(errorLine) {
-          logError("First compilation error occurred on line " + errorLine);
-
-          // Highlight the line where the error occurred
-          codeArea.focus(); // Ensure the code area is focused
-          const errorLineNumber = errorLine - 1; // Adjust to zero-based index
-
-          // Calculate the position of the error line in the codeArea
-          const lines = codeArea.value.split('\n');
-          const startPos = lines.slice(0, errorLineNumber).join('\n').length + 1;
-          const endPos = lines.slice(0, errorLineNumber + 1).join('\n').length;
-
-          // Select the error line in the codeArea
-          codeArea.setSelectionRange(startPos, endPos);
-      }
+    catch(e) {
+      logError("An error has occurred: '" + e.message + "' at an unknown location in your code. Please double-check your code.");
       logError("Compilation failed.");
+      exceptionOccurred = true;
+    }
+
+    if(!exceptionOccurred) {
+       // nqc.FS.isFile(outputFilename))  // TODO: can we check for file existence?!
+      if(retval == 0) {
+          const out = nqc.FS.readFile(outputFilename);
+          logDebug("Compiled NQC code successfully using WebNQC.");
+
+          logDebug("Binary output length: " + out.length);
+          logDebug("Binary output as HEX: " + array2hex(out));
+
+          // copy binary to global variable
+          rcxBinary = out;
+      }
+      else {
+        // copy global variable into local one and reset the global one
+        const errorLine = firstErrorLine;
+        firstErrorLine = null;
+        logDebug("Return value from WebNQC call: " + retval);
+
+        if(errorLine) {
+            logError("First compilation error occurred on line " + errorLine);
+
+            // Highlight the line where the error occurred
+            codeArea.focus(); // Ensure the code area is focused
+            const errorLineNumber = errorLine - 1; // Adjust to zero-based index
+
+            // Calculate the position of the error line in the codeArea
+            const lines = codeArea.value.split('\n');
+            const startPos = lines.slice(0, errorLineNumber).join('\n').length + 1;
+            const endPos = lines.slice(0, errorLineNumber + 1).join('\n').length;
+
+            // Select the error line in the codeArea
+            codeArea.setSelectionRange(startPos, endPos);
+        }
+        logError("Compilation failed.");
+      }
     }
   }
   else {
