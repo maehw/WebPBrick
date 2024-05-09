@@ -58,6 +58,7 @@ document.addEventListener('DOMContentLoaded', () => {
     disableSerialConnectBtn();
   }
 
+/*
   const webUsbNotSupported = document.getElementById('webusb-not-supported');
   if(!('usb' in navigator)) {
     // show hidden error banner, deactivate connect button and log to console
@@ -65,6 +66,7 @@ document.addEventListener('DOMContentLoaded', () => {
     console.log("WebUSB not supported.");
     disableUsbConnectBtn();
   }
+*/
 
   const wasmNotSupported = document.getElementById('wasm-not-supported');
   if(!wasmSupported) {
