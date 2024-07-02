@@ -56,7 +56,7 @@ const printFunction = (function() {
     return function(text) {
       if (arguments.length > 1) text = Array.prototype.slice.call(arguments).join(' ');
       if (txtStdOut) {
-        txtStdOut.value += "[STDOUT] " + text + "\n";
+        txtStdOut.value += "↪️ " + text + "\n";
       }
     };
   })();
