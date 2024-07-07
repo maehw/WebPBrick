@@ -1,0 +1,28 @@
+// intro_2.nqc - using multiple tasks
+
+task main()
+{
+ 	start fast_beep;
+ 	start slow_beep;
+ 	Wait(1000);
+ 	stop slow_beep;
+}
+
+task fast_beep()
+{
+ 	while(true)
+	{
+		PlayTone(440, 10);
+		Wait(50);
+	}
+}
+
+
+task slow_beep()
+{
+	while(true)
+	{
+		PlayTone(880, 10);
+		Wait(100);
+	}
+}   

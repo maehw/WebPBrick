@@ -1,0 +1,28 @@
+// onebot.nqc
+//  robot driven by a single motor
+
+// motor and sensor
+#define DRIVE OUT_A
+#define BUMP SENSOR_1
+
+// constant
+#define REV_TIME	40
+
+task main()
+{
+	SetSensor(BUMP, SENSOR_TOUCH);
+
+	On(DRIVE);
+
+	while(true)
+	{
+		until(BUMP==1);
+
+		// back up / turn a little
+		Rev(DRIVE);
+		Wait(REV_TIME);
+
+		// resume going forwards
+		Fwd(DRIVE);
+	}
+}

@@ -1,0 +1,177 @@
+// delivery.nqc
+//	program for the Delivery Truck
+
+// linebot sensor, motors, and constants
+#define EYE		SENSOR_2
+#define LEFT	OUT_A
+#define RIGHT	OUT_C
+#define LINE_THRESHOLD		51
+#define STOPPER_THRESHOLD	42
+#define TURN_SPEED 		3
+#define INITIAL_TIME 	4
+
+// dumper motor and constants
+#define DUMPER	OUT_B
+#define DUMP_TIME	70
+#define UNDUMP_TIME	100
+
+// sensor and constant for taking an order
+#define BUTTON SENSOR_3
+#define TIMEOUT 20
+#define	REVERSE_TIME	80
+
+
+void dump()
+{
+	// dump the cargo bin
+	OnFwd(DUMPER);
+	Wait(DUMP_TIME);
+	Rev(DUMPER);
+	Wait(UNDUMP_TIME);
+	Off(DUMPER);
+}
+
+
+int direction, time, eye, ok_to_stop;
+
+sub follow_line()
+{
+	// initialize the variables
+	direction = 1;
+	time = INITIAL_TIME;
+	ok_to_stop = 0;
+	
+	// start driving
+	OnFwd(LEFT+RIGHT);
+	
+	while(true)
+	{
+		// read the sensor value
+		eye = EYE;
+
+		if (eye < LINE_THRESHOLD)
+		{
+			// we are either over the line or a stopper
+			if (eye > STOPPER_THRESHOLD)
+				ok_to_stop = 1;
+			else if (ok_to_stop == 1)
+			{
+				// found a stopper
+				Off(RIGHT+LEFT);
+				return;
+			}
+			
+		}
+		else
+		{
+			// need to find the line again
+			ClearTimer(0);
+			if (direction == 1)
+			{
+				SetPower(RIGHT+LEFT, TURN_SPEED);
+				Rev(LEFT);
+			}
+			else
+			{
+				SetPower(RIGHT+LEFT, TURN_SPEED);
+				Rev(RIGHT);
+			}
+			
+			while(true)
+			{
+				// have we found the line?
+				if (EYE < LINE_THRESHOLD)
+				{
+					time = INITIAL_TIME;
+					break;
+				}
+				
+				if (Timer(0) > time)
+				{
+					// try the other direction
+					direction *= -1;
+					time *= 2;
+					break;
+				}
+			}
+			
+			SetPower(LEFT+RIGHT, OUT_FULL);
+			Fwd(RIGHT+LEFT);
+		}
+	}
+}
+
+
+void turn_around()
+{
+	// start turning
+	OnRev(LEFT);
+	OnFwd(RIGHT);
+	
+	// wait until not over line
+	until(EYE >= LINE_THRESHOLD);
+	
+	// wait until over line again
+	until(EYE < LINE_THRESHOLD);
+	Off(LEFT+RIGHT);
+}
+
+
+int order;
+
+task counting_task()
+{
+	// count the number of button presses
+	while(true)
+	{
+		until(BUTTON == 1);
+		ClearTimer(0);
+		PlaySound(SOUND_CLICK);
+		order++;
+		until(BUTTON == 0);
+	}
+}
+
+void get_order()
+{
+	// start with a clean order
+	order = 0;
+	
+	// start counting
+	start counting_task;
+	
+	// wait until at least 1 press and then a timeout
+	until(order == 1);
+	until(Timer(0) >= TIMEOUT);
+	
+	// no more counting
+	stop counting_task;
+}
+
+
+task main()
+{
+	SetSensor(EYE, SENSOR_LIGHT);
+	SetSensor(BUTTON, SENSOR_TOUCH);
+	
+	get_order();
+	
+	follow_line();
+
+	// send request, wait for response
+	ClearMessage();
+	SendMessage(order);
+	until(Message() != 0);
+
+	// turn-around
+	Rev(LEFT+RIGHT);
+	OnFor(LEFT+RIGHT, REVERSE_TIME);
+	turn_around();
+	
+	// return to starting place and dump
+	follow_line();
+	dump();
+
+	PlaySound(SOUND_UP);
+}
+

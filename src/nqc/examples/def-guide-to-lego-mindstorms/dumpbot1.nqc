@@ -1,0 +1,61 @@
+// dumpbot1.nqc
+//	follow a line for 5 seconds, then dump cargo
+
+// linebot sensor, motors, and constants
+#define EYE		SENSOR_2
+#define LEFT	OUT_A
+#define RIGHT	OUT_C
+#define LEFT_THRESHOLD  	42
+#define RIGHT_THRESHOLD		53
+
+// dumper motor and constants
+#define DUMPER	OUT_B
+#define DUMP_TIME	70
+#define UNDUMP_TIME	100
+
+#define FOLLOW_TIME	500	// 5 seconds of driving before dumping
+
+void dump()
+{
+	OnFwd(DUMPER);
+	Wait(DUMP_TIME);
+	Rev(DUMPER);
+	Wait(UNDUMP_TIME);
+	Off(DUMPER);
+}
+
+
+task main()
+{
+	SetSensor(EYE, SENSOR_LIGHT);
+	
+	start follow;
+	Wait(FOLLOW_TIME);
+	stop follow;
+	Off(LEFT+RIGHT);
+	dump();
+}
+
+
+task follow()
+{
+	On(LEFT+RIGHT);
+
+	while(true)
+	{
+		if (EYE <= LEFT_THRESHOLD)
+		{
+			Off(LEFT);
+			On(RIGHT);
+		}
+		else if (EYE >= RIGHT_THRESHOLD)
+		{
+			Off(RIGHT);
+			On(LEFT);
+		}
+		else
+		{
+			On(LEFT+RIGHT);
+		}
+	}
+}
