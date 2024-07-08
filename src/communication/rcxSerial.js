@@ -129,6 +129,7 @@ async function transceiveCommand(opcode, params = new Uint8Array(), timeout = 50
  */
 async function serialConnect() {
     let success = true; // think positive!
+    let versionInfo = null;
 
     // Request a port and open a connection.
     try {
@@ -151,7 +152,6 @@ async function serialConnect() {
 
       serialReader = serialPort.readable.getReader();
       serialWriter = serialPort.writable.getWriter();
-      let versionInfo = null;
 
       success = await ping();
 
