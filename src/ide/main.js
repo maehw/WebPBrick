@@ -20,7 +20,6 @@
 
 // define various control elements
 const compileBtn = document.getElementById('compileBtn');
-//const usbConnectBtn = document.getElementById('usbConnectBtn');
 const serialConnectBtn = document.getElementById('serialConnectBtn');
 const downloadBtn = document.getElementById('downloadBtn');
 const clearLogBtn = document.getElementById('clearLogBtn');
@@ -28,8 +27,8 @@ const codeArea = document.getElementById('codeArea');
 const logArea = document.getElementById('logArea');
 const lineNumbers = document.querySelector('.line-numbers');
 
-let usbConnected = false;
 let codeModified = true; // code modified after build?
+let serialConnected = false;
 
 // Helper to check if browser supports WASM
 const wasmSupported = (() => {
@@ -57,16 +56,6 @@ document.addEventListener('DOMContentLoaded', () => {
     disableSerialConnectBtn();
   }
 
-/*
-  const webUsbNotSupported = document.getElementById('webusb-not-supported');
-  if(!('usb' in navigator)) {
-    // show hidden error banner, deactivate connect button and log to console
-    webUsbNotSupported.style.display = "block";
-    console.log("WebUSB not supported.");
-    disableUsbConnectBtn();
-  }
-*/
-
   const wasmNotSupported = document.getElementById('wasm-not-supported');
   if(!wasmSupported) {
     // show hidden error banner, deactivate connect button and log to console
@@ -74,6 +63,9 @@ document.addEventListener('DOMContentLoaded', () => {
     console.log("WebAssembly (WASM) not supported.");
     disableCompileBtn();
   }
+
+  serialConnectBtn.addEventListener('click', clickSerialConnect);
+  downloadBtn.addEventListener('click', clickProgramDownload);
 });
 
 // Helper to sleep, i.e. add delay
@@ -165,43 +157,6 @@ function enableSerialConnectBtn() {
   serialConnectBtn.style.color = ''; // Reset text color
 }
 
-function disableUsbConnectBtn() {
-  //usbConnectBtn.disabled = true; // Disable serial connection button
-  //usbConnectBtn.style.color = 'gray'; // Change text color to indicate connected state or missing functionality support
-}
-
-function enableUsbConnectBtn() {
-  //usbConnectBtn.disabled = false; // Enable serial connection button
-  //usbConnectBtn.style.color = ''; // Reset text color
-}
-
-/*
-// future use
-usbConnectBtn.addEventListener('click', () => {
-  if (!usbConnected) {
-    usbConnected = true;
-    usbConnectBtn.innerHTML = '🔗 USB Disconnect';
-    disableSerialConnectBtn();
-    enableDownloadBtn();
-  } else {
-    usbConnected = false;
-    usbConnectBtn.innerHTML = '🔗 USB Connect';
-    enableSerialConnectBtn();
-    disableDownloadBtn();
-  }
-});
-*/
-
-serialConnectBtn.addEventListener('click', () => {
-  if (!serialConnected) {
-    disableUsbConnectBtn();
-    enableDownloadBtn();
-  } else {
-    enableUsbConnectBtn();
-    disableDownloadBtn();
-  }
-});
-
 clearLogBtn.addEventListener('click', () => {
   logArea.value = ''; // Clear log
 });
@@ -216,4 +171,93 @@ function enableDownloadBtn() {
 function disableDownloadBtn() {
   downloadBtn.disabled = true;
   downloadBtn.style.color = 'gray'; // Set text color to gray
+}
+
+/**
+ * @name clickSerialConnect
+ * Click handler for the connect/disconnect button.
+ */
+async function clickSerialConnect() {
+  let success = true;
+
+  if (!serialConnected) {
+    success = await serialConnect();
+
+    if(success) {
+      enableDownloadBtn();
+      serialConnectBtn.innerHTML = '🔗 Serial Disconnect';
+      serialConnected = true;
+    }
+  } else {
+    success = await serialDisconnect();
+
+    if(success) {
+      disableDownloadBtn();
+      serialConnectBtn.innerHTML = '🔗 Serial Connect';
+      serialConnected = false;
+    }
+  }
+}
+
+/*
+// Handler for click on firmware download button
+async function clickFwDownload() {
+    // Open a dialog first to let the user confirm the download before starting it
+    const confirmedFwDownload = window.confirm("Firmware download is quite slow and will take several minutes. " +
+        "Firmware download may fail. It may render your RCX (temporarily) unusable." +
+        "\n\nI know what I am doing and want to continue.");
+
+    if(confirmedFwDownload) {
+        console.log("Firmware download request confirmed.");
+        showInfoMsg("Firmware download request confirmed.");
+
+        const success = await downloadFirmware();
+        if(success) {
+            showInfoMsg("✅ Firmware download complete. 🎉");
+        }
+        else {
+            showErrorMsg("Failed to download firmware. Make sure the RCX is switched on " +
+                "and in line of sight of the IR tower. Please retry!");
+        }
+        showInfoMsg("Please disconnect and re-connect!");
+    }
+    else {
+        console.log("Firmware download request aborted.");
+        showInfoMsg("Firmware download request aborted.");
+    }
+}
+*/
+
+// Handler for click on program download button
+async function clickProgramDownload() {
+    if(rcxBinary === null) {
+        showErrorMsg("No program to download. Need to build the NQC code first!");
+    }
+    else {
+        showInfoMsg("Program download requested.");
+
+        // show an info message if the code has been touched after last build in the meantime
+        if(codeModified) {
+          showInfoMsg("❗ Code has been modified after last build. Consider re-building the current version of the code!");
+        }
+
+        const programNumber = 0; // TODO: make program slot selectable
+        let success = await downloadProgram(programNumber, rcxBinary);
+        if(success) {
+            showInfoMsg("️✅ Download of program succeeded! 🎉 " +
+                "Press the green 'Run' button 🟢▶️ on the RCX to start execution of the program!");
+
+            success = await playSystemSound(SystemSound.FastSweepUp);
+
+            if(success) {
+                showInfoMsg("🎵 Played system sound.");
+            }
+            else {
+                showErrorMsg("Unable to play system sound.");
+            }
+        }
+        else {
+            showErrorMsg("Download of program may have failed.");
+        }
+    }
 }
