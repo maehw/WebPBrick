@@ -1,0 +1,67 @@
+// steerbot1.nqc
+//   a simple bumper car with rack & pinion steering
+
+#define CENTER	SENSOR_1
+#define BUMP	SENSOR_3
+
+#define STEER	OUT_A
+#define DRIVE	OUT_C
+
+#define FULL_TURN_TIME	50
+#define STRAIGHT_TIME	50
+
+
+void left()
+{
+	Fwd(STEER);
+	OnFor(STEER, FULL_TURN_TIME);
+}
+
+
+void right()
+{
+	Rev(STEER);
+	OnFor(STEER, FULL_TURN_TIME);
+}
+
+void center()
+{
+	Toggle(STEER);
+	On(STEER);
+	until(CENTER==1);
+	Off(STEER);
+}
+
+
+task main()
+{
+	SetSensor(CENTER, SENSOR_TOUCH);
+	SetSensor(BUMP, SENSOR_TOUCH);
+
+	// align wheels
+	left();
+	center();
+	
+	// drive forward
+	On(DRIVE);
+	
+	while(true)
+	{
+		// wait for bump
+		until(BUMP==1);
+		
+		// back up while turning
+		Rev(DRIVE);
+		right();		
+		Wait(STRAIGHT_TIME);
+		
+		// forward while turning other direction
+		Fwd(DRIVE);
+		left();
+		
+		// center steer
+		center();
+	}
+}
+
+

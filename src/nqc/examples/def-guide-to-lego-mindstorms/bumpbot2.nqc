@@ -1,0 +1,40 @@
+// bumpbot2.nqc - improved sensor design 
+
+// sensors
+#define BUMP SENSOR_1
+
+// motors
+#define LEFT OUT_A
+#define RIGHT OUT_C
+
+// constants
+#define REV_TIME	50
+#define SPIN_MIN	70
+#define SPIN_RANDOM	50
+
+task main()
+{
+	// configure the sensor
+	SetSensor(BUMP, SENSOR_TOUCH);
+	
+	// start going forward
+	On(LEFT+RIGHT);
+	
+	// do this forever
+	while(true)
+	{
+		// wait for bumper to hit something
+		until(BUMP==0);
+		
+		// back up
+		Rev(LEFT+RIGHT);
+		Wait(REV_TIME);
+		
+		// spin around
+		Fwd(LEFT);
+		Wait(SPIN_MIN + Random(SPIN_RANDOM));
+		
+		// resume
+		Fwd(RIGHT);
+	}
+}

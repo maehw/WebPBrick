@@ -1,0 +1,36 @@
+// vending2.nqc
+//  program for message based Vending Machine
+
+#define CANDY_COUNT	SENSOR_3
+#define CANDY_MOTOR	OUT_C
+
+task main()
+{
+	// setup sensors
+	SetSensor(CANDY_COUNT, SENSOR_TOUCH);
+	
+	while(true)
+	{
+		// wait for message
+		until(Message() != 0);
+		
+		// dispense candy
+		dispenseCandy(Message());
+		
+		// get ready for next message
+		ClearMessage();
+	}
+}
+
+
+void dispenseCandy(const int &n)
+{
+	// dispsense the candy
+	On(CANDY_MOTOR);
+	repeat (n)
+	{
+		until(CANDY_COUNT == 1);
+		until(CANDY_COUNT == 0);
+	}
+	Off(CANDY_MOTOR);
+}
