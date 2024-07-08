@@ -38,10 +38,10 @@ Those modules could be used independently.
 Start a local webserver, e.g. using Python:
 
 ```shell
-python -m http.server 8080
+python3 -m http.server 8080
 ```
 
-Open your web browser and navigate to http://localhost:8080/ide/
+Open your web browser and navigate to http://localhost:8080/src/ide/
 
 
 ## Licenses
