@@ -23,7 +23,6 @@ const compileBtn = document.getElementById('compileBtn');
 //const usbConnectBtn = document.getElementById('usbConnectBtn');
 const serialConnectBtn = document.getElementById('serialConnectBtn');
 const downloadBtn = document.getElementById('downloadBtn');
-const downloadFirmwareBtn = document.getElementById('downloadFirmwareBtn');
 const clearLogBtn = document.getElementById('clearLogBtn');
 const codeArea = document.getElementById('codeArea');
 const logArea = document.getElementById('logArea');
@@ -147,7 +146,6 @@ codeArea.value = exampleCode;
 
 // Disable the Download buttons initially
 disableDownloadBtn();
-disableDownloadFirmwareBtn();
 
 // Initial update of line numbers
 updateLineNumbers();
@@ -185,13 +183,11 @@ usbConnectBtn.addEventListener('click', () => {
     usbConnectBtn.innerHTML = '🔗 USB Disconnect';
     disableSerialConnectBtn();
     enableDownloadBtn();
-    enableDownloadFirmwareBtn();
   } else {
     usbConnected = false;
     usbConnectBtn.innerHTML = '🔗 USB Connect';
     enableSerialConnectBtn();
     disableDownloadBtn();
-    disableDownloadFirmwareBtn();
   }
 });
 */
@@ -200,11 +196,9 @@ serialConnectBtn.addEventListener('click', () => {
   if (!serialConnected) {
     disableUsbConnectBtn();
     enableDownloadBtn();
-    enableDownloadFirmwareBtn();
   } else {
     enableUsbConnectBtn();
     disableDownloadBtn();
-    disableDownloadFirmwareBtn();
   }
 });
 
@@ -218,20 +212,8 @@ function enableDownloadBtn() {
   downloadBtn.style.color = ''; // Reset text color
 }
 
-// Function to enable the firmware download button
-function enableDownloadFirmwareBtn() {
-  downloadFirmwareBtn.disabled = false;
-  downloadFirmwareBtn.style.color = ''; // Reset text color
-}
-
 // Function to disable the download button
 function disableDownloadBtn() {
   downloadBtn.disabled = true;
   downloadBtn.style.color = 'gray'; // Set text color to gray
-}
-
-// Function to disable the download firmware button
-function disableDownloadFirmwareBtn() {
-  downloadFirmwareBtn.disabled = true;
-  downloadFirmwareBtn.style.color = 'gray'; // Set text color to gray
 }

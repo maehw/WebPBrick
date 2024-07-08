@@ -31,19 +31,19 @@ let serialConnected = false;
 // define various control elements
 const log = document.getElementById('logArea');
 const butConnect = document.getElementById('serialConnectBtn');
-const butFwDownload = document.getElementById('downloadFirmwareBtn');
+//const butFwDownload = document.getElementById('downloadFirmwareBtn');
 const butProgramDownload = document.getElementById('downloadBtn');
 
 document.addEventListener('DOMContentLoaded', () => {
   butConnect.addEventListener('click', clickSerialConnect);
-  butFwDownload.addEventListener('click', clickFwDownload);
+  //butFwDownload.addEventListener('click', clickFwDownload);
   butProgramDownload.addEventListener('click', clickProgramDownload);
 });
 
 // UI related helper functions
 function disableFwDownloadBtn() {
-  butFwDownload.disabled = true;
-  butFwDownload.style.color = 'gray';
+  //butFwDownload.disabled = true;
+  //butFwDownload.style.color = 'gray';
 }
 
 function disableProgramDownloadBtn() {
@@ -178,7 +178,7 @@ async function serialConnect() {
 
     if(success) {
         showInfoMsg("ℹ️ ROM version: " + versionInfo.romVersion + ", Firmware version: " + versionInfo.fwVersion);
-        butFwDownload.disabled = false; // enable firmware download
+        //butFwDownload.disabled = false; // enable firmware download
 
         if(versionInfo.fwVersion == '0.0') {
             showErrorMsg("Firmware version '0.0' indicates that currently no firmware is loaded into RAM.");
@@ -266,6 +266,7 @@ async function serialDisconnect() {
     serialReader = null;
   }
   if (serialWriter) {
+    serialWriter.releaseLock();
     serialWriter = null;
   }
 
