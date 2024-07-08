@@ -1,0 +1,91 @@
+// bugbot3.nqc - now with corner detection
+
+// sensors
+#define LBUMP SENSOR_1
+#define RBUMP SENSOR_3
+
+// motors
+#define LEFT OUT_A
+#define RIGHT OUT_C
+
+#define TIMER_LIMIT	50
+#define COUNTER_LIMIT 10
+
+int counter;
+
+void check_left()
+{
+	if (LBUMP == 0)
+	{
+		Off(LEFT);
+		Rev(RIGHT);
+		until(LBUMP==1);
+		On(LEFT);
+		Fwd(RIGHT);
+		counter += 1;
+	}
+}
+
+
+void check_right()
+{
+	if (RBUMP == 0)
+	{
+		Off(RIGHT);
+		Rev(LEFT);
+		until(RBUMP==1);
+		On(RIGHT);
+		Fwd(LEFT);
+		counter += 1;
+	}
+}
+
+
+void check_counter()
+{
+	if (counter > COUNTER_LIMIT)
+	{
+		// we're in a corner...
+		PlaySound(SOUND_DOWN);
+		counter = 0;
+		
+		// back up, spin around, and continue
+		Rev(RIGHT+LEFT);
+		Wait(100);
+		Fwd(RIGHT);
+		Wait(300 + Random(300));
+		Fwd(LEFT);
+	}
+}
+
+
+task main()
+{
+	counter = 0;
+	
+	// configure the sensor
+	SetSensor(LBUMP, SENSOR_TOUCH);
+	SetSensor(RBUMP, SENSOR_TOUCH);
+	
+	On(LEFT+RIGHT);
+	start watch_timer;
+	
+	while(true)
+	{
+		check_left();
+		check_right();
+		check_counter();
+	}
+}
+
+
+task watch_timer()
+{
+	while(true)
+	{
+		until(Timer(0) > TIMER_LIMIT);
+		PlayTone(440, 10);
+		ClearTimer(0);
+		counter = 0;
+	}
+}

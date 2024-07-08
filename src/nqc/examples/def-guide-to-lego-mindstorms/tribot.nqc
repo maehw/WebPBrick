@@ -1,0 +1,34 @@
+// tribot.nqc
+//	three wheeled robot
+
+// motors and sensors
+#define LEFT OUT_A
+#define RIGHT OUT_C
+#define BUMP SENSOR_1
+
+// constants
+#define REV_TIME	50
+#define TURN_TIME	20
+
+task main()
+{
+	SetSensor(BUMP, SENSOR_TOUCH);
+
+	On(LEFT+RIGHT);
+
+	while(true)
+	{
+		until(BUMP==1);
+
+		// back up a litle
+		Rev(LEFT+RIGHT);
+		Wait(REV_TIME);
+		
+		// spin a little
+		Off(LEFT);
+		Wait(TURN_TIME);
+		
+		// resume going forwards
+		OnFwd(LEFT+RIGHT);
+	}
+}
