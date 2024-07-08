@@ -23,38 +23,12 @@
 // TODO: add proper source code comments, at least for every function
 // TODO: check if toggle bit functionality shall be opcode-bound or whether its okay to toggle just every time!
 
-let serialPort;
-let serialReader;
-let serialWriter;
-let serialConnected = false;
+let serialPort = null;
+let serialReader = null;
+let serialWriter = null;
 
 // define various control elements
 const log = document.getElementById('logArea');
-const butConnect = document.getElementById('serialConnectBtn');
-//const butFwDownload = document.getElementById('downloadFirmwareBtn');
-const butProgramDownload = document.getElementById('downloadBtn');
-
-document.addEventListener('DOMContentLoaded', () => {
-  butConnect.addEventListener('click', clickSerialConnect);
-  //butFwDownload.addEventListener('click', clickFwDownload);
-  butProgramDownload.addEventListener('click', clickProgramDownload);
-});
-
-// UI related helper functions
-function disableFwDownloadBtn() {
-  //butFwDownload.disabled = true;
-  //butFwDownload.style.color = 'gray';
-}
-
-function disableProgramDownloadBtn() {
-  butProgramDownload.disabled = true;
-  butProgramDownload.style.color = 'gray';
-}
-
-function disableDownloadsBtns() {
-  disableFwDownloadBtn();
-  disableProgramDownloadBtn();
-}
 
 async function transceiveCommand(opcode, params = new Uint8Array(), timeout = 500, ignoreReply = false) {
     const txMsg = encodeCommand(opcode, params);
@@ -131,13 +105,15 @@ async function serialConnect() {
     let success = true; // think positive!
     let versionInfo = null;
 
-    // Request a port and open a connection.
-    try {
-      serialPort = await navigator.serial.requestPort();
-    }
-    catch(e) {
-      showErrorMsg("Failed to open serial port: '" + e.message + "'");
-      success = false;
+    // Request a port and open a connection
+    if(serialPort === null) {
+      try {
+        serialPort = await navigator.serial.requestPort();
+      }
+      catch(e) {
+        showErrorMsg("Failed to open serial port: '" + e.message + "'");
+        success = false;
+      }
     }
 
     if(success) {
@@ -145,25 +121,32 @@ async function serialConnect() {
       // Configure 2400 baud, 8-O-1, increase buffer size instead of the default 255 bytes
       // FIXME: Some buffer does not seem to be consumed or flushed properly?! Waiting for a line break?!
       const serialParams = { baudRate: 2400, parity: "odd", bufferSize: 3*32*1024 };
-      await serialPort.open(serialParams);
 
-      const serialPortInfo = serialPort.getInfo();
-      showInfoMsg("Connected to serial device (baudrate: " + serialParams.baudRate + ").");
+      try {
+        await serialPort.open(serialParams);
 
-      serialReader = serialPort.readable.getReader();
-      serialWriter = serialPort.writable.getWriter();
+        const serialPortInfo = serialPort.getInfo();
+        showInfoMsg("Connected to serial device (baudrate: " + serialParams.baudRate + ").");
+
+        serialReader = serialPort.readable.getReader();
+        serialWriter = serialPort.writable.getWriter();
+      }
+      catch(e) {
+        if((e instanceof DOMException) && e.name == 'InvalidStateError') {
+          // ignore: port has already been opened before, something else must have failed, so let's continue
+        }
+        else {
+          throw e;
+        }
+      }
 
       success = await ping();
 
       if(!success) {
         showErrorMsg("No communication with RCX possible.\n" +
-                     "RCX needs to be switched on and placed close to the IR tower and also in line of sight.");
+                     "RCX needs to be switched on and placed close to the IR tower and also in line of sight.\n" +
+                     "Please try again.");
       }
-    }
-
-    if(!success) {
-      // Disable the download buttons if no communication is possible (no serial port or no ping from the RCX)
-      disableDownloadsBtns();
     }
 
     if(success) {
@@ -178,15 +161,9 @@ async function serialConnect() {
 
     if(success) {
         showInfoMsg("ℹ️ ROM version: " + versionInfo.romVersion + ", Firmware version: " + versionInfo.fwVersion);
-        //butFwDownload.disabled = false; // enable firmware download
-
         if(versionInfo.fwVersion == '0.0') {
             showErrorMsg("Firmware version '0.0' indicates that currently no firmware is loaded into RAM.");
-            disableProgramDownloadBtn();
             success = false;
-        }
-        else {
-            butProgramDownload.disabled = false; // enable program download; could limit this to known, compatible versions
         }
     }
 
@@ -216,18 +193,7 @@ async function serialConnect() {
         showInfoMsg("🎵 Played system sound.");
     }
 
-    // Allow the serial port to be closed later.
-    serialWriter.releaseLock();
-
-    // Disconnect if connect has not been successful.
-    if(success) {
-      serialConnectBtn.innerHTML = '🔗 Serial Disconnect';
-    }
-    else {
-      serialDisconnect();
-    }
-
-    serialConnected = success;
+    return success;
 }
 
 async function serialReadWithTimeout(timeout) {
@@ -273,93 +239,7 @@ async function serialDisconnect() {
   // Close the port.
   await serialPort.close();
   serialPort = null;
-  serialConnectBtn.innerHTML = '🔗 Serial Connect';
 
-  log.textContent += "Disconnected from serial device.\n";
-}
-
-/**
- * @name clickSerialConnect
- * Click handler for the connect/disconnect button.
- */
-async function clickSerialConnect() {
-  // Disconnect
-  if (serialPort) {
-    await serialDisconnect();
-    return;
-  }
-
-  // Connect
-  await serialConnect();
-}
-
-// Handler for click on firmware download button
-async function clickFwDownload() {
-    // Open a dialog first to let the user confirm the download before starting it
-    const confirmedFwDownload = window.confirm("Firmware download is quite slow and will take several minutes. " +
-        "Firmware download may fail. It may render your RCX (temporarily) unusable." +
-        "\n\nI know what I am doing and want to continue.");
-
-    if(confirmedFwDownload) {
-        console.log("Firmware download request confirmed.");
-        showInfoMsg("Firmware download request confirmed.");
-
-        serialWriter = serialPort.writable.getWriter();
-
-        const success = await downloadFirmware();
-        if(success) {
-            showInfoMsg("✅ Firmware download complete. 🎉");
-        }
-        else {
-            showErrorMsg("Failed to download firmware. Make sure the RCX is switched on " +
-                "and in line of sight of the IR tower. Please retry!");
-        }
-        showInfoMsg("Please disconnect and re-connect!");
-
-        // Allow the serial port to be closed later.
-        serialWriter.releaseLock();
-    }
-    else {
-        console.log("Firmware download request aborted.");
-        showInfoMsg("Firmware download request aborted.");
-    }
-}
-
-// Handler for clic on program download button
-async function clickProgramDownload() {
-    if(rcxBinary === null) {
-        showErrorMsg("No program to download. Need to build the NQC code first!");
-    }
-    else {
-        showInfoMsg("Program download requested.");
-
-        // show an info message if the code has been touched after last build in the meantime
-        if(codeModified) {
-          showInfoMsg("❗ Code has been modified after last build. Consider re-building the current version of the code!");
-        }
-
-        serialWriter = serialPort.writable.getWriter();
-
-        const programNumber = 0; // TODO: make program slot selectable
-        let success = await downloadProgram(programNumber, rcxBinary);
-        if(success) {
-            showInfoMsg("️✅ Download of program succeeded! 🎉 " +
-                "Press the green 'Run' button 🟢▶️ on the RCX to start execution of the program!");
-
-            success = await playSystemSound(SystemSound.FastSweepUp);
-
-            if(success) {
-                showInfoMsg("🎵 Played system sound.");
-            }
-            else {
-                showErrorMsg("Unable to play system sound.");
-            }
-        }
-        else {
-            showErrorMsg("Download of program may have failed.");
-        }
-
-        // Allow the serial port to be closed later.
-        serialWriter.releaseLock();
-    }
+  showInfoMsg("Disconnected from serial device.");
+  return true;
 }
