@@ -270,12 +270,13 @@ async function usbConnect() {
     }
 
     if(success) {
-        success = await ping();
+        success = await remoteSound();
         if(!success) {
-            showErrorMsg("Unable to ping.");
+            showErrorMsg("Unable to execute remote command(s).");
         }
     }
 
+/*
     if(success) {
         success = await playSystemSound(SystemSound.Beep);
 
@@ -286,6 +287,7 @@ async function usbConnect() {
     if(success) {
         showInfoMsg("🎵 Played system sound.");
     }
+*/
 
     return success;
 }
@@ -508,6 +510,18 @@ async function flushUsbTowerBuffers(txBuffer = true, rxBuffer = true) {
   return success;
 }
 
+async function remoteSound() {
+    params = new Uint8Array([0x00, 0x00]);
+    let {success, payload} = await transceiveCommand(OpCode.RemoteCommand, params);
+
+    if(success) {
+        params = new Uint8Array([0x80, 0x00]);
+        let {success, payload} = await transceiveCommand(OpCode.RemoteCommand, params);
+    }
+
+    return success;
+}
+
 async function transceiveCommand(opcode, params = new Uint8Array(), timeout = 500, ignoreReply = false) {
     const txMsg = encodeCommand(opcode, params);
 
@@ -527,7 +541,7 @@ async function transceiveCommand(opcode, params = new Uint8Array(), timeout = 50
         showErrorMsg("Unable to get TX state or TX not ready.");
     }
     else {
-        await flushUsbTowerBuffers(false, true);
+        //await flushUsbTowerBuffers(false, true);
 
         console.log("[TXM]", array2hex(txMsg));
         let result = await usbDevice.transferOut(usbTxEndpoint, txMsg);
@@ -538,6 +552,7 @@ async function transceiveCommand(opcode, params = new Uint8Array(), timeout = 50
     if(success) {
         console.log("Out transfer successful.");
 
+/*
         // try to read in (FIXME: make this work)
         const len = 4;
         result = await usbDevice.transferIn(usbRxEndpoint, len);
@@ -547,13 +562,14 @@ async function transceiveCommand(opcode, params = new Uint8Array(), timeout = 50
         if(!success) {
             console.log("Failed to transfer in.");
         }
+*/
     }
     else {
         console.log("Failed to transfer out.");
     }
 
     if(success) {
-        showInfoMsg("IN transfer data: " + array2hex(result.data.buffer));
+        //showInfoMsg("IN transfer data: " + array2hex(result.data.buffer));
 
         return {success: true, payload: null};
     }

@@ -98,7 +98,7 @@ const OpCode = {
     ContinueDownload: 0x45,
     // Other exceptions
     //SendUartData:     0xC2, // no reply!
-    //RemoteCommand:    0xD2, // no reply!
+    RemoteCommand:    0xD2, // no reply!
 }
 
 // List of RCX system sounds
@@ -197,13 +197,13 @@ function encodeCommand(opcode, params) {
     // except when the download command is used because there's a variable length of parameter bytes
     // (see also the list of OpCodes from above)
     const paramLen = opcode & 0x07;
-    if((paramLen != params.length) && (OpCode.ContinueDownload != opcode)) {
+    if((paramLen != params.length) && (OpCode.ContinueDownload != opcode) && (OpCode.RemoteCommand != opcode)) {
         console.log("Wrong number of parameters!");
         // wrong number of parameters
         return emptyMsg;
     }
 
-    // two more bytes for opcode and its implement, two more bytes for checksum and its complement
+    // two more bytes for opcode and its complement, two more bytes for checksum and its complement
     let cmdMsg = new Uint8Array(preamble.length + 2 + params.length*2 + 2);
 
     // fill with preamble
@@ -221,6 +221,7 @@ function encodeCommand(opcode, params) {
 
     // fill parameter bytes and calculate checksum for the current command while doing so
     let checksum = txOpcode;
+    console.log("[PRMS] " + array2hex(new Uint8Array(params)));
     for(let i = 0; i<params.length; i++) {
         checksum += params[i];
 
