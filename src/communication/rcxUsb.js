@@ -297,22 +297,21 @@ async function usbConnect() {
     }
 
     if(success) {
-        success = await remoteSound();
-        if(!success) {
-            showErrorMsg("Unable to execute remote command(s).");
+        const batteryLevel = await getBatteryLevel();
+        let msg = "";
+        if(batteryLevel > 0) {
+            if(batteryLevel < 20) {
+                msg = "🪫";
+            }
+            else {
+                msg = "🔋";
+            }
+            msg += " Battery level: " + Math.floor(batteryLevel) + " %";
+            showInfoMsg(msg);
         }
     }
 
-    /*
-    if(success) {
-        success = await goIntoBootMode();
-        if(!success) {
-            showErrorMsg("Unable to execute remote command(s).");
-        }
-    }*/
-
-/*
-    if(success) {
+    if(success && versionInfo) {
         success = await playSystemSound(SystemSound.Beep);
 
         if(!success) {
@@ -322,7 +321,6 @@ async function usbConnect() {
     if(success) {
         showInfoMsg("🎵 Played system sound.");
     }
-*/
 
     return success;
 }
