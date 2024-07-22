@@ -498,19 +498,23 @@ async function downloadProgram(programNumber, rcxBinary) {
 /**
   * On error returns received message without payload, but with complement bytes for further analysis
   */
-function extractReply(rxMsg) {
+function extractReply(rxMsg, quiet=false) {
     // throw away the preamble at the beginning as it does not contain any info (remove more redundancy)
     rxMsg = rxMsg.slice(preamble.length);
 
     if(rxMsg.length < 2) {
         // expect at least 2 bytes for the checksum
-        console.log("[XTR] message too short: " + rxMsg.length);
+        if(!quiet) {
+            console.log("[XTR] message too short: " + rxMsg.length);
+        }
         return {valid: false, payload: rxMsg};
     }
 
     if(rxMsg.length % 2 != 0) {
         // expect multiple of 2 bytes
-        console.log("[XTR] remaining length w/o preamble not a multiple of 2: " + rxMsg.length);
+        if(!quiet) {
+            console.log("[XTR] remaining length w/o preamble not a multiple of 2: " + rxMsg.length);
+        }
         return {valid: false, payload: rxMsg};
     }
 
