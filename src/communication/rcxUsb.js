@@ -267,6 +267,33 @@ async function usbConnect() {
         if(!success) {
             showErrorMsg("Unable to flush USB tower's buffers.");
         }
+        else {
+            success = await ping();
+        }
+    }
+
+    if(!success) {
+        showErrorMsg("No communication with RCX possible.\n" +
+                     "RCX needs to be switched on and placed close to the IR tower and also in line of sight.\n" +
+                     "Please try again.");
+    }
+
+    if(success) {
+        showInfoMsg("🔗 Communication working, RCX is alive!");
+
+        versionInfo = await getVersions();
+        if(!versionInfo.success) {
+            showErrorMsg("Failed to retrieve ROM and firmware versions.");
+            success = false;
+        }
+    }
+
+    if(success) {
+        showInfoMsg("ℹ️ ROM version: " + versionInfo.romVersion + ", Firmware version: " + versionInfo.fwVersion);
+        if(versionInfo.fwVersion == '0.0') {
+            showErrorMsg("Firmware version '0.0' indicates that currently no firmware is loaded into RAM.");
+            success = false;
+        }
     }
 
     if(success) {
@@ -275,6 +302,14 @@ async function usbConnect() {
             showErrorMsg("Unable to execute remote command(s).");
         }
     }
+
+    /*
+    if(success) {
+        success = await goIntoBootMode();
+        if(!success) {
+            showErrorMsg("Unable to execute remote command(s).");
+        }
+    }*/
 
 /*
     if(success) {
@@ -549,29 +584,48 @@ async function transceiveCommand(opcode, params = new Uint8Array(), timeout = 50
         success = (result.status == 'ok') && (result.bytesWritten == txMsg.length);
     }
 
+    let rxMsg = new Uint8Array([]);
+    let valid = false;
+    let reply;
+
     if(success) {
         console.log("Out transfer successful.");
 
-/*
-        // try to read in (FIXME: make this work)
-        const len = 4;
-        result = await usbDevice.transferIn(usbRxEndpoint, len);
+        let startTs = Date.now();
 
-        success = (result.status == 'ok');
+        while(success && !valid && ((Date.now() - startTs) < 1000)) {
+            //console.log("Diff: ", (Date.now() - startTs))
+            result = await usbDevice.transferIn(usbRxEndpoint, 8);
+            success = (result.status == 'ok');
 
-        if(!success) {
-            console.log("Failed to transfer in.");
+            if(!success) {
+                console.log("Failed to transfer in.");
+            }
+            else {
+                //console.log("In transfer successful.");
+                rxMsg = concatBuffers(rxMsg, result.data.buffer);
+
+                if(rxMsg.length >= 2 && rxMsg[0] == 0xFF && rxMsg[1] == 0x00) {
+                    console.log("Auto-fixing corrupt prefix: missing 0x55 but seeing 0xFF and 0x00");
+                    rxMsg = concatBuffers(new Uint8Array([0x55]), rxMsg);
+                }
+                //console.log("[RXM]", array2hex(result.data.buffer));
+                //console.log("[RXM_ALL]", array2hex(rxMsg));
+
+                reply = extractReply(rxMsg, quiet=true);
+                //console.log("[RPL] valid? " + reply.valid + ", payload: " + array2hex(reply.payload));
+                valid = reply.valid;
+            }
         }
-*/
     }
     else {
         console.log("Failed to transfer out.");
     }
 
     if(success) {
-        //showInfoMsg("IN transfer data: " + array2hex(result.data.buffer));
+        console.log("[RXM]", array2hex(rxMsg));
 
-        return {success: true, payload: null};
+        return {success: true, payload: reply.payload};
     }
     else {
         return {success: false, payload: null};
