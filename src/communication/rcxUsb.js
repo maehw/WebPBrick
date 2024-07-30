@@ -28,9 +28,11 @@ const sleep = (delay) => new Promise((resolve) => setTimeout(resolve, delay));
 // define various control elements
 const log = document.getElementById('logArea');
 const butUsbConnect = document.getElementById('usbConnectBtn');
+const butFwDownload = document.getElementById('downloadFirmwareBtn');
 
 document.addEventListener('DOMContentLoaded', () => {
   butUsbConnect.addEventListener('click', clickUsbConnect);
+  butFwDownload.addEventListener('click', clickFwDownload);
 });
 
 const USB_VENDOR_ID = 0x0694;
@@ -296,6 +298,7 @@ async function usbConnect() {
         }
     }
 
+/*
     if(success) {
         const batteryLevel = await getBatteryLevel();
         let msg = "";
@@ -321,6 +324,7 @@ async function usbConnect() {
     if(success) {
         showInfoMsg("🎵 Played system sound.");
     }
+*/
 
     return success;
 }
@@ -566,8 +570,6 @@ async function transceiveCommand(opcode, params = new Uint8Array(), timeout = 50
         return {success: false, payload: null};
     }
 
-    await sleep(50); // FIXME: delay where?
-
     success = await isTxReady();
 
     if(!success) {
@@ -585,47 +587,73 @@ async function transceiveCommand(opcode, params = new Uint8Array(), timeout = 50
     let rxMsg = new Uint8Array([]);
     let valid = false;
     let reply;
+    let failedInXfers = 0; // count number of failed USB in transfers
+    let successfulInXfers = 0; // count number of successful USB in transfers
+    const maxFailedInXfers = 50;
 
     if(success) {
-        console.log("Out transfer successful.");
+        // console.log("OUT transfer successful.");
 
-        let startTs = Date.now();
-
-        while(success && !valid && ((Date.now() - startTs) < 1000)) {
-            //console.log("Diff: ", (Date.now() - startTs))
-            result = await usbDevice.transferIn(usbRxEndpoint, 8);
-            success = (result.status == 'ok');
-
-            if(!success) {
-                console.log("Failed to transfer in.");
+        while(!valid && (failedInXfers < maxFailedInXfers)) {
+            let inXferSuccess;
+            try {
+                const usbInRequest = Promise.race([
+                  usbDevice.transferIn(usbRxEndpoint, 8),
+                  new Promise((resolve, reject) => {
+                    setTimeout(() => reject(), 50);
+                  }),
+                ]);
+                result = await usbInRequest;
+                inXferSuccess = (result.status == 'ok');
+                if(inXferSuccess) {
+                    successfulInXfers++;
+                }
             }
-            else {
-                //console.log("In transfer successful.");
+            catch(e) {
+                inXferSuccess = false;
+                failedInXfers++;
+            }
+
+            // check if the single transfer has succeeded
+            if(inXferSuccess) {
                 rxMsg = concatBuffers(rxMsg, result.data.buffer);
 
                 if(rxMsg.length >= 2 && rxMsg[0] == 0xFF && rxMsg[1] == 0x00) {
                     console.log("Auto-fixing corrupt prefix: missing 0x55 but seeing 0xFF and 0x00");
                     rxMsg = concatBuffers(new Uint8Array([0x55]), rxMsg);
                 }
-                //console.log("[RXM]", array2hex(result.data.buffer));
-                //console.log("[RXM_ALL]", array2hex(rxMsg));
 
                 reply = extractReply(rxMsg, quiet=true);
-                //console.log("[RPL] valid? " + reply.valid + ", payload: " + array2hex(reply.payload));
-                valid = reply.valid;
+                valid = reply.valid; // we are done, let's leave the loop!
             }
         }
+
+        console.log("Number of successful IN transfers: " + successfulInXfers)
+        console.log("Number of failed IN transfers: " + failedInXfers)
     }
     else {
-        console.log("Failed to transfer out.");
+        console.log("Failed to transfer OUT.");
     }
 
-    if(success) {
+    if(success && valid) {
+        console.log("Both OUT and IN transfers successful.");
         console.log("[RXM]", array2hex(rxMsg));
+        console.log("[Reply]", array2hex(reply.payload));
+        console.log("[Reply Validity]", reply.valid);
 
         return {success: true, payload: reply.payload};
     }
     else {
+        console.log("Unable to transceive.");
+        if(rxMsg.length > 0)
+        {
+            console.log("[RXM]", array2hex(rxMsg));
+            if(reply !== undefined) {
+                console.log("[Reply]", array2hex(reply.payload));
+                console.log("[Reply Validity]", reply.valid);
+            }
+        }
+
         return {success: false, payload: null};
     }
 }
@@ -648,5 +676,32 @@ function array2hex(arrayBuffer) {
         return "0x"+Array.from(new Uint8Array(arrayBuffer))
             .map(n => n.toString(16).toUpperCase().padStart(2, "0"))
             .join(" 0x");
+    }
+}
+
+// Handler for click on firmware download button
+async function clickFwDownload() {
+    // Open a dialog first to let the user confirm the download before starting it
+    const confirmedFwDownload = window.confirm("Firmware download is quite slow and will take several minutes. " +
+        "Firmware download may fail. It may render your RCX (temporarily) unusable." +
+        "\n\nI know what I am doing and want to continue.");
+
+    if(confirmedFwDownload) {
+        console.log("Firmware download request confirmed.");
+        showInfoMsg("Firmware download request confirmed.");
+
+        const success = await downloadFirmware();
+        if(success) {
+            showInfoMsg("âœ… Firmware download complete. ðŸŽ‰");
+        }
+        else {
+            showErrorMsg("Failed to download firmware. Make sure the RCX is switched on " +
+                "and in line of sight of the IR tower. Please retry!");
+        }
+        showInfoMsg("Please disconnect and re-connect!");
+    }
+    else {
+        console.log("Firmware download request aborted.");
+        showInfoMsg("Firmware download request aborted.");
     }
 }
