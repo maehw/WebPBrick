@@ -381,7 +381,7 @@ async function downloadFirmware() {
 // Send command to RCX that indicates beginning of a firmware download
 async function beginFirmwareDownload(checksum) {
     const startAddress = 0x8000; // always this same memory start address
-    const {success, payload} = await transceiveCommand(OpCode.BeginFwDownload,
+    let {success, payload} = await transceiveCommand(OpCode.BeginFwDownload,
                                                        [getLoByte(startAddress),
                                                         getHiByte(startAddress),
                                                         getLoByte(checksum),
