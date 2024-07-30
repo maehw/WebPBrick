@@ -622,6 +622,10 @@ async function transceiveCommand(opcode, params = new Uint8Array(), timeout = 50
                     console.log("Auto-fixing corrupt prefix: missing 0x55 but seeing 0xFF and 0x00");
                     rxMsg = concatBuffers(new Uint8Array([0x55]), rxMsg);
                 }
+                else if(rxMsg.length >= 1 && rxMsg[0] == 0x00) {
+                    console.log("Auto-fixing corrupt prefix: missing 0x55 and 0xFF but seeing 0x00");
+                    rxMsg = concatBuffers(new Uint8Array([0x55, 0xFF]), rxMsg);
+                }
 
                 reply = extractReply(rxMsg, quiet=true);
                 valid = reply.valid; // we are done, let's leave the loop!
