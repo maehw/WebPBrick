@@ -415,7 +415,7 @@ async function downloadProgram(programNumber, rcxBinary) {
     }
 
     if(success) {
-        showInfoMsg("🛠️ Preparing program download...");
+        showInfoMsg("🛠️ Preparing program #" + programNumber + " download...");
 
         success = await selectProgram(programNumber);
 

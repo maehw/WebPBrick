@@ -6,6 +6,28 @@ The format is heavily inspired by [Keep a Changelog](https://keepachangelog.com/
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
 
+## [0.3.0] - 2025-12-18
+
+### Known Issues
+
+* USB communication is work in progress and therefore LEGO USB IR Tower connection is not made available yet
+
+### Added
+
+* UI element and functionality to select RCX program slot (backwards compatibility due to keeping slot #0 the default)
+
+### Changed
+
+N/A
+
+### Removed
+
+N/A
+
+### Fixed
+
+N/A
+
 ## [0.2.0] - 2024-05-03
 
 ### Known Issues
