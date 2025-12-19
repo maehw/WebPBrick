@@ -25,14 +25,14 @@ Blockly.defineBlocksWithJsonArray([
     // Block for setting RCX' display mode
     {
       "type": "display_mode",
-      "message0": "select display mode %1",
+      "message0": "selecione o modo da tela %1",
       "args0": [
         {
           "type": "field_dropdown",
           "name": "MODE",
           "options": [
             [
-              "system watch",
+              "relógio do sistema",
               "DISPLAY_WATCH"
             ],
             [
@@ -48,15 +48,15 @@ Blockly.defineBlocksWithJsonArray([
               "DISPLAY_SENSOR_3"
             ],
             [
-              "output A",
+              "saída A",
               "DISPLAY_OUT_A"
             ],
             [
-              "output B",
+              "saída B",
               "DISPLAY_OUT_B"
             ],
             [
-              "output C",
+              "saída C",
               "DISPLAY_OUT_C"
             ]
           ]
@@ -72,7 +72,7 @@ Blockly.defineBlocksWithJsonArray([
     // Block for setting RCX watch
     {
       "type": "watch_set",
-      "message0": "set system watch to %1 hours %2 minutes",
+      "message0": "defina o horário do sistema para %1 horas e %2 minutos",
       "args0": [
         {
           "type": "field_number",
@@ -101,7 +101,7 @@ Blockly.defineBlocksWithJsonArray([
     // Block for setting RCX watch
     {
       "type": "watch_get",
-      "message0": "get system watch value (in minutes)",
+      "message0": "obter horário do sistema (em minutos)",
       "inputsInline": true,
       "output": "Number",
       "colour": timeDataCategoryCol,
@@ -111,7 +111,7 @@ Blockly.defineBlocksWithJsonArray([
     // Block for creating a datalog
     {
       "type": "datalog_create",
-      "message0": "create datalog of size %1",
+      "message0": "criar registro de dados de tamanho %1",
       "args0": [
         {
           "type": "field_number",
@@ -132,7 +132,7 @@ Blockly.defineBlocksWithJsonArray([
     // Block for adding a value to the datalog
     {
       "type": "datalog_addvalue",
-      "message0": "add value %1 to datalog",
+      "message0": "Adicionar valor %1 ao registro de dados",
       "args0": [
         {
           "type": "input_value",
@@ -150,7 +150,7 @@ Blockly.defineBlocksWithJsonArray([
     // Block for clearing a timer
     {
       "type": "timer_clear",
-      "message0": "clear timer %1",
+      "message0": "limpar temporizador %1",
       "args0": [
         {
           "type": "field_dropdown",
@@ -186,7 +186,7 @@ Blockly.defineBlocksWithJsonArray([
     // Block for reading a timer value
     {
       "type": "timer_read",
-      "message0": "timer %1 value",
+      "message0": "valor do %1 temporizador",
       "args0": [
         {
           "type": "field_dropdown",
@@ -220,7 +220,7 @@ Blockly.defineBlocksWithJsonArray([
     // Block for setting the sleep timeout
     {
       "type": "sleep_setsleeptime",
-      "message0": "set sleep timeout to %1 minutes",
+      "message0": "Defina o tempo limite de suspensão para %1 minuto",
       "args0": [
         {
           "type": "field_number",
@@ -241,7 +241,7 @@ Blockly.defineBlocksWithJsonArray([
     // Block for going to sleep
     {
       "type": "sleep_gosleep",
-      "message0": "go to sleep",
+      "message0": "ativar modo dormir",
       "inputsInline": true,
       "previousStatement": null,
       "colour": timeDataCategoryCol,

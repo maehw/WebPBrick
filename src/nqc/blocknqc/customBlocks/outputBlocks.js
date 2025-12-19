@@ -25,7 +25,7 @@ Blockly.defineBlocksWithJsonArray([
     // Block for setting motor/output power
     {
       "type": "output_setpower",
-      "message0": "set output %1 power level to %2",
+      "message0": "Defina o nível de potência de saída %1 para %2",
       "args0": [
         {
           "type": "field_dropdown",
@@ -77,7 +77,7 @@ Blockly.defineBlocksWithJsonArray([
     // Block for setting motor/output direction
     {
       "type": "output_setdirection",
-      "message0": "set output %1 direction to %2",
+      "message0": "Defina a direção de saída %1 para %2",
       "args0": [
         {
           "type": "field_dropdown",
@@ -118,15 +118,15 @@ Blockly.defineBlocksWithJsonArray([
           "name": "DIRECTION",
           "options": [
             [
-              "forward",
+              "para frente",
               "OUT_FWD"
             ],
             [
-              "reverse",
+              "para trás",
               "OUT_REV"
             ],
             [
-              "toggle",
+              "alternar",
               "OUT_TOGGLE"
             ]
           ]
@@ -142,7 +142,7 @@ Blockly.defineBlocksWithJsonArray([
     // Block for switching motor/output on in a specific direction
     {
       "type": "output_onwithdirection",
-      "message0": "switch output %1 on in %2 direction",
+      "message0": "A saída %1 deve estar ligada na direção %2",
       "args0": [
         {
           "type": "field_dropdown",
@@ -203,7 +203,7 @@ Blockly.defineBlocksWithJsonArray([
     // Block for switching motor/output off
     {
       "type": "output_off",
-      "message0": "switch output %1 off",
+      "message0": "desligar porta de saída %1 ",
       "args0": [
         {
           "type": "field_dropdown",
@@ -250,7 +250,7 @@ Blockly.defineBlocksWithJsonArray([
     // Block for switching motor/output off smoothly ("float" or "coast")
     {
       "type": "output_float",
-      "message0": "switch output %1 off smoothly (float)",
+      "message0": "desligar porta de saída %1 suavemente",
       "args0": [
         {
           "type": "field_dropdown",
@@ -297,7 +297,7 @@ Blockly.defineBlocksWithJsonArray([
     // Block for switching motor/output on
     {
       "type": "output_on",
-      "message0": "switch output %1 on",
+      "message0": "ligar porta de saída %1 ",
       "args0": [
         {
           "type": "field_dropdown",
@@ -344,7 +344,7 @@ Blockly.defineBlocksWithJsonArray([
     // Block for setting motor/output mode
     {
       "type": "output_setmode",
-      "message0": "set output %1 mode to %2",
+      "message0": "defina o modo da porta de saída %1 para %2",
       "args0": [
         {
           "type": "field_dropdown",
@@ -385,15 +385,15 @@ Blockly.defineBlocksWithJsonArray([
           "name": "MODE",
           "options": [
             [
-              "on",
+              "ligar",
               "OUT_ON"
             ],
             [
-              "off",
+              "desligar",
               "OUT_OFF"
             ],
             [
-              "float",
+              "desligar em ponto morto",
               "OUT_FLOAT"
             ]
           ]

@@ -25,18 +25,18 @@ Blockly.defineBlocksWithJsonArray([
     // Block for setting infrared TX power
     {
       "type": "infrared_txpower",
-      "message0": "set IR TX power level to %1",
+      "message0": "coloque a potência da torre infravermelho para %1",
       "args0": [
         {
           "type": "field_dropdown",
           "name": "LEVEL",
           "options": [
             [
-              "low",
+              "baixo",
               "TX_POWER_LO"
             ],
             [
-              "high",
+              "alto",
               "TX_POWER_HI"
             ]
           ]
@@ -52,7 +52,7 @@ Blockly.defineBlocksWithJsonArray([
     // Block for sending IR message
     {
       "type": "infrared_msgsend",
-      "message0": "send IR message %1 via IR",
+      "message0": "Enviar mensagem infravelho %1 por infravermelho",
       "args0": [
         {
           "type": "input_value",
@@ -70,7 +70,7 @@ Blockly.defineBlocksWithJsonArray([
     // Block for clearing IR message
     {
       "type": "infrared_msgclear",
-      "message0": "clear last received IR message",
+      "message0": "limpar última mensagem infravermelho recebida",
       "inputsInline": true,
       "previousStatement": null,
       "nextStatement": null,
@@ -81,7 +81,7 @@ Blockly.defineBlocksWithJsonArray([
     // Block for receiving an IR message
     {
       "type": "infrared_msgreceive",
-      "message0": "receive IR message",
+      "message0": "receber mensagem infravermelho",
       "output": "Number",
       "inputsInline": true,
       "colour": infraredCategoryCol,
