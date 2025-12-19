@@ -183,11 +183,11 @@ Blockly.defineBlocksWithJsonArray([
           "name": "DIRECTION",
           "options": [
             [
-              "forward",
+              "para frente",
               "OnFwd"
             ],
             [
-              "reverse",
+              "para trás",
               "OnRev"
             ],
           ]

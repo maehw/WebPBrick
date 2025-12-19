@@ -34,7 +34,7 @@ async function transceiveCommand(opcode, params = new Uint8Array(), timeout = 50
     const txMsg = encodeCommand(opcode, params);
 
     if(txMsg.length == 0) {
-        console.log("[TXM] encoding error, wrong number of parameters");
+        console.log("[TXM] Erro de codificação, número errado de parâmetros");
         return {success: false, payload: null};
     }
     if(txMsg.length < preamble.length) {
@@ -111,7 +111,7 @@ async function serialConnect() {
         serialPort = await navigator.serial.requestPort();
       }
       catch(e) {
-        showErrorMsg("Failed to open serial port: '" + e.message + "'");
+        showErrorMsg("Falha ao abrir a porta serial: '" + e.message + "'");
         success = false;
       }
     }
@@ -126,7 +126,7 @@ async function serialConnect() {
         await serialPort.open(serialParams);
 
         const serialPortInfo = serialPort.getInfo();
-        showInfoMsg("Connected to serial device (baudrate: " + serialParams.baudRate + ").");
+        showInfoMsg("Conectado ao dispositivo serial (baudrate: " + serialParams.baudRate + ").");
 
         serialReader = serialPort.readable.getReader();
         serialWriter = serialPort.writable.getWriter();
@@ -143,26 +143,26 @@ async function serialConnect() {
       success = await ping();
 
       if(!success) {
-        showErrorMsg("No communication with RCX possible.\n" +
-                     "RCX needs to be switched on and placed close to the IR tower and also in line of sight.\n" +
-                     "Please try again.");
+        showErrorMsg("Não é possível se comunicar com o RCX.\n" +
+                     "O RCX precisa estar ligado e ser devidamente colocado próximo à torre infra vermelho, como também na linha de visão da torre.\n" +
+                     "Por favor tente novamente.");
       }
     }
 
     if(success) {
-        showInfoMsg("🔗 Communication working, RCX is alive!");
+        showInfoMsg("🔗 Comunicação funcionando, RCX está respondendo!");
 
         versionInfo = await getVersions();
         if(!versionInfo.success) {
-            showErrorMsg("Failed to retrieve ROM and firmware versions.");
+            showErrorMsg("Não foi possível obter a versão da ROM e firmware.");
             success = false;
         }
     }
 
     if(success) {
-        showInfoMsg("ℹ️ ROM version: " + versionInfo.romVersion + ", Firmware version: " + versionInfo.fwVersion);
+        showInfoMsg("ℹ️ versão da ROM: " + versionInfo.romVersion + ", versão do Firmware: " + versionInfo.fwVersion);
         if(versionInfo.fwVersion == '0.0') {
-            showErrorMsg("Firmware version '0.0' indicates that currently no firmware is loaded into RAM.");
+            showErrorMsg("A versão de firmware '0.0' indica que atualmente nenhum firmware está carregado na memória RAM.");
             success = false;
         }
     }
@@ -177,7 +177,7 @@ async function serialConnect() {
             else {
                 msg = "🔋";
             }
-            msg += " Battery level: " + Math.floor(batteryLevel) + " %";
+            msg += " Nível da bateria: " + Math.floor(batteryLevel) + " %";
             showInfoMsg(msg);
         }
     }
@@ -186,11 +186,11 @@ async function serialConnect() {
         success = await playSystemSound(SystemSound.Beep);
 
         if(!success) {
-            showErrorMsg("Unable to play system sound.");
+            showErrorMsg("Não foi possível tocar o som do sistema.");
         }
     }
     if(success) {
-        showInfoMsg("🎵 Played system sound.");
+        showInfoMsg("🎵 Tocado o som do sistema.");
     }
 
     return success;
@@ -211,7 +211,7 @@ async function serialReadWithTimeout(timeout) {
     catch (e) {
         // make sure to detect and handle timeout errors and re-throw other type of exceptions
         if (e instanceof TypeError) {
-            console.log("Timeout error occurred!");
+            console.log("Tempo limite esgotado!");
         }
         else {
             throw(e);
@@ -240,6 +240,6 @@ async function serialDisconnect() {
   await serialPort.close();
   serialPort = null;
 
-  showInfoMsg("Disconnected from serial device.");
+  showInfoMsg("Desconectado da torre serial.");
   return true;
 }

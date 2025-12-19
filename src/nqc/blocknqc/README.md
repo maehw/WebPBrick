@@ -1,50 +1,47 @@
 # BlockNQC
 
-Visual programming editor to generate NQC code which can then be compiled with a NQC compiler, e.g. [WebNQC](https://github.com/maehw/WebNQC) embedded into [WebPBrick](https://github.com/maehw/WebPBrick/).
+Editor de programação visual para gerar código NQC que pode então ser compilado com um compilador NQC, por exemplo, [WebNQC](https://github.com/maehw/WebNQC) embutido em [WebPBrick](https://github.com/maehw/WebPBrick/).
 
 
 ## Blockly
 
-### Blockly source code and installation
+### Blockly código fonte e instalação
 
-see https://developers.google.com/blockly/guides/get-started/get-the-code
+veja https://developers.google.com/blockly/guides/get-started/get-the-code
 
 
-## Blocks
+## Blocos
 
-### Built-in default blocks
+### Blocos padrão embutidos
 
-* Check Blockly Block Wiki: https://github.com/google/blockly/wiki
-* Check Blockly Advanced Playground: https://blockly-demo.appspot.com/static/tests/playgrounds/advanced_playground.html
-* See also: https://github.com/google/blockly-samples/blob/master/plugins/dev-tools/src/toolboxCategories.js
+* Veja a Wiki dos blocos do Blockly: https://github.com/google/blockly/wiki
+* Veja o playground avançado do Blockly: https://blockly-demo.appspot.com/static/tests/playgrounds/advanced_playground.html
+* Veja também: https://github.com/google/blockly-samples/blob/master/plugins/dev-tools/src/toolboxCategories.js
 
-### Custom blocks
+### Blocos customizados
 
-* Use Blockly Developer Tools: https://developers.google.com/blockly/guides/create-custom-blocks/blockly-developer-tools > Block Factory https://blockly-demo.appspot.com/static/demos/blockfactory/index.html
+* Use as ferramentas de desenvolvimento Blockly: https://developers.google.com/blockly/guides/create-custom-blocks/blockly-developer-tools > fábrica de blocos https://blockly-demo.appspot.com/static/demos/blockfactory/index.html
 * https://blockly-demo.appspot.com/static/demos/blockfactory/index.html
 
-## Open questions
+## Perguntas abertas 
 
-* Can the number of variables be limited? _(All variables are made global, so they are limited by the RCX bytecode interpreter to 32. Blockly treats variables as global by default.)_
-* Can the number of options of built-in blocks be reduced? E.g. `^` (JavaScript code generator generates `Math.pow()`) be removed from `math_arithmetic`?
-* How to implement the `task` feature properly? Only tasks should be started/stopped that exists (i.e. where their name has been declared).
-* How can the way of storing/loading programs (as JSON) be improved?
+* O número de variáveis pode ser limitado? _(Todas as variáveis são globalizadas, então são limitadas pelo interpretador de bytecode RCX a 32. O Blockly trata variáveis como globais por padrão.)_ * O número de opções de blocos embutidos pode ser reduzido? Por exemplo, '^' (gerador de código JavaScript gera 'Math.pow()') ser removido de 'math_arithmetic'? * Como implementar corretamente o recurso 'tarefa'? Apenas as tarefas que existem devem ser iniciadas/interrompidas (ou seja, quando o nome delas foi declarado). * Como a forma de armazenar/carregar programas (como JSON) pode ser melhorada?
 
-## Optional TODOs
+## Opcional à fazer
 
-_(considered nice-to-have)_
+_(considerados bom ter)_
 
-* Implement `Program()` and `SelectProgram()`
-* Implement functions and subroutines (code blocks can be copy-pasted).
-* Support `for` loops
-* Support `switch` statement
-* Implement resource access control (`acquire`, `monitor`)
-* Restrict `math_single` block to `abs()` and _unary minus_ (or reimplement)
-* Reimplement `math_number_property`
-* Add support for `sign()` and bitwise operations
-* Implement `OutputStatus()`
-* Support counters
-* Support events
-* Add instructions (context-aware tooltips)
-* Add support for "RCX2" functions - need to double-check against used firmware version?!
-* Define aliases for sensor inputs and (motor) outputs.
+* Implementar 'Program()' e 'SelectProgram()' 
+* Implementar funções e sub-rotinas (blocos de código podem ser copiados e colados). 
+* Loops de suporte 'to' 
+* Instrução 'switch' de suporte 
+* Implementar controle de acesso a recursos ('adquirir', 'monitorar') 
+* Restringa o bloco 'math_single' a 'abs()' e _unary minus_ (ou reimplemente) 
+* Reimplementar 'math_number_property' 
+* Adicionar suporte para 'sign()' e operações bit a bit 
+* Implementar 'OutputStatus()' 
+* Contadores de suporte 
+* Eventos de apoio 
+* Adicionar instruções (dicas de ferramentas conscientes do contexto) 
+* Adicionar suporte para funções "RCX2" - precisa conferir novamente com a versão usada do firmware?! 
+* Defina aliases para entradas de sensores e saídas (motores).

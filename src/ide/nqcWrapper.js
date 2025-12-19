@@ -184,8 +184,8 @@ async function clickConvert() {
       retval = nqc.callMain(args);
     }
     catch(e) {
-      logError("An error has occurred: '" + e.message + "' at an unknown location in your code. Please double-check your code.");
-      logError("Compilation failed.");
+      logError("Um erro ocrreu: '" + e.message + "' em um local desconhecido do seu código. Por favor cheque novamente seu código.");
+      logError("A compilação falhou.");
       exceptionOccurred = true;
     }
 
@@ -193,10 +193,10 @@ async function clickConvert() {
        // nqc.FS.isFile(outputFilename))  // TODO: can we check for file existence?!
       if(retval == 0) {
           const out = nqc.FS.readFile(outputFilename);
-          logDebug("Compiled NQC code successfully using WebNQC.");
+          logDebug("Código NQC compilado com sucesso utilizando WebNQC.");
 
-          logDebug("Binary output length: " + out.length);
-          logDebug("Binary output as HEX: " + array2hex(out));
+          logDebug("comprimento da saída binária: " + out.length);
+          logDebug("Saída binária em HEX: " + array2hex(out));
 
           codeModified = false;
 
@@ -207,10 +207,10 @@ async function clickConvert() {
         // copy global variable into local one and reset the global one
         const errorLine = firstErrorLine;
         firstErrorLine = null;
-        logDebug("Return value from WebNQC call: " + retval);
+        logDebug("Valor de retorno da chamada WebNQC: " + retval);
 
         if(errorLine) {
-            logError("First compilation error occurred on line " + errorLine);
+            logError("Primeiro erro de compilação ocorreu na linha " + errorLine);
 
             // Highlight the line where the error occurred
             codeArea.focus(); // Ensure the code area is focused
@@ -224,11 +224,11 @@ async function clickConvert() {
             // Select the error line in the codeArea
             codeArea.setSelectionRange(startPos, endPos);
         }
-        logError("Compilation failed.");
+        logError("Compilação falhou.");
       }
     }
   }
   else {
-    logError("WebNQC seems to be broken.");
+    logError("WebNQC parece estar quebrado...");
   }
 }

@@ -242,7 +242,7 @@ function calculateFirmwareChecksum(firmwareData) {
     const firmwareSize = firmwareData.length;
 
     if(firmwareSize > 19*1024) {
-        showInfoMsg("Firmware size exceeds 19 kBytes. Limited checksum calculation to first 19 kBytes.");
+        showInfoMsg("O tamanho do firmware ultrapassa 19 kBytes. Cálculo de verificação é limitado aos primeiros 19 kBytes.");
     }
 
     // "The firmware check sum is the sum of the first 19456 bytes in the firmware program (= 19 * 1024 = 19K) modulo 65536."
@@ -280,29 +280,29 @@ async function downloadFirmware() {
 
     // prepare download
     const firmwareSize = firmwareData.length;
-    showInfoMsg("🧮 Firmware size in bytes: " + firmwareSize);
+    showInfoMsg("🧮 Tamanho do firmware em bytes: " + firmwareSize);
 
     const firmwareChecksum = calculateFirmwareChecksum(firmwareData);
-    showInfoMsg("🧮 Calculated firmware checksum: 0x" + firmwareChecksum.toString(16).padStart(4, '0').toUpperCase());
+    showInfoMsg("🧮 Checksum de firmware calculado: 0x" + firmwareChecksum.toString(16).padStart(4, '0').toUpperCase());
 
     // ping
     let success = await goIntoBootMode(); // ignore result, maybe echo reply is cut off?!
     if(!success) {
-        showErrorMsg("Unable to enter boot mode. Please retry!");
+        showErrorMsg("Não é possível entrar no modo de boot. Por favor, tente novamente!");
     }
 
     if(success) {
-        showInfoMsg("🥾 Entered boot mode.");
+        showInfoMsg("🥾 Modo de boot carregado.");
 
         success = await beginFirmwareDownload(firmwareChecksum);
 
         if(!success) {
-            showErrorMsg("Unable to begin firmware download.");
+            showErrorMsg("Não foi possível iniciar o download do firmware.");
         }
     }
 
     if(success) {
-        showInfoMsg("🐌 Began firmware download...");
+        showInfoMsg("🐌 Iniciado o download do firmware...");
 
         // continue download in blocks of N bytes
         const blockSize = 20;
@@ -310,22 +310,22 @@ async function downloadFirmware() {
         //const blockSize = 200; // TODO: make it work with bigger block sizes
         //const extendedTimeout = true; // timeout depends on block size (data transfer duration)
         const numBlocks = Math.ceil(firmwareSize/blockSize);
-        console.log("Calculated " + numBlocks + " blocks to download.");
-        showInfoMsg("🧱 Calculated " + numBlocks + " firmware blocks to download.");
+        console.log("Calculado " + numBlocks + " blocos para baixar.");
+        showInfoMsg("🧱 Calculado " + numBlocks + " blocos de firmware para baixar.");
         let downloadSuccess = true;
         let downloadedBlock = false;
         for(let blockCount = 1; blockCount <= numBlocks; blockCount++) {
             let blockData = firmwareData.slice((blockCount-1)*blockSize, blockCount*blockSize);
             downloadedBlock = await downloadBlock(blockCount, blockData, extendedTimeout);
             if(!downloadedBlock) {
-                console.log("Download error during block #" + blockCount + ", retrying...");
-                showErrorMsg("Download error during block #" + blockCount + ", retrying...");
+                console.log("Erro de download durante o bloco #" + blockCount + ", tentando novamente...");
+                showErrorMsg("Erro de download durante o bloco #" + blockCount + ", tentando novamente...");
 
                 // maybe, we have to wake something up again!
                 let success = await wakeup();
                 if(!success) {
-                    showErrorMsg("No communication with RCX possible.\n" +
-                                 "RCX needs to be switched on and placed close to the IR tower.");
+                    showErrorMsg("Não é possível se comunicar com o RCX.\n" +
+                                 "O RCX precisa ser ligado e colocado perto da torre infra vermelho.");
                     downloadSuccess = false;
                     break;
                 }
@@ -337,27 +337,27 @@ async function downloadFirmware() {
                     downloadedBlock = await downloadBlock(blockCount, blockData, extendedTimeout);
                     if(downloadedBlock) {
                         const progress = blockCount/numBlocks;
-                        showInfoMsg("⏳ Successfully downloaded firmware block " + blockCount + "/" + numBlocks +
+                        showInfoMsg("⏳ bloco do firmware baixado com sucesso " + blockCount + "/" + numBlocks +
                                     " ("+ Math.round(progress*1000)/10 + " %)");
 
                         break; // no need to retry any longer
                     }
                     else {
-                        const retryText = "Download error during retry attempt #" + retry +
-                                          " of block #" + blockCount + "...";
+                        const retryText = "Erro de Download durante a nova tentativa #" + retry +
+                                          " do bloco #" + blockCount + "...";
                         console.log(retryText);
                         showErrorMsg(retryText);
                     }
                 }
                 if(!downloadedBlock) {
-                    console.log("Aborting download.");
+                    console.log("Abortando Download.");
                     downloadSuccess = false;
                     break;
                 }
             }
             else {
                 const progress = blockCount/numBlocks;
-                showInfoMsg("⏳ Successfully downloaded firmware block " + blockCount + "/" + numBlocks +
+                showInfoMsg("⏳ bloco do firmware baixado com sucesso " + blockCount + "/" + numBlocks +
                             " ("+ Math.round(progress*1000)/10 + " %)");
             }
         }
@@ -367,11 +367,11 @@ async function downloadFirmware() {
     }
 
     if(success) {
-        showInfoMsg("⌛️ Finalizing firmware...");
+        showInfoMsg("⌛️ Finalizando firmware...");
 
         success = await unlockFirmware();
         if(!success) {
-            showErrorMsg("May have failed to unlock firmware.");
+            showErrorMsg("Talvez houve uma falha ao desbloquear o firmware.");
         }
     }
 
@@ -399,7 +399,7 @@ async function beginFirmwareDownload(checksum) {
 
 // Download user program to RCX programmable brick
 async function downloadProgram(programNumber, rcxBinary) {
-    showInfoMsg("🛠️ Parsing program binary using kaitai...");
+    showInfoMsg("🛠️ Realizando análise binária do programa usando kaitai...");
 
     let success = (rcxBinary !== null);
     let parsedRcxi = null;
@@ -411,76 +411,76 @@ async function downloadProgram(programNumber, rcxBinary) {
         }
     }
     if(!success) {
-        showErrorMsg("Unable to parse program binary.");
+        showErrorMsg("Não é possível analisar o binário do programa.");
     }
 
     if(success) {
-        showInfoMsg("🛠️ Preparing program download...");
+        showInfoMsg("🛠️ Preparando para baixa o programa...");
 
         success = await selectProgram(programNumber);
 
         if(!success) {
-            showErrorMsg("Failed to select program #" + programNumber + ".");
+            showErrorMsg("Falha ao selecionar o programa #" + programNumber + ".");
         }
     }
 
     if(success) {
-        showInfoMsg("🔢 Selected program number #" + programNumber + ".");
+        showInfoMsg("🔢 Selecionado programa de número #" + programNumber + ".");
 
         success = await stopRunningTasks();
         if(!success) {
-            showErrorMsg("Unable to stop running tasks.");
+            showErrorMsg("Não foi possível parar tarefas em andamento.");
         }
     }
 
     if(success) {
-        showInfoMsg("🧍 Stopped running tasks.");
+        showInfoMsg("🧍 Parada todas tarefas em andamento.");
 
         success = await deleteTasks();
         if(!success) {
-            showErrorMsg("Unable to delete old tasks.");
+            showErrorMsg("Não foi possível deletar tarefas antigas.");
         }
     }
 
     if(success) {
-        showInfoMsg("🗑️ Successfully deleted old tasks.");
+        showInfoMsg("🗑️ Tarefas antigas deletadas com sucesso.");
 
         success = await deleteSubroutines();
         if(!success) {
-            showErrorMsg("Unable to delete old subroutines.");
+            showErrorMsg("Não foi possível deletar subrotinas.");
         }
     }
 
     if(success) {
-        showInfoMsg("🗑️ Successfully deleted old subroutines.");
+        showInfoMsg("🗑️ Subrotinas deletadas com sucesso.");
 
         let taskNumber = 0;
         let subtaskNumber = 0;
 
-        showInfoMsg("🐌 Downloading new program...");
+        showInfoMsg("🐌 Baixando o novo programa...");
 
         if(parsedRcxi.chunks.length == parsedRcxi.chunkCount) {
             const numChunks = parsedRcxi.chunkCount;
-            showDebugMsg("Found " + numChunks + " chunk(s) in RCX image file.");
+            showDebugMsg("Encontrado " + numChunks + " pedaço(s) no arquivo de imagem do RCX.");
             for(let chunkIdx = 0; chunkIdx < numChunks; chunkIdx++) {
                 if(parsedRcxi.chunks[chunkIdx].chunkLength  == parsedRcxi.chunks[chunkIdx].chunkData.length) {
                     const chunkLength = parsedRcxi.chunks[chunkIdx].chunkLength;
                     const chunkType = parsedRcxi.chunks[chunkIdx].chunkType;
                     const chunkData = parsedRcxi.chunks[chunkIdx].chunkData;
                     if(0 == chunkType) {
-                        showDebugMsg("Chunk #" + chunkIdx + " is a task (#" + taskNumber + ") and " + chunkLength + " bytes long.");
+                        showDebugMsg("Pedaço #" + chunkIdx + " é uma tarefa (#" + taskNumber + ") e tamanho de " + chunkLength + " bytes.");
 
                         success = await downloadTask(taskNumber, chunkData);
                         if(success) {
-                            showInfoMsg("⏳ Successfully downloaded task (#" + taskNumber + ").");
+                            showInfoMsg("⏳ tarefa (#" + taskNumber + ") baixada com sucesso.");
                         }
                         else {
-                            showErrorMsg("Failed to download new task.");
+                            showErrorMsg("Falaha ao baixar a nova tarefa.");
                         }
                         taskNumber++;
                     }
                     else {
-                        showErrorMsg("Unsupported chunk type #" + chunkType + ". Kindly ask developers to add support.");
+                        showErrorMsg("Tipo de bloco não suportado #" + chunkType + ". Por favor, peça aos desenvolvedores que adicionem suporte.");
                         debugger;
                     }
                 }
@@ -505,7 +505,7 @@ function extractReply(rxMsg, quiet=false) {
     if(rxMsg.length < 2) {
         // expect at least 2 bytes for the checksum
         if(!quiet) {
-            console.log("[XTR] message too short: " + rxMsg.length);
+            console.log("[XTR] mensagem muito curta: " + rxMsg.length);
         }
         return {valid: false, payload: rxMsg};
     }
@@ -513,7 +513,7 @@ function extractReply(rxMsg, quiet=false) {
     if(rxMsg.length % 2 != 0) {
         // expect multiple of 2 bytes
         if(!quiet) {
-            console.log("[XTR] remaining length w/o preamble not a multiple of 2: " + rxMsg.length);
+            console.log("[XTR] comprimento restante sem preâmbulo, não múltiplo de 2: " + rxMsg.length);
         }
         return {valid: false, payload: rxMsg};
     }
@@ -552,7 +552,7 @@ async function downloadTask(taskNumber, taskData) {
     const taskSize = taskData.length;
     const beganTaskDownload = await beginTaskDownload(taskNumber, 0, taskSize);
     if(!beganTaskDownload) {
-        console.log("Unable to begin task download for task #" + taskNumber);
+        console.log("Não é possível iniciar o download da tarefa #" + taskNumber);
         return false;
     }
 
@@ -560,7 +560,7 @@ async function downloadTask(taskNumber, taskData) {
     const blockSize = 20;
     const extendedTimeout = false; // timeout depends on block size (data transfer duration)
     const numBlocks = Math.ceil(taskSize/blockSize);
-    console.log("Calculated " + numBlocks + " blocks to download.");
+    console.log("Calculado " + numBlocks + " blocos para baixar.");
     let downloadSuccess = true;
     let downloadedBlock = false;
     for(let blockCount = 1; blockCount < numBlocks; blockCount++) {
@@ -568,7 +568,7 @@ async function downloadTask(taskNumber, taskData) {
         downloadedBlock = await downloadBlock(blockCount, blockData, extendedTimeout);
         if(!downloadedBlock) {
             downloadSuccess = false;
-            console.log("Download error during block #" + blockCount);
+            console.log("Erro ao baixar o bloco #" + blockCount);
             break;
         }
     }
@@ -580,7 +580,7 @@ async function downloadTask(taskNumber, taskData) {
         downloadedBlock = await downloadBlock(0, blockData);
         if(!downloadedBlock) {
             downloadSuccess = false;
-            console.log("Download error during last block.");
+            console.log("Erro de download durante o último bloco.");
         }
     }
 
@@ -602,30 +602,30 @@ async function downloadBlock(blockCount, blockData, extendedTimeout = false) {
     let timeout = 300;
     if(extendedTimeout) {
         timeout = 1800;
-        console.log("Extended timeout to " + timeout);
+        console.log("Tempo de espera estendido para " + timeout);
     }
     let {success, payload} = await transceiveCommand(OpCode.ContinueDownload, params);
 
     if(success) {
         switch (payload[1]) {
             case DownloadStatus.Okay:
-                console.log("Successfully downloaded block #" + blockCount + ".");
+                console.log("Bloco baixado com sucesso #" + blockCount + ".");
                 break;
             case DownloadStatus.BlockChecksumError:
                 success = false;
-                console.log('Block checksum error in block #' + blockCount);
+                console.log('Erro de soma de verificação do bloco #' + blockCount);
                 break;
             case DownloadStatus.FwChecksumError:
                 success = false;
-                console.log('Firmware checksum error in block #' + blockCount);
+                console.log('Erro de soma de verificação de firmware no bloco #' + blockCount);
                 break;
             case DownloadStatus.DownloadNotActive:
                 success = false;
-                console.log('Error in block #' + blockCount + ': download not active!');
+                console.log('Erro no bloco #' + blockCount + ': download não ativo!');
                 break;
             default:
                 success = false;
-                console.log('Unexpected error: ' + array2hex([payload[1]]));
+                console.log('Erro inesperado: ' + array2hex([payload[1]]));
         }
     }
 
@@ -654,7 +654,7 @@ async function getVersions() {
     let fwVersion = "unknown";
 
     if(success && (payload.length == 9)) {
-        console.log("Retrieved RCX firmware versions.");
+        console.log("Versões do firmware RCX recuperadas.");
 
         // RAM version seems to be BCD encoded:
         // "0x00 0x03 0x03 0x02" matches RCX firmware version "3.32"
@@ -666,7 +666,7 @@ async function getVersions() {
         fwVersion = ramMajor + "." + ramMinor;
     }
     else {
-        console.log("Unable to read RCX firmware versions.");
+        console.log("Não foi possível ler versões do firmware do RCX.");
     }
 
     return {success: success, romVersion: romVersion, fwVersion: fwVersion};
@@ -680,13 +680,13 @@ async function ping(playSound = false) {
     let {success, payload} = await transceiveCommand(OpCode.Ping);
 
     if(success) {
-        console.log("Programmable brick is alive.");
+        console.log("O bloco programável está respondendo.");
         if(playSound) {
             await playSystemSound(SystemSound.FastSweepUp);
         }
     }
     else {
-        console.log("Programmable brick is not alive.");
+        console.log("O bloco programável não está respondendo.");
         if(playSound) {
             await playSystemSound(SystemSound.Error);
         }
@@ -707,10 +707,10 @@ async function getBatteryLevel() {
     if(success && (payload.length == 3)) {
         // convert from two bytes to percentage, assume values in range 0..100
         level = to16bit(payload.slice(1), false) / 100;
-        console.log("Raw battery level:", array2hex(payload.slice(1)));
+        console.log("Nível bruto da bateria:", array2hex(payload.slice(1)));
     }
     else {
-        console.log("Unable to read battery level.");
+        console.log("Não é possível ler o nível da bateria.");
     }
 
     return level;
@@ -724,10 +724,10 @@ async function selectProgram(programNumber) {
     const {success, payload} = await transceiveCommand(OpCode.SelectProgram, [programNumber]);
 
     if(success) {
-        console.log("Selected program #" + programNumber + ".");
+        console.log("Programa selecionado #" + programNumber + ".");
     }
     else {
-        console.log("Unable to select program #" + programNumber + ".");
+        console.log("Não é possível selecionar o programa #" + programNumber + ".");
     }
 
     return success;
@@ -737,10 +737,10 @@ async function stopRunningTasks() {
     const {success, payload} = await transceiveCommand(OpCode.StopAllTasks);
 
     if(success) {
-        console.log("Stopped running tasks in the currently selected program and released acquired access resources.");
+        console.log("Interrompida a execução de tarefas no programa selecionado atualmente e liberado os recursos de acesso adquiridos.");
     }
     else {
-        console.log("Unable to stop running tasks in the currently selected program.");
+        console.log("Não é possível parar de executar tarefas no programa selecionado no momento.");
     }
 
     return success;
@@ -750,10 +750,10 @@ async function deleteTasks() {
     const {success, payload} = await transceiveCommand(OpCode.DeleteAllTasks);
 
     if(success) {
-        console.log("Deleted all tasks in the currently selected program.");
+        console.log("Excluída todas as tarefas no programa atualmente selecionado.");
     }
     else {
-        console.log("Unable to delete all tasks in the currently selected program.");
+        console.log("Não é possível deletar todas as tarefas no programa atualmente selecionado.");
     }
 
     return success;
@@ -763,10 +763,10 @@ async function deleteSubroutines() {
     const {success, payload} = await transceiveCommand(OpCode.DeleteAllSubs);
 
     if(success) {
-        console.log("Deleted all subroutines in the currently selected program.");
+        console.log("Excluí todas as sub-rotinas do programa atualmente selecionado.");
     }
     else {
-        console.log("Unable to delete all subroutines in the currently selected program.");
+        console.log("Não é possível deletar todas as sub-rotinas no programa atualmente selecionado.");
     }
 
     return success;
@@ -784,23 +784,23 @@ async function beginTaskDownload(taskNumber, subCallList, taskSize) {
     if(success) {
         switch (payload[1]) {
             case DownloadStatus.Okay:
-                console.log("Beginning task download...");
+                console.log("Inciando download da tarefa...");
                 break;
             case DownloadStatus.NotEnoughMemory:
                 success = false;
-                console.log('Not enough memory.');
+                console.log('Memória insuficiente.');
                 break;
             case DownloadStatus.IllegalNumber:
                 success = false;
-                console.log('Illegal task number.');
+                console.log('Número da tarefa incorreto.');
                 break;
             default:
                 success = false;
-                console.log('Unexpected error: ' + array2hex([payload[1]]));
+                console.log('Erro inesperado: ' + array2hex([payload[1]]));
         }
     }
     else {
-        console.log("Unable to begin task download.");
+        console.log("Não é possível iniciar o download da tarefa.");
     }
 
     return success;

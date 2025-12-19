@@ -25,34 +25,34 @@ Blockly.defineBlocksWithJsonArray([
     // Block for playing a sound
     {
       "type": "sound_playsound",
-      "message0": "play sound %1",
+      "message0": "tocar som %1",
       "args0": [
         {
           "type": "field_dropdown",
           "name": "SOUND",
           "options": [
             [
-              "click",
+              "clique",
               "SOUND_CLICK"
             ],
             [
-              "double beep",
+              "bip duplo",
               "SOUND_DOUBLE_BEEP"
             ],
             [
-              "down",
+              "baixo",
               "SOUND_DOWN"
             ],
             [
-              "up",
+              "alto",
               "SOUND_UP"
             ],
             [
-              "low beep",
+              "bip baixo",
               "SOUND_LOW_BEEP"
             ],
             [
-              "fast up",
+              "rápido alto",
               "SOUND_FAST_UP"
             ]
           ]
@@ -68,7 +68,7 @@ Blockly.defineBlocksWithJsonArray([
     // Block for playing a tone
     {
       "type": "sound_playtone",
-      "message0": "play tone with frequency %1 Hz for %2 seconds",
+      "message0": "tocar tom com a frequência %1 Hz por %2 segundos",
       "args0": [
         {
           "type": "field_number",
