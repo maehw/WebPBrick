@@ -1,30 +1,30 @@
 <!DOCTYPE html>
-<html lang="en">
+<html lang="pt">
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>RCX programmable brick web IDE (prototype)</title>
+  <title>IDE web programável RCX (protótipo)</title>
   <link rel="stylesheet" href="styles.css">
 </head>
 <body>
   <div class="toolbar">
     <div class="left-buttons">
-      <button id="compileBtn">🧱 Build</button>
+      <button id="compileBtn">🧱 Construir</button>
       <!-- <button id="usbConnectBtn">🔗 USB Connect</button> -->
-      <button id="serialConnectBtn">🔗 Serial Connect</button>
-      <button id="downloadBtn">⬇️ Download program to RCX</button>
-      <a href="../nqc/blocknqc/index.html" target="_blank">↗️🧱 Try BlockNQC</a>
+      <button id="serialConnectBtn">🔗 Conectar torre serial</button>
+      <button id="downloadBtn">⬇️ Baixar programa para o RCX</button>
+      <a href="../nqc/blocknqc/index.html" target="_blank">↗️🧱 Usar BlockNQC</a>
     </div>
-    <button id="clearLogBtn">🧹 Clear log</button>
+    <button id="clearLogBtn">🧹 Limpar registro</button>
   </div>
   <div id="wasm-not-supported" class="not-supported">
-    Sorry, <b>WebAssembly (WASM)</b> is not supported by this browser. You won't be able to compile your NQC code using the WebNQC compiler. Details: <a href="https://caniuse.com/wasm">https://caniuse.com/wasm</a>
+    Desculpe, <b>WebAssembly (WASM)</b> não é suportado por este navegador. Você não poderá compilar seu código NQC usando o compilador WebNQC. Detalhes: <a href="https://caniuse.com/wasm">https://caniuse.com/wasm</a>
   </div>
   <div id="webserial-not-supported" class="not-supported">
-    Sorry, <b>Web Serial</b> is not supported by this browser. You won't be able to use a LEGO® serial tower. Details: <a href="https://caniuse.com/web-serial">https://caniuse.com/web-serial</a>
+    Desculpe, <b>Web Serial</b> não é suportado por este navegador. Você não vai conseguir usar uma torre serial LEGO®. Detalhes: <a href="https://caniuse.com/web-serial">https://caniuse.com/web-serial</a>
   </div>
   <div id="webusb-not-supported" class="not-supported">
-    Sorry, <b>WebUSB</b> is not supported by this browser. You won't be able to use a LEGO® USB tower. Details: <a href="https://caniuse.com/webusb">https://caniuse.com/webusb</a>
+    Desculpe, <b>WebUSB</b> não é suportado por este navegador. Você não vai conseguir usar uma torre USB LEGO®. Detalhes: <a href="https://caniuse.com/webusb">https://caniuse.com/webusb</a>
   </div>
   <div class="split">
     <div class="code-wrapper">
@@ -34,9 +34,9 @@
     <textarea id="logArea" class="log" readonly></textarea>
   </div>
   <footer>
-  <p>LEGO® is a trademark of the LEGO Group of companies which does not sponsor, authorize or endorse this site.</p>
+  <p>LEGO® é uma marca registrada do Grupo de Empresas LEGO, que não patrocina, autoriza nem endossa este site.</p>
   <div class="footer-links">
-    <a href="https://github.com/maehw/WebPBrick/discussions">HELP?!</a> | <a href="https://github.com/maehw/WebPBrick">Source code</a> | <a href="https://github.com/maehw/WebPBrick/blob/main/CHANGELOG.md">Version: 0.2.0</a>
+    <a href="https://github.com/maehw/WebPBrick/discussions">Ajuda?!</a> | <a href="https://github.com/maehw/WebPBrick">Código fonte</a> | <a href="https://github.com/maehw/WebPBrick/blob/main/CHANGELOG.md">Versão: 0.2.0</a>
   </div>
   </footer>
   <script src="main.js"></script>

@@ -115,23 +115,23 @@ Blockly.defineBlocksWithJsonArray([
           "name": "MODE",
           "options": [
             [
-              "cru",
+              "bruto",
               "SENSOR_MODE_RAW"
             ],
             [
-              "bool",
+              "lógico(boolean)",
               "SENSOR_MODE_BOOL"
             ],
             [
-              "edge",
+              "borda",
               "SENSOR_MODE_EDGE"
             ],
             [
-              "pulse",
+              "pulso",
               "SENSOR_MODE_PULSE"
             ],
             [
-              "percent",
+              "porcentagem",
               "SENSOR_MODE_PERCENT"
             ],
             [
@@ -139,11 +139,11 @@ Blockly.defineBlocksWithJsonArray([
               "SENSOR_MODE_CELSIUS"
             ],
             [
-              "Fahrenheit (F)",
+              "Fahrenheit (°F)",
               "SENSOR_MODE_FAHRENHEIT"
             ],
             [
-              "rotation",
+              "rotação",
               "SENSOR_MODE_ROTATION"
             ]
           ]
@@ -159,7 +159,7 @@ Blockly.defineBlocksWithJsonArray([
     // Block for sensor type
     {
       "type": "sensor_type",
-      "message0": "set sensor %1 type to %2 sensor",
+      "message0": "defina o tipo do sensor %1 para %2 sensor",
       "args0": [
         {
           "type": "field_dropdown",
@@ -184,19 +184,19 @@ Blockly.defineBlocksWithJsonArray([
           "name": "TYPE",
           "options": [
             [
-              "touch",
+              "toque",
               "SENSOR_TYPE_TOUCH"
             ],
             [
-              "light",
+              "luminosidade",
               "SENSOR_TYPE_LIGHT"
             ],
             [
-              "temperature",
+              "temperatura",
               "SENSOR_TYPE_TEMPERATURE"
             ],
             [
-              "rotation",
+              "rotação",
               "SENSOR_TYPE_ROTATION"
             ]
           ]
@@ -212,7 +212,7 @@ Blockly.defineBlocksWithJsonArray([
     // Block for sensor clear
     {
       "type": "sensor_clear",
-      "message0": "clear sensor %1",
+      "message0": "limpar sensor %1",
       "args0": [
         {
           "type": "field_dropdown",
@@ -243,7 +243,7 @@ Blockly.defineBlocksWithJsonArray([
     // Block for sensor value
     {
       "type": "sensor_read",
-      "message0": "sensor %1 value",
+      "message0": "valor do sensor %1",
       "args0": [
         {
           "type": "field_dropdown",
@@ -273,7 +273,7 @@ Blockly.defineBlocksWithJsonArray([
     // Block for raw sensor value
     {
       "type": "sensor_readraw",
-      "message0": "sensor %1 raw value",
+      "message0": "valor bruto do sensor %1",
       "args0": [
         {
           "type": "field_dropdown",

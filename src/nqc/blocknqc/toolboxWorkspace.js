@@ -24,7 +24,7 @@ const toolbox = {
   'contents': [
     {
       kind: 'category',
-      name: 'Logic',
+      name: 'Lógica',
       categorystyle: 'logic_category',
       contents: [
         {
@@ -67,7 +67,7 @@ const toolbox = {
     }, /* end of Logic category */
     {
       kind: 'category',
-      name: 'Tasks',
+      name: 'Tarefas',
       contents: [
         {
           type: 'task_definition',
@@ -89,7 +89,7 @@ const toolbox = {
     }, /* end of Tasks category */
     {
       kind: 'category',
-      name: 'Loops & Control',
+      name: 'Repetições(loop) e controle',
       categorystyle: 'loop_category',
       contents: [
         {
@@ -161,7 +161,7 @@ const toolbox = {
     }, /* end of Loops & Control category */
     {
       kind: 'category',
-      name: 'Math',
+      name: 'Matemática',
       categorystyle: 'math_category',
       contents: [
         {
@@ -267,13 +267,13 @@ const toolbox = {
     }, /* end of Math category */
     {
       kind: 'category',
-      name: 'Variables',
+      name: 'Variáveis',
       custom: 'VARIABLE',
       categorystyle: 'variable_category',
     }, /* end of Variables category */
     {
       kind: 'category',
-      name: 'Outputs',
+      name: 'Saídas',
       /* custom: 'MOTION', -- only required for 'dynamic categories', seems to require callbacks */
       contents: [
         {
@@ -318,7 +318,7 @@ const toolbox = {
     }, /* end of Outputs category */
     {
       kind: 'category',
-      name: 'Sensors',
+      name: 'Sensores',
       /* custom: 'SENSORS', -- only required for 'dynamic categories', seems to require callbacks */
       contents: [
         {
@@ -349,7 +349,7 @@ const toolbox = {
     }, /* end of Sensors category */
     {
       kind: 'category',
-      name: 'Sound',
+      name: 'Sons',
       contents: [
 
         {
@@ -364,7 +364,7 @@ const toolbox = {
     }, /* end of Sound category */
     {
       kind: 'category',
-      name: 'IR Messages',
+      name: 'Mensagens Infra Vermelho',
       contents: [
         {
           type: 'infrared_txpower',
@@ -396,7 +396,7 @@ const toolbox = {
     }, /* end of IR Messages category */
     {
       kind: 'category',
-      name: 'Time & Data',
+      name: 'Hora & Data',
       contents: [
         {
           type: 'display_mode',

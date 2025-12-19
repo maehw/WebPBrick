@@ -52,7 +52,7 @@ document.addEventListener('DOMContentLoaded', () => {
   if(!('serial' in navigator)) {
     // show hidden error banner, deactivate connect button and log to console
     webSerialNotSupported.style.display = "block";
-    console.log("Web Serial not supported.");
+    console.log("Web Serial não suportado.");
     disableSerialConnectBtn();
   }
 
@@ -60,7 +60,7 @@ document.addEventListener('DOMContentLoaded', () => {
   if(!wasmSupported) {
     // show hidden error banner, deactivate connect button and log to console
     wasmNotSupported.style.display = "block";
-    console.log("WebAssembly (WASM) not supported.");
+    console.log("WebAssembly (WASM) não suportado.");
     disableCompileBtn();
   }
 
@@ -185,7 +185,7 @@ async function clickSerialConnect() {
 
     if(success) {
       enableDownloadBtn();
-      serialConnectBtn.innerHTML = '🔗 Serial Disconnect';
+      serialConnectBtn.innerHTML = '🔗 Desconetar torre serial';
       serialConnected = true;
     }
   } else {
@@ -193,7 +193,7 @@ async function clickSerialConnect() {
 
     if(success) {
       disableDownloadBtn();
-      serialConnectBtn.innerHTML = '🔗 Serial Connect';
+      serialConnectBtn.innerHTML = '🔗 Conectar torre serial';
       serialConnected = false;
     }
   }
@@ -231,33 +231,33 @@ async function clickFwDownload() {
 // Handler for click on program download button
 async function clickProgramDownload() {
     if(rcxBinary === null) {
-        showErrorMsg("No program to download. Need to build the NQC code first!");
+        showErrorMsg("Nenhum programa para ser baixado. Você precisa construir o código em NQC primeiro!");
     }
     else {
-        showInfoMsg("Program download requested.");
+        showInfoMsg("Solicitação para baixar o programa recebida..");
 
         // show an info message if the code has been touched after last build in the meantime
         if(codeModified) {
-          showInfoMsg("❗ Code has been modified after last build. Consider re-building the current version of the code!");
+          showInfoMsg("❗ O código foi modificado desde a última vez. Considere reconstruir a versão atual do código!");
         }
 
         const programNumber = 0; // TODO: make program slot selectable
         let success = await downloadProgram(programNumber, rcxBinary);
         if(success) {
-            showInfoMsg("️✅ Download of program succeeded! 🎉 " +
-                "Press the green 'Run' button 🟢▶️ on the RCX to start execution of the program!");
+            showInfoMsg("️✅ Programa baixado com sucesso! 🎉 " +
+                "Precione o botão verde 'Run' 🟢▶️ no RCX para inicar a execução do programa!");
 
             success = await playSystemSound(SystemSound.FastSweepUp);
 
             if(success) {
-                showInfoMsg("🎵 Played system sound.");
+                showInfoMsg("🎵 Tocado som do sistema.");
             }
             else {
-                showErrorMsg("Unable to play system sound.");
+                showErrorMsg("Não foi possível tocar o som do sistema.");
             }
         }
         else {
-            showErrorMsg("Download of program may have failed.");
+            showErrorMsg("O download do programa pode ter falhado.");
         }
     }
 }

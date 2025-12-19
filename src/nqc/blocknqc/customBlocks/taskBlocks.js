@@ -25,7 +25,7 @@ Blockly.defineBlocksWithJsonArray([
     // Block for the definition of the main task
     {
       "type": "task_main",
-      "message0": "task main %1 %2",
+      "message0": "tarefa principal %1 %2",
       "args0": [
         {
           "type": "input_dummy"
@@ -43,7 +43,7 @@ Blockly.defineBlocksWithJsonArray([
     // Block for a task definition
     {
       "type": "task_definition",
-      "message0": "task %1 %2 %3",
+      "message0": "tarefa %1 %2 %3",
       "args0": [
         {
           "type": "field_input",
@@ -66,7 +66,7 @@ Blockly.defineBlocksWithJsonArray([
     // Block for starting a task
     {
       "type": "task_start",
-      "message0": "start task %1",
+      "message0": "iniciar tarefa %1",
       "args0": [
         {
           "type": "field_input",
@@ -84,7 +84,7 @@ Blockly.defineBlocksWithJsonArray([
     // Block for stopping a task
     {
       "type": "task_stop",
-      "message0": "stop task %1",
+      "message0": "parar tarefa %1",
       "args0": [
         {
           "type": "field_input",
@@ -103,7 +103,7 @@ Blockly.defineBlocksWithJsonArray([
     // Block for stopping all tasks
     {
       "type": "task_stopall",
-      "message0": "stop all tasks",
+      "message0": "parar todas tarefas",
       "inputsInline": true,
       "previousStatement": null,
       "colour": tasksCategoryCol,

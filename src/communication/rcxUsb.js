@@ -169,7 +169,7 @@ async function usbConnect() {
   let success = true;
 
   if((usbDevice.manufacturerName == "LEGO Group") &&
-     (usbDevice.productName == "LEGO USB Tower") &&
+     (usbDevice.productName == "LEGO Torre USB") &&
      (usbDevice.deviceClass == 255) &&
      (usbDevice.configurations.length == 4)) {
 
@@ -178,37 +178,37 @@ async function usbConnect() {
       success = usbDevice.opened;
 
       if(!success) {
-        showErrorMsg("Unable to open USB device.");
+        showErrorMsg("Não foi possível se conectar ao dispositivo USB.");
       }
   }
   else {
-    showErrorMsg("Unexpected USB descriptor values.");
+    showErrorMsg("Valor inesperado de descritor USB recebido.");
     success = false;
   }
 
   if(success)
   {
-      showInfoMsg("Opened USB device successfully.");
+      showInfoMsg("Dispositivo USB conectado com sucesso.");
 
       version = await getUsbTowerFwVersion();
 
       if(version != "") {
-        showInfoMsg("🔗 USB tower firmware version is '" + version + "'.");
+        showInfoMsg("🔗 Versão do firmware da torre USB é '" + version + "'.");
 
         success = await resetUsbTower();
 
         if(!success) {
-            showErrorMsg("Unable to reset USB tower.");
+            showErrorMsg("Não foi possível reiniciar a torre USB.");
         }
       }
       else {
-        showErrorMsg("Unable to read firmware version from USB tower.");
+        showErrorMsg("Não foi possível ler a versão do firmware da torre USB.");
         success = false;
       }
   }
 
     if(success) {
-        showInfoMsg("🔗 Performed USB tower reset. Communication with USB tower working!");
+        showInfoMsg("🔗 A torre USB foi reiniciada. Comunicação com a torre USB funcionando!");
 
         // The Tower has four USB configurations:
         // 1. Low power (default)
@@ -221,53 +221,53 @@ async function usbConnect() {
         success = (usbDevice.configuration !== null) && (usbDevice.configuration.configurationValue == USB_DEV_CONFIG_ID);
 
         if(!success) {
-            showErrorMsg("Unable to select configuration.");
+            showErrorMsg("Não foi possível selecionar a configuração.");
         }
     }
 
     if(success) {
-        showInfoMsg("🔗 Selected USB device configuration #" + USB_DEV_CONFIG_ID);
+        showInfoMsg("🔗 Selecionado a configuração do dispositivo USB #" + USB_DEV_CONFIG_ID);
 
         await usbDevice.claimInterface(USB_INTERFACE_ID);
         success = ((usbDevice.configuration.interfaces[USB_INTERFACE_ID].interfaceNumber == USB_INTERFACE_ID) &&
                    (usbDevice.configuration.interfaces[USB_INTERFACE_ID].claimed));
 
         if(!success) {
-            showErrorMsg("Unable to claim interface.");
+            showErrorMsg("Não foi possível obter esta interface.");
         }
     }
 
     // It's possible to set speeds for RX and TX independently, but we go for 2400 baud in both directions.
     const rxTxSpeed = SPEED_COMM_BAUD_2400;
     if(success) {
-        showInfoMsg("🔗 Selected USB interface #" + USB_INTERFACE_ID);
+        showInfoMsg("🔗 Interface USB selecionada #" + USB_INTERFACE_ID);
 
         success = await setUsbTowerTxSpeed(rxTxSpeed);
         if(!success) {
-            showErrorMsg("Unable to set TX speed.");
+            showErrorMsg("Não foi possível definir a velocidade TX.");
         }
     }
 
     if(success) {
-        showInfoMsg("🔗 Set TX speed.");
+        showInfoMsg("🔗 Definir velocidade TX.");
 
         success = await setUsbTowerRxSpeed(rxTxSpeed);
         if(!success) {
-            showErrorMsg("Unable to set RX speed.");
+            showErrorMsg("Não foi possível definir a velocidade RX.");
         }
     }
 
     if(success) {
-        showInfoMsg("🔗 Set RX speed.");
+        showInfoMsg("🔗 Definir velocidade RX.");
 
         usbTxEndpoint = usbDevice.configuration.interfaces[USB_INTERFACE_ID].alternate.endpoints.find(obj => obj.direction === 'out').endpointNumber;
         usbRxEndpoint = usbDevice.configuration.interfaces[USB_INTERFACE_ID].alternate.endpoints.find(obj => obj.direction === 'in').endpointNumber;
-        showInfoMsg("🔗 TX endpoint is #" + usbTxEndpoint + ", RX endpoint is #" + usbRxEndpoint);
+        showInfoMsg("🔗 TX ponto final é #" + usbTxEndpoint + ", RX ponto final é #" + usbRxEndpoint);
 
         success = await flushUsbTowerBuffers(true, true);
 
         if(!success) {
-            showErrorMsg("Unable to flush USB tower's buffers.");
+            showErrorMsg("Não é possível esvaziar os buffers da torre USB.");
         }
         else {
             success = await ping();
@@ -275,25 +275,25 @@ async function usbConnect() {
     }
 
     if(!success) {
-        showErrorMsg("No communication with RCX possible.\n" +
-                     "RCX needs to be switched on and placed close to the IR tower and also in line of sight.\n" +
-                     "Please try again.");
+        showErrorMsg("Nenhuma comunicação possível com o RCX.\n" +
+                     "O RCX precisa ser ligado e colocado próximo à torre Infra Vermelho e também precisa estar na linha de visão.\n" +
+                     "Por favor tente novamente.");
     }
 
     if(success) {
-        showInfoMsg("🔗 Communication working, RCX is alive!");
+        showInfoMsg("🔗 Comunicação funcionando, RCX está respondendo!");
 
         versionInfo = await getVersions();
         if(!versionInfo.success) {
-            showErrorMsg("Failed to retrieve ROM and firmware versions.");
+            showErrorMsg("Não foi possível obter a versão da ROM e firmware.");
             success = false;
         }
     }
 
     if(success) {
-        showInfoMsg("ℹ️ ROM version: " + versionInfo.romVersion + ", Firmware version: " + versionInfo.fwVersion);
+        showInfoMsg("ℹ️ versão da ROM: " + versionInfo.romVersion + ", versão do Firmware: " + versionInfo.fwVersion);
         if(versionInfo.fwVersion == '0.0') {
-            showErrorMsg("Firmware version '0.0' indicates that currently no firmware is loaded into RAM.");
+            showErrorMsg("A versão de firmware '0.0' indica que atualmente nenhum firmware está carregado na memória RAM.");
             success = false;
         }
     }
@@ -375,10 +375,10 @@ async function resetUsbTower() {
     if(size == 4) {
       const errCode = versionReply[2];
       if(errCode == 0) {
-        console.log("Performed reset.");
+        console.log("reinicio realizado.");
       }
       else {
-        console.log("Error code: " + errCode);
+        console.log("código de erro: " + errCode);
         success = false;
       }
     }
@@ -411,10 +411,10 @@ async function setUsbTowerTxSpeed(speed) {
         const value = reply[3];
         const speed = to16bit(reply, false, 4);
         success = ((value == 0) && (speed == SPEED_COMM_BAUD_2400));
-        console.log("Set TX speed.");
+        console.log("Definir velocidade TX.");
       }
       else {
-        console.log("Error code: " + errorCodeToString(errCode));
+        console.log("Código de erro: " + errorCodeToString(errCode));
         success = false;
       }
     }
@@ -447,10 +447,10 @@ async function setUsbTowerRxSpeed(speed) {
         const value = reply[3];
         const speed = to16bit(reply, false, 4);
         success = ((value == 0) && (speed == SPEED_COMM_BAUD_2400));
-        console.log("Set RX speed.");
+        console.log("Definir velocidade RX.");
       }
       else {
-        console.log("Error code: " + errorCodeToString(errCode));
+        console.log("Código de erro: " + errorCodeToString(errCode));
         success = false;
       }
     }
@@ -483,14 +483,14 @@ async function isTxReady() {
         const txState = reply[4];
         success = (txState == 0x01);
         if(success) {
-          console.log("TX is ready.");
+          console.log("TX está pronto.");
         }
         else {
-          console.log("TX is busy.");
+          console.log("TX está ocupado.");
         }
       }
       else {
-        console.log("Error code: " + errorCodeToString(errCode));
+        console.log("Código de erro: " + errorCodeToString(errCode));
         success = false;
       }
     }
@@ -529,10 +529,10 @@ async function flushUsbTowerBuffers(txBuffer = true, rxBuffer = true) {
       const errCode = reply[2];
       if(errCode == 0) {
         const flushedBuffers = reply[3];
-        console.log("Flushed buffers: " + array2hex([flushedBuffers]));
+        console.log("Limpado os buffers: " + array2hex([flushedBuffers]));
       }
       else {
-        console.log("Error code: " + errorCodeToString(errCode));
+        console.log("Código de erro: " + errorCodeToString(errCode));
         success = false;
       }
     }
@@ -563,7 +563,7 @@ async function transceiveCommand(opcode, params = new Uint8Array(), timeout = 50
     const txMsg = encodeCommand(opcode, params);
 
     if(txMsg.length == 0) {
-        console.log("[TXM] encoding error, wrong number of parameters");
+        console.log("[TXM] erro de codificação, número errado de parâmetros");
         return {success: false, payload: null};
     }
     if(txMsg.length < preamble.length) {
@@ -573,7 +573,7 @@ async function transceiveCommand(opcode, params = new Uint8Array(), timeout = 50
     success = await isTxReady();
 
     if(!success) {
-        showErrorMsg("Unable to get TX state or TX not ready.");
+        showErrorMsg("Não consigo colocar o estado do TX ou o TX não está pronto.");
     }
     else {
         //await flushUsbTowerBuffers(false, true);
@@ -686,26 +686,26 @@ function array2hex(arrayBuffer) {
 // Handler for click on firmware download button
 async function clickFwDownload() {
     // Open a dialog first to let the user confirm the download before starting it
-    const confirmedFwDownload = window.confirm("Firmware download is quite slow and will take several minutes. " +
-        "Firmware download may fail. It may render your RCX (temporarily) unusable." +
-        "\n\nI know what I am doing and want to continue.");
+    const confirmedFwDownload = window.confirm("O download do firmware é bem lento e leva vários minutos. " +
+        "O download do firmware pode falhar. Você precisará reinstalar o firmware caso isto aconteça." +
+        "\n\nEu sei o que estou fazendo e quero continuar.");
 
     if(confirmedFwDownload) {
-        console.log("Firmware download request confirmed.");
-        showInfoMsg("Firmware download request confirmed.");
+        console.log("Solicitação de download de firmware confirmada.");
+        showInfoMsg("Solicitação de download de firmware confirmada.");
 
         const success = await downloadFirmware();
         if(success) {
-            showInfoMsg("âœ… Firmware download complete. ðŸŽ‰");
+            showInfoMsg("âœ… Download do Firmware completo. ðŸŽ‰");
         }
         else {
-            showErrorMsg("Failed to download firmware. Make sure the RCX is switched on " +
-                "and in line of sight of the IR tower. Please retry!");
+            showErrorMsg("Falha ao baixar o firmware. Certifique-se de que o RCX está ligado " +
+                "e na linha de visão da torre infra vermelho. Por favor, tente novamente!");
         }
-        showInfoMsg("Please disconnect and re-connect!");
+        showInfoMsg("Por favor, desconecte e reconecte!");
     }
     else {
-        console.log("Firmware download request aborted.");
-        showInfoMsg("Firmware download request aborted.");
+        console.log("Solicitação de download de firmware abortada.");
+        showInfoMsg("Solicitação de download de firmware abortada.");
     }
 }
