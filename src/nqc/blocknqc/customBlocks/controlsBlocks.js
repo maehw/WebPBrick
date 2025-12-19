@@ -26,7 +26,7 @@ Blockly.defineBlocksWithJsonArray([
     // Block for waiting for a specific amount of time (in multiple of seconds)
     {
       "type": "controls_wait",
-      "message0": "wait for %1 seconds",
+      "message0": "esperar por %1 segundo(s)",
       "args0": [
         {
           "type": "input_value",
@@ -44,7 +44,7 @@ Blockly.defineBlocksWithJsonArray([
     // Block for waiting for a specific amount of time (in multiple of 1/100 seconds)
     {
       "type": "controls_waitfraction",
-      "message0": "wait for %1 × 1/100 seconds",
+      "message0": "esperar por %1 × 1/100 segundos",
       "args0": [
         {
           "type": "input_value",

@@ -25,7 +25,7 @@ Blockly.defineBlocksWithJsonArray([
     // Block for creating a random number
     {
       "type": "math_random_int0",
-      "message0": "random integer from 0 to %1",
+      "message0": "número inteiro aleatório de 0 a %1",
       "args0": [
         {
           "type": "field_number",
@@ -45,18 +45,18 @@ Blockly.defineBlocksWithJsonArray([
     // Block for creating a random number
     {
       "type": "math_abssign",
-      "message0": "%1 of %2",
+      "message0": "%1 de %2",
       "args0": [
         {
           "type": "field_dropdown",
           "name": "OP",
           "options": [
             [
-              "absolute value",
+              "valor absoluto",
               "abs"
             ],
             [
-              "sign of",
+              "sinal de",
               "sign"
             ],
           ]

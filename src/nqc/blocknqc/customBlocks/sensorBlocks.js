@@ -25,7 +25,7 @@ Blockly.defineBlocksWithJsonArray([
     // Block for sensor configuration
     {
       "type": "sensor_config",
-      "message0": "set sensor %1 configuration (type + mode) to %2",
+      "message0": "defina a configuração do sensor %1 (tipo + modo) para %2",
       "args0": [
         {
           "type": "field_dropdown",
@@ -50,31 +50,31 @@ Blockly.defineBlocksWithJsonArray([
           "name": "CONFIG",
           "options": [
             [
-              "touch",
+              "toque",
               "SENSOR_TOUCH"
             ],
             [
-              "light",
+              "luminosidade",
               "SENSOR_LIGHT"
             ],
             [
-              "rotation",
+              "rotação",
               "SENSOR_ROTATION"
             ],
             [
-              "temperature (°C)",
+              "temperatura (°C)",
               "SENSOR_CELSIUS"
             ],
             [
-              "temperature (F)",
+              "temperatura (°F)",
               "SENSOR_FAHRENHEIT"
             ],
             [
-              "pulse detection",
+              "detecção de pulso",
               "SENSOR_PULSE"
             ],
             [
-              "edge detection",
+              "detecção de beirada",
               "SENSOR_EDGE"
             ]
           ]
@@ -90,7 +90,7 @@ Blockly.defineBlocksWithJsonArray([
     // Block for sensor mode
     {
       "type": "sensor_setmode",
-      "message0": "set sensor %1 mode to %2",
+      "message0": "defina o modo do sensor %1 para %2",
       "args0": [
         {
           "type": "field_dropdown",
@@ -115,7 +115,7 @@ Blockly.defineBlocksWithJsonArray([
           "name": "MODE",
           "options": [
             [
-              "raw",
+              "cru",
               "SENSOR_MODE_RAW"
             ],
             [
