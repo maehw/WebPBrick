@@ -1,65 +1,69 @@
-# README
+# LEIA-ME
 
-This git repository provides the source codes for the **WebPBrick** project and hence the [webpbrick.com](http://webpbrick.com) website.
+Este repositório Git fornece os códigos-fonte do projeto **WebPBrick** e, consequentemente, do site [webpbrick.com](http://webpbrick.com).
 
+## Como usar o WebPBrick
 
-## WebPBrick How To
+1. Escreva o código NQC (ou use o BlockNQC para gerar o código)
+2. Compile seu código NQC (clique no botão "Compilar")
+3. Conecte-se ao bloco RCX programável amarelo usando uma torre infravermelha (clique no botão "Conectar Serial")
+4. Transfira seu programa compilado para o RCX (clique no botão "Transferir programa para o RCX")
 
-1. Write NQC code _(or use BlockNQC to generate the code)_
-2. Build your NQC code (click the "Build" button)
-3. Connect to the yellow programmable RCX brick using an infrared tower (click the "Serial Connect" button)
-4. Download your compiled program to the RCX (click the "Download program to RCX" button)
+![Ideal de Desenvolvimento Integrado do WebPBrick](./doc/webpbrick_ide.png)
 
-![WebPBrick IDE](./doc/webpbrick_ide.png)
+## BlockNQC do WebPBrick
 
-## WebPBrick's BlockNQC
-
-A web-based visual programming editor called BlockNQC can be used to generate NQC code. BlockNQC is based on Google's Blockly. For details, see BlockNQC's separate [README](./nqc/blocknqc/README.md) file.
+Um editor de programação visual baseado na web chamado BlockNQC pode ser usado para gerar código NQC. O BlockNQC é baseado no Blockly do Google. Para mais detalhes, consulte o arquivo [README](./nqc/blocknqc/README.md) separado do BlockNQC.
 
 ![BlockNQC](./doc/blocknqc.png)
 
-## Toolchain modules
+## Módulos da cadeia de ferramentas
 
-![Toolchain block diagram](./doc/toolchain.png)
+![Diagrama de blocos da cadeia de ferramentas](./doc/toolchain.png)
 
-WebPBrick's toolchain consists of several modules:
+A cadeia de ferramentas do WebPBrick consiste em vários módulos:
 
-* BlockNQC: Web-based visual programming editor called BlockNQC that can be used to generate NQC code (based on Google's Blockly).
-* WebNQC: The NQC compiler built as WebAssembly (WASM) for the web using emscripten.
-* RCX image parser written in Kaitai Struct and compiled to JavaScript to parse and split RCX image binary files so that they can be downloaded to the RCX in their bytecode chunks.
-* RCX communication libraries:
-  * Based on Web Serial API to be used with the LEGO IR Serial Tower and [DIY IR serial towers](https://github.com/maehw/DiyIrTower)
-  * Based on WebUSB API to be used with LEGO IR USB Tower
+* BlockNQC: Editor de programação visual baseado na web chamado BlockNQC, que pode ser usado para gerar código NQC (baseado no Blockly do Google).
 
-Those modules could be used independently.
+* WebNQC: O compilador NQC construído como WebAssembly (WASM) para a web usando o Emscripten.
 
-## Run
+* Analisador de imagens RCX escrito em Kaitai Struct e compilado para JavaScript para analisar e dividir arquivos binários de imagem RCX, de forma que possam ser baixados para o RCX em seus blocos de bytecode.
 
-Start a local webserver, e.g. using Python:
+* Bibliotecas de comunicação RCX:
+
+* Baseadas na API Web Serial para uso com a Torre Serial IR da LEGO e [torres seriais IR DIY](https://github.com/maehw/DiyIrTower)
+
+* Baseadas na API WebUSB para uso com a Torre USB IR da LEGO
+
+Esses módulos podem ser usados ​​independentemente.
+
+## Executar
+
+Inicie um servidor web local, por exemplo, usando Python:
 
 ```shell
 python3 -m http.server 8080
 ```
 
-Open your web browser and navigate to http://localhost:8080/src/ide/
+Abra seu navegador e acesse http://localhost:8080/src/ide/
 
+## Licenças
 
-## Licenses
+Este projeto é uma coleção de módulos e software de código aberto.
 
-This project is a collection of modules and open source software. 
+| Módulo | Licença |
 
-| Module                                                   | License                                                                     |
 |----------------------------------------------------------|-----------------------------------------------------------------------------|
-| NQC / WebNQC                                             | [Mozilla Public License 2.0](./nqc/webnqc/LICENSE.md)                       |
-| NQC example code by D. Baum and R. Zurcher               | [Freeware License](./nqc/examples/def-guide-to-lego-mindstorms/LICENSE.txt) |
-| Blockly (required for BlockNQC)                          | [Apache License 2.0](./nqc/blocknqc/blockly/LICENSE)                        |
-| all others WebPBrick modules (e.g. BlockNQC and the IDE) | [GNU GPLv3](./LICENSE)                                                      |
 
+| NQC / WebNQC | [Mozilla Public License 2.0](./nqc/webnqc/LICENSE.md) |
+| Código de exemplo NQC por D. Baum e R. Zurcher | [Licença Freeware](./nqc/examples/def-guide-to-lego-mindstorms/LICENSE.txt) |
+| Blockly (necessário para BlockNQC) | [Licença Apache 2.0](./nqc/blocknqc/blockly/LICENSE) |
+| todos os outros módulos WebPBrick (por exemplo, BlockNQC e a IDE) | [GNU GPLv3](./LICENSE) |
 
-## Released versions
+## Versões lançadas
 
-Please find the CHANGELOG [here](./CHANGELOG.md). Please also note that WebPbrick.com may not be up-to-date with this repository on GitHub.
+Consulte o CHANGELOG [aqui](./CHANGELOG.md). Observe também que o WebPbrick.com pode não estar atualizado com este repositório no GitHub.
 
-## Disclaimer
+## Aviso Legal
 
-LEGO® is a trademark of the LEGO Group of companies which does not sponsor, authorize or endorse this project.
+LEGO® é uma marca registrada do Grupo LEGO de empresas, que não patrocina, autoriza ou endossa este projeto.
