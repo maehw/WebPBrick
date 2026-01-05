@@ -3,6 +3,13 @@
 This git repository provides the source codes for the **WebPBrick** project and hence the [webpbrick.com](http://webpbrick.com) website.
 
 
+## Languages
+
+WebPBrick is currently available in English (_en_) and Brazilian Portuguese (_ptbr_).
+
+Huge thanks to GitHub user [Jonnhey](https://github.com/Jonnhey), who has not only translated the [README](./README_PTBR.md) file but also the screenshots, the whole IDE and all messages in the source code files!
+
+
 ## WebPBrick How To
 
 1. Write NQC code _(or use BlockNQC to generate the code)_
