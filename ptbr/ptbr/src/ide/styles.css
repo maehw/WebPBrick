@@ -1,0 +1,139 @@
+body, html {
+  margin: 0;
+  padding: 0;
+  height: 100%;
+  font-family: monospace;
+}
+
+.toolbar {
+  background-color: #333;
+  padding: 10px;
+  display: flex; /* Ensure the toolbar uses flexbox */
+  align-items: center; /* Center items vertically */
+  justify-content: space-between; /* Distribute items evenly */
+}
+
+.left-buttons {
+  display: flex; /* Ensure the left buttons use flexbox */
+}
+
+.hidden {
+  display: none;
+}
+
+.toolbar button {
+  background-color: #ffdb00;
+  color: #333;
+  border: none;
+  padding: 8px 16px;
+  margin-right: 10px;
+  cursor: pointer;
+}
+
+.toolbar a {
+  background-color: #ffdb00;
+  color: #333;
+  border: none;
+  padding: 8px 16px;
+  margin-right: 10px;
+  cursor: pointer;
+  font-family: sans-serif;
+  font-size: 10pt;
+  text-decoration: none;
+}
+
+.toolbar button:last-child {
+  margin-right: 0; /* Remove right margin from the last button */
+}
+
+#clearLogBtn {
+  margin-left: auto; /* Push the "Clear log" button to the right */
+}
+
+.split {
+  display: flex;
+  height: calc(100% - 100px); /* Leave some space for the footer overlay */
+}
+
+.code-wrapper {
+  position: relative;
+  flex: 2;
+  overflow: auto; /* Allow code editor to scroll */
+}
+
+.code {
+  width: 100%; /* Take up full width of code wrapper */
+  height: 100%; /* Take up full height of code wrapper */
+  resize: none;
+  border: none;
+  padding: 10px;
+  padding-left: 50px; /* Adjust padding to make space for line numbers */
+  box-sizing: border-box;
+  margin-top: -1px; /* Move the code editor 1px up */
+}
+
+.log {
+  flex: 1.5;
+  border: 1px solid #ccc;
+  padding: 10px;
+  margin-left: 5px;
+  margin-top: 0px;
+  border-top: 0px;
+  background-color: #f0f0f0; /* Light gray background color */
+}
+
+.line-numbers {
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 3em; /* Adjusted width for three-digit numbers */
+  height: 100%;
+  border-right: 1px solid #ccc;
+  padding: 10px;
+  box-sizing: border-box;
+  background-color: #f7f7f7; /* Adjust background color */
+  overflow: hidden;
+  pointer-events: none;
+  color: #666; /* Adjust line number color */
+  text-align: right; /* Align line numbers to the right */
+}
+
+.not-supported {
+  padding: 1em;
+  background-color: red;
+  color: white;
+  display: none;log
+}
+
+footer {
+  position: fixed; /* Position the footer fixed to the bottom */
+  bottom: 0; /* Align the footer to the bottom */
+  width: 100%; /* Make the footer span the entire width */
+  background-color: #333;
+  color: #fff;
+  padding: 3px;
+  padding-left: 12px;
+  font-size: 12px;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+}
+
+.footer p {
+  margin: 0;
+}
+
+.footer-links {
+  display: flex;
+}
+
+.footer-links a {
+  color: white;
+  text-decoration: underline;
+  margin-left: 10px;
+  margin-right: 10px;
+}
+
+.footer-links a:last-child {
+  margin-right: 30px;
+}

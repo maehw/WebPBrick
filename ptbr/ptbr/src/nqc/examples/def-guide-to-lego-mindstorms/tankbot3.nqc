@@ -1,0 +1,35 @@
+// tankbot3.nqc - improved turning
+
+// motors
+#define LEFT OUT_A
+#define RIGHT OUT_C
+
+// how much time to spend turning or forward
+#define TURN_TIME		 50
+#define STRAIGHT_TIME	200
+
+task main()
+{
+	// start with both motors on
+	On(LEFT+RIGHT);
+	
+	// repeat the following steps forever
+	while(true)
+	{
+		// turn right by reversing the right tread
+		Rev(RIGHT);
+		Wait(TURN_TIME);
+		
+		// resume going straight
+		Fwd(RIGHT);
+		Wait(STRAIGHT_TIME);
+		
+		// turn left by reversing the left tread
+		Rev(LEFT);
+		Wait(TURN_TIME);
+		
+		// resume going straight
+		Fwd(LEFT);
+		Wait(STRAIGHT_TIME);
+	}
+}

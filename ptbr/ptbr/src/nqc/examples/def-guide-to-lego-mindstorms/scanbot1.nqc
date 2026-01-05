@@ -1,0 +1,89 @@
+// scanbot1.nqc
+//  a simple tracking program for SCANBOT
+
+// sensors
+#define EYE	SENSOR_3
+#define ANGLE SENSOR_1
+
+// motors
+#define LEFT OUT_A
+#define HEAD OUT_B
+#define RIGHT OUT_C
+
+// other constants
+#define SLOP 2
+
+#define CENTER 53
+#define SWEEP 48	// 135 degrees
+
+#define ALIGN_TIME	300		// 3 seconds
+#define TURN_TIME	50		// 1/2 second
+
+#define THRESHOLD	65
+
+void align()
+{
+	Rev(HEAD);	// begin turning left
+	OnFor(HEAD, ALIGN_TIME);
+	Off(HEAD);		// stop turning
+	Fwd(HEAD);		// prepare for later activation
+	ClearSensor(ANGLE);	// make this position "0"
+}
+
+task main()
+{
+	// configure sensors
+	SetSensor(EYE, SENSOR_LIGHT);
+	SetSensor(ANGLE, SENSOR_ROTATION);
+	
+	align();
+	
+	// look and steer...
+	On(LEFT+RIGHT+HEAD);
+	
+	// now we can start the steering task
+	start steer;
+	
+	// keep looking back and forth
+	while(true)
+	{
+		if (ANGLE < CENTER-SWEEP)
+		{
+			Fwd(HEAD);
+		}
+		else if (ANGLE > CENTER+SWEEP)
+		{
+			Rev(HEAD);
+		}
+	}
+}
+
+
+task steer()
+{
+	while(true)
+	{
+		if (EYE >= THRESHOLD)
+		{
+			Off(HEAD);	// stop looking
+			PlaySound(SOUND_CLICK);
+			
+			if (ANGLE < CENTER-SLOP)
+			{
+				// turn left
+				Rev(LEFT);
+				Wait(TURN_TIME);
+				Fwd(LEFT);
+			}
+			else if (ANGLE > CENTER+SLOP)
+			{
+				// turn right
+				Rev(RIGHT);
+				Wait(TURN_TIME);
+				Fwd(RIGHT);
+			}
+			
+			On(HEAD);	// resume looking
+		}
+	}
+}

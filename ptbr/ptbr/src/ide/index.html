@@ -1,0 +1,50 @@
+<!DOCTYPE html>
+<html lang="pt">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>IDE web programável RCX (protótipo)</title>
+  <link rel="stylesheet" href="styles.css">
+</head>
+<body>
+  <div class="toolbar">
+    <div class="left-buttons">
+      <button id="compileBtn">🧱 Construir</button>
+      <!-- <button id="usbConnectBtn">🔗 USB Connect</button> -->
+      <button id="serialConnectBtn">🔗 Conectar torre serial</button>
+      <button id="downloadBtn">⬇️ Baixar programa para o RCX</button>
+      <a href="../nqc/blocknqc/index.html" target="_blank">↗️🧱 Usar BlockNQC</a>
+    </div>
+    <button id="clearLogBtn">🧹 Limpar registro</button>
+  </div>
+  <div id="wasm-not-supported" class="not-supported">
+    Desculpe, <b>WebAssembly (WASM)</b> não é suportado por este navegador. Você não poderá compilar seu código NQC usando o compilador WebNQC. Detalhes: <a href="https://caniuse.com/wasm">https://caniuse.com/wasm</a>
+  </div>
+  <div id="webserial-not-supported" class="not-supported">
+    Desculpe, <b>Web Serial</b> não é suportado por este navegador. Você não vai conseguir usar uma torre serial LEGO®. Detalhes: <a href="https://caniuse.com/web-serial">https://caniuse.com/web-serial</a>
+  </div>
+  <div id="webusb-not-supported" class="not-supported">
+    Desculpe, <b>WebUSB</b> não é suportado por este navegador. Você não vai conseguir usar uma torre USB LEGO®. Detalhes: <a href="https://caniuse.com/webusb">https://caniuse.com/webusb</a>
+  </div>
+  <div class="split">
+    <div class="code-wrapper">
+      <div class="line-numbers"></div>
+      <textarea id="codeArea" class="code"></textarea>
+    </div>
+    <textarea id="logArea" class="log" readonly></textarea>
+  </div>
+  <footer>
+  <p>LEGO® é uma marca registrada do Grupo de Empresas LEGO, que não patrocina, autoriza nem endossa este site.</p>
+  <div class="footer-links">
+    <a href="https://github.com/maehw/WebPBrick/discussions">Ajuda?!</a> | <a href="https://github.com/maehw/WebPBrick">Código fonte</a> | <a href="https://github.com/maehw/WebPBrick/blob/main/CHANGELOG.md">Versão: 0.2.0</a>
+  </div>
+  </footer>
+  <script src="main.js"></script>
+  <script type="text/javascript" src="../nqc/webnqc/nqc.js"></script>
+  <script type="text/javascript" src="nqcWrapper.js"></script>
+  <script type="text/javascript" src="../communication/rcxCommon.js"></script>
+  <script type="text/javascript" src="../communication/rcxSerial.js"></script>
+  <script src="../fileFormats/KaitaiStream.js" defer></script>
+  <script src="../fileFormats/legoRcxi.js" defer></script>
+</body>
+</html>
