@@ -1,0 +1,35 @@
+// linebot1.nqc
+//	turn by stopping one tread
+
+// sensor and motors
+#define EYE		SENSOR_2
+#define LEFT	OUT_A
+#define RIGHT	OUT_C
+
+// thresholds
+#define LEFT_THRESHOLD  	42
+#define RIGHT_THRESHOLD		53
+
+task main()
+{
+	SetSensor(EYE, SENSOR_LIGHT);
+	On(LEFT+RIGHT);
+
+	while(true)
+	{
+		if (EYE <= LEFT_THRESHOLD)
+		{
+			Off(LEFT);
+			On(RIGHT);
+		}
+		else if (EYE >= RIGHT_THRESHOLD)
+		{
+			Off(RIGHT);
+			On(LEFT);
+		}
+		else
+		{
+			On(LEFT+RIGHT);
+		}
+	}
+}

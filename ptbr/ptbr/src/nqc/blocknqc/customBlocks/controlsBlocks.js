@@ -1,0 +1,62 @@
+/*
+ * WebPBrick / BlockNQC
+ * Copyright (C) 2024 maehw
+ *
+ * This program is free software: you can redistribute it and/or modify
+ * it under the terms of the GNU General Public License as published by
+ * the Free Software Foundation, either version 3 of the License, or
+ * (at your option) any later version.
+ *
+ * This program is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * GNU General Public License for more details.
+ *
+ * You should have received a copy of the GNU General Public License
+ * along with this program.  If not, see <http://www.gnu.org/licenses/>.
+ */
+
+// This JavaScript code is used to define blocks of the "Control" category.
+// This includes blocks for waiting for a specific time but also task control.
+
+controlsCategoryCol = 120; // hue value
+
+// Block definitions
+Blockly.defineBlocksWithJsonArray([
+    // Block for waiting for a specific amount of time (in multiple of seconds)
+    {
+      "type": "controls_wait",
+      "message0": "esperar por %1 segundo(s)",
+      "args0": [
+        {
+          "type": "input_value",
+          "name": "DURATION",
+          "check": "Number"
+        }
+      ],
+      "inputsInline": true,
+      "previousStatement": null,
+      "nextStatement": null,
+      "colour": controlsCategoryCol,
+      "tooltip": "",
+      "helpUrl": ""
+    },
+    // Block for waiting for a specific amount of time (in multiple of 1/100 seconds)
+    {
+      "type": "controls_waitfraction",
+      "message0": "esperar por %1 × 1/100 segundos",
+      "args0": [
+        {
+          "type": "input_value",
+          "name": "DURATION",
+          "check": "Number"
+        }
+      ],
+      "inputsInline": true,
+      "previousStatement": null,
+      "nextStatement": null,
+      "colour": controlsCategoryCol,
+      "tooltip": "",
+      "helpUrl": ""
+    },
+]);
