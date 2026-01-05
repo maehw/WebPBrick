@@ -9,17 +9,17 @@ Este repositório Git fornece os códigos-fonte do projeto **WebPBrick** e, cons
 3. Conecte-se ao bloco RCX programável amarelo usando uma torre infravermelha (clique no botão "Conectar Serial")
 4. Transfira seu programa compilado para o RCX (clique no botão "Transferir programa para o RCX")
 
-![Ideal de Desenvolvimento Integrado do WebPBrick](./doc/webpbrick_ide.png)
+![Ideal de Desenvolvimento Integrado do WebPBrick](./ptbr/doc/webpbrick_ide.png)
 
 ## BlockNQC do WebPBrick
 
 Um editor de programação visual baseado na web chamado BlockNQC pode ser usado para gerar código NQC. O BlockNQC é baseado no Blockly do Google. Para mais detalhes, consulte o arquivo [README](./nqc/blocknqc/README.md) separado do BlockNQC.
 
-![BlockNQC](./doc/blocknqc.png)
+![BlockNQC](./ptbr/doc/blocknqc.png)
 
 ## Módulos da cadeia de ferramentas
 
-![Diagrama de blocos da cadeia de ferramentas](./doc/toolchain.png)
+![Diagrama de blocos da cadeia de ferramentas](./ptbr/doc/toolchain.png)
 
 A cadeia de ferramentas do WebPBrick consiste em vários módulos:
 
@@ -52,9 +52,7 @@ Abra seu navegador e acesse http://localhost:8080/src/ide/
 Este projeto é uma coleção de módulos e software de código aberto.
 
 | Módulo | Licença |
-
 |----------------------------------------------------------|-----------------------------------------------------------------------------|
-
 | NQC / WebNQC | [Mozilla Public License 2.0](./nqc/webnqc/LICENSE.md) |
 | Código de exemplo NQC por D. Baum e R. Zurcher | [Licença Freeware](./nqc/examples/def-guide-to-lego-mindstorms/LICENSE.txt) |
 | Blockly (necessário para BlockNQC) | [Licença Apache 2.0](./nqc/blocknqc/blockly/LICENSE) |
