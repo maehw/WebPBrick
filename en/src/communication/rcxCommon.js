@@ -268,7 +268,7 @@ async function goIntoBootMode() {
 // Send command to unlock RCX' firmware
 async function unlockFirmware() {
     // ignoring the reply as unlock usually works even though the command reply is not verified correctly
-    let {success, payload} = await transceiveCommand(OpCode.UnlockFirmware, unlockFirmwareMagic, 500, true);
+    let {success, payload} = await transceiveCommand(OpCode.UnlockFirmware, unlockFirmwareMagic, 1500, true);
     return success;
 }
 
@@ -332,6 +332,9 @@ async function downloadFirmware(description="firmware", firmwareData=[]) {
         showInfoMsg("🧱 Calculated " + numBlocks + " " + description + " blocks to download.");
         let downloadSuccess = true;
         let downloadedBlock = false;
+
+        startDownloadTime = performance.timeOrigin + performance.now();
+
         for(let blockCount = 1; blockCount <= numBlocks; blockCount++) {
             let blockData = firmwareData.slice((blockCount-1)*blockSize, blockCount*blockSize);
             downloadedBlock = await downloadBlock(blockCount, blockData, extendedTimeout);
@@ -349,9 +352,9 @@ async function downloadFirmware(description="firmware", firmwareData=[]) {
                 }
 
                 let retry = 0;
-                const maxRetries = 5;
+                const maxRetries = 10;
                 for(retry = 1; retry <= maxRetries; retry++) {
-                    await sleep(300); // wait for short duration before retry (transmission conditions may improve!)
+                    await sleep(retry * 100); // wait for short duration before retry (transmission conditions may improve!)
                     downloadedBlock = await downloadBlock(blockCount, blockData, extendedTimeout);
                     if(downloadedBlock) {
                         const progress = blockCount/numBlocks;
@@ -372,10 +375,11 @@ async function downloadFirmware(description="firmware", firmwareData=[]) {
                     downloadSuccess = false;
                     break;
                 }
-            }
-            else {
+            } else {
                 const progress = blockCount/numBlocks;
-                showInfoMsg("⏳ Successfully downloaded " + description + " block " + blockCount + "/" + numBlocks +
+                const currentTime = performance.timeOrigin + performance.now();
+                const duration = currentTime - startDownloadTime;
+                showInfoMsg("⏳ [" + (duration/1000).toFixed(1) + "s] Successfully downloaded " + description + " block " + blockCount + "/" + numBlocks +
                             " ("+ Math.round(progress*1000)/10 + " %)");
             }
         }
