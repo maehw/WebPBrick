@@ -72,7 +72,10 @@ Blockly.defineBlocksWithJsonArray([
       "nextStatement": null,
       "colour": outputsCategoryCol,
       "tooltip": "",
-      "helpUrl": ""
+      "helpUrl": "",
+      "extensions": [
+        'power_range_validation',
+      ]
     },
     // Block for setting motor/output direction
     {
@@ -407,3 +410,11 @@ Blockly.defineBlocksWithJsonArray([
       "helpUrl": ""
     },
 ]);
+
+Blockly.Extensions.register('power_range_validation', function() {
+  this.setOnChange(function(changeEvent) {
+    if (changeEvent instanceof Blockly.Events.BlockChange) {
+      checkIntegerInputRange(this, 'POWER', 0, 7);
+    }
+  });
+});
