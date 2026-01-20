@@ -101,154 +101,169 @@ async function transceiveCommand(opcode, params = new Uint8Array(), timeout = 50
  * @name Serial connect
  * Opens a Web Serial connection to an RCX programmable brick
  */
-async function serialConnect(fast=false) {
-    let success = true; // think positive!
+async function serialConnect(fastMode=false) {
+  let success = true; // think positive!
+	let speedText = "slow";
+	if(fastMode) {
+		speedText = "fast";
+	}
 
-    // Request a port and open a connection
-    if(serialPort === null) {
-      try {
-        serialPort = await navigator.serial.requestPort();
+  // Request a port and open a connection
+  if(serialPort === null) {
+    try {
+      serialPort = await navigator.serial.requestPort();
+    }
+    catch(e) {
+      showErrorMsg("Failed to open serial port: '" + e.message + "'");
+      success = false;
+    }
+  }
+
+  if(success) {
+    // Wait for the port to open.
+    // Slow mode (default for now): configure 2400 baud, 8-O-1, increase buffer size instead of the default 255 bytes
+    // FIXME: Some buffer does not seem to be consumed or flushed properly?! Waiting for a line break?!
+    let baudRate = 2400;
+	  let parity = "odd";
+    if(fastMode) {
+      // firmdl3 fast mode: increase baud rate and switch to "no parity"
+      baudRate = 4800;
+      parity = "none";
+    }
+    const serialParams = { baudRate: baudRate, parity: parity, bufferSize: 3*32*1024 };
+
+    try {
+      await serialPort.open(serialParams);
+
+      const serialPortInfo = serialPort.getInfo();
+      showInfoMsg("Connected to serial device in " + speedText + " mode (baudrate: " + serialParams.baudRate + "; parity: " + serialParams.parity + ").");
+
+      serialReader = serialPort.readable.getReader();
+      serialWriter = serialPort.writable.getWriter();
+    }
+    catch(e) {
+      if((e instanceof DOMException) && e.name == 'InvalidStateError') {
+        // ignore: port has already been opened before, something else must have failed, so let's continue
       }
-      catch(e) {
-        showErrorMsg("Failed to open serial port: '" + e.message + "'");
-        success = false;
+      else {
+        throw e;
       }
     }
 
-    if(success) {
-      // Wait for the port to open.
-      // Configure 2400 baud, 8-O-1, increase buffer size instead of the default 255 bytes
-      // FIXME: Some buffer does not seem to be consumed or flushed properly?! Waiting for a line break?!
-      let baudRate = 2400;
-      if(fast) {
-        baudRate = 4800;
-      }
-      const serialParams = { baudRate: baudRate, parity: "odd", bufferSize: 3*32*1024 };
+	  success = await ping();
 
-      try {
-        await serialPort.open(serialParams);
+	  if(!success) {
+      showErrorMsg("No communication with RCX possible.\n" +
+             "RCX needs to be switched on and placed close to the IR tower and also in line of sight.\n" +
+             "Please try again.");
+	  }
+  }
 
-        const serialPortInfo = serialPort.getInfo();
-        showInfoMsg("Connected to serial device (baudrate: " + serialParams.baudRate + ").");
+  if(success) {
+      showInfoMsg("🔗 Communication working, RCX is alive!");
+  }
 
-        serialReader = serialPort.readable.getReader();
-        serialWriter = serialPort.writable.getWriter();
-      }
-      catch(e) {
-        if((e instanceof DOMException) && e.name == 'InvalidStateError') {
-          // ignore: port has already been opened before, something else must have failed, so let's continue
-        }
-        else {
-          throw e;
-        }
-      }
-
-      success = await ping();
-
-      if(!success) {
-        showErrorMsg("No communication with RCX possible.\n" +
-                     "RCX needs to be switched on and placed close to the IR tower and also in line of sight.\n" +
-                     "Please try again.");
-      }
-    }
-
-    if(success) {
-        showInfoMsg("🔗 Communication working, RCX is alive!");
-    }
-
-    return success;
+  return success;
 }
 
-async function serialSetSpeed(fast=true) {
-    let success = true; // think positive!
+async function serialSetSpeed(fastMode=true) {
+  let success = true; // think positive!
 
-    // Request a port and open a connection
-    if(serialPort === null) {
-        success = false;
-    } else {
-      showInfoMsg("Disconnecting...");
-      success = await serialDisconnect(true);
-      if(success) {
-        showInfoMsg("Reconnecting...");
-        success = await serialConnect(fast);
-      }
+  // Reconnect on known port with different settings
+  if(serialPort === null) {
+      success = false;
+  } else {
+    showInfoMsg("Disconnecting...");
+    success = await serialDisconnect(true);
+
+    if(success) {
+    await sleep(500);
+      showInfoMsg("Reconnecting...");
+      success = await serialConnect(fastMode);
     }
+  }
 }
 
 async function checkFirmwareAndBattery() {
-    let success = true; // think positive!
-    let versionInfo = null;
+  let success = true; // think positive!
+  let versionInfo = null;
 
-    versionInfo = await getVersions();
-    if(!versionInfo.success) {
-        showErrorMsg("Failed to retrieve ROM and firmware versions.");
-        success = false;
-    }
+  versionInfo = await getVersions();
+  if(!versionInfo.success) {
+      showErrorMsg("Failed to retrieve ROM and firmware versions.");
+      success = false;
+  }
 
-    if(success) {
-        showInfoMsg("ℹ️ ROM version: " + versionInfo.romVersion + ", Firmware version: " + versionInfo.fwVersion);
-        if(versionInfo.fwVersion == '0.0') {
-            showErrorMsg("Firmware version '0.0' indicates that currently no firmware is loaded into RAM. " +
-              "Download of programs to the RCX is not possible.");
-            success = false;
-        }
-    }
+  if(success) {
+      showInfoMsg("ℹ️ ROM version: " + versionInfo.romVersion + ", Firmware version: " + versionInfo.fwVersion);
+      if(versionInfo.fwVersion == '0.0') {
+          showErrorMsg("Firmware version '0.0' indicates that currently no firmware is loaded into RAM. " +
+            "Download of programs to the RCX is not possible.");
+          success = false;
+      }
+  }
 
-    if(success) {
-        const batteryLevel = await getBatteryLevel();
-        let msg = "";
-        if(batteryLevel > 0) {
-            if(batteryLevel < 20) {
-                msg = "🪫";
-            }
-            else {
-                msg = "🔋";
-            }
-            msg += " Battery level: " + Math.floor(batteryLevel) + " %";
-            showInfoMsg(msg);
-        }
-    }
+  if(success) {
+      const batteryLevel = await getBatteryLevel();
+      let msg = "";
+      if(batteryLevel > 0) {
+          if(batteryLevel < 20) {
+              msg = "🪫";
+          }
+          else {
+              msg = "🔋";
+          }
+          msg += " Battery level: " + Math.floor(batteryLevel) + " %";
+          showInfoMsg(msg);
+      }
+  }
 
-/*
-    if(success && versionInfo) {
-        success = await playSystemSound(SystemSound.Beep);
+  if(success && versionInfo) {
+      success = await playSystemSound(SystemSound.Beep);
 
-        if(!success) {
-            showErrorMsg("Unable to play system sound.");
-        }
-    }
-    if(success) {
-        showInfoMsg("🎵 Played system sound.");
-    }
-*/
+      if(!success) {
+          showErrorMsg("Unable to play system sound.");
+      }
+  }
+  if(success) {
+      showInfoMsg("🎵 Played system sound.");
+  }
 
     return success;
 }
 
 async function serialReadWithTimeout(timeout) {
-    // inspired by https://github.com/WICG/serial/issues/122
+  // inspired by https://github.com/WICG/serial/issues/122
 
-    let timer = setTimeout(() => {
-        serialReader.releaseLock();
-    }, timeout);
+  let timer = setTimeout(() => {
+      serialReader.releaseLock();
+  }, timeout);
 
-    let result = {done: false, value: new Uint8Array()};
+  let result = {done: false, value: new Uint8Array()};
 
-    try {
-        result = await serialReader.read();
+  try {
+      result = await serialReader.read();
+  }
+  catch (e) {
+    // make sure to detect and handle timeout errors and re-throw other type of exceptions
+    if (e instanceof TypeError) {
+        console.log("Timeout error occurred!");
+    } else if (e instanceof DOMException) {
+      if(e.name == 'FramingError') {
+        console.log("Framing error occurred!");
+      } else if (e.name == 'ParityError') {
+        console.log("Parity error occurred!");
+      } else {
+        console.log("Unhandled DOMException!");
+        throw(e);
+      }
+    } else {
+      throw(e);
     }
-    catch (e) {
-        // make sure to detect and handle timeout errors and re-throw other type of exceptions
-        if (e instanceof TypeError) {
-            console.log("Timeout error occurred!");
-        }
-        else {
-            throw(e);
-        }
-    }
-    clearTimeout(timer);
+  }
+  clearTimeout(timer);
 
-    return result.value;
+  return result.value;
 }
 
 /**
