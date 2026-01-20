@@ -145,7 +145,10 @@ Blockly.defineBlocksWithJsonArray([
       "nextStatement": null,
       "colour": timeDataCategoryCol,
       "tooltip": "",
-      "helpUrl": ""
+      "helpUrl": "",
+      "extensions": [
+        'datalog_value_range_validation',
+      ],
     },
     // Block for clearing a timer
     {
@@ -249,3 +252,11 @@ Blockly.defineBlocksWithJsonArray([
       "helpUrl": ""
     },
 ]);
+
+Blockly.Extensions.register('datalog_value_range_validation', function() {
+  this.setOnChange(function(changeEvent) {
+    if (changeEvent instanceof Blockly.Events.BlockChange) {
+      checkIntegerInputRange(this, 'VALUE', 0, 65535);
+    }
+  });
+});
