@@ -101,9 +101,8 @@ async function transceiveCommand(opcode, params = new Uint8Array(), timeout = 50
  * @name Serial connect
  * Opens a Web Serial connection to an RCX programmable brick
  */
-async function serialConnect() {
+async function serialConnect(fast=false) {
     let success = true; // think positive!
-    let versionInfo = null;
 
     // Request a port and open a connection
     if(serialPort === null) {
@@ -120,7 +119,11 @@ async function serialConnect() {
       // Wait for the port to open.
       // Configure 2400 baud, 8-O-1, increase buffer size instead of the default 255 bytes
       // FIXME: Some buffer does not seem to be consumed or flushed properly?! Waiting for a line break?!
-      const serialParams = { baudRate: 2400, parity: "odd", bufferSize: 3*32*1024 };
+      let baudRate = 2400;
+      if(fast) {
+        baudRate = 4800;
+      }
+      const serialParams = { baudRate: baudRate, parity: "odd", bufferSize: 3*32*1024 };
 
       try {
         await serialPort.open(serialParams);
@@ -151,18 +154,42 @@ async function serialConnect() {
 
     if(success) {
         showInfoMsg("🔗 Communication working, RCX is alive!");
+    }
 
-        versionInfo = await getVersions();
-        if(!versionInfo.success) {
-            showErrorMsg("Failed to retrieve ROM and firmware versions.");
-            success = false;
-        }
+    return success;
+}
+
+async function serialSetSpeed(fast=true) {
+    let success = true; // think positive!
+
+    // Request a port and open a connection
+    if(serialPort === null) {
+        success = false;
+    } else {
+      showInfoMsg("Disconnecting...");
+      success = await serialDisconnect(true);
+      if(success) {
+        showInfoMsg("Reconnecting...");
+        success = await serialConnect(fast);
+      }
+    }
+}
+
+async function checkFirmwareAndBattery() {
+    let success = true; // think positive!
+    let versionInfo = null;
+
+    versionInfo = await getVersions();
+    if(!versionInfo.success) {
+        showErrorMsg("Failed to retrieve ROM and firmware versions.");
+        success = false;
     }
 
     if(success) {
         showInfoMsg("ℹ️ ROM version: " + versionInfo.romVersion + ", Firmware version: " + versionInfo.fwVersion);
         if(versionInfo.fwVersion == '0.0') {
-            showErrorMsg("Firmware version '0.0' indicates that currently no firmware is loaded into RAM.");
+            showErrorMsg("Firmware version '0.0' indicates that currently no firmware is loaded into RAM. " +
+              "Download of programs to the RCX is not possible.");
             success = false;
         }
     }
@@ -182,6 +209,7 @@ async function serialConnect() {
         }
     }
 
+/*
     if(success && versionInfo) {
         success = await playSystemSound(SystemSound.Beep);
 
@@ -192,6 +220,7 @@ async function serialConnect() {
     if(success) {
         showInfoMsg("🎵 Played system sound.");
     }
+*/
 
     return success;
 }
@@ -226,7 +255,7 @@ async function serialReadWithTimeout(timeout) {
  * @name Disconnect serial
  * Closes the Web Serial connection.
  */
-async function serialDisconnect() {
+async function serialDisconnect(keepPort=false) {
   if (serialReader) {
     serialReader.releaseLock();
     serialReader = null;
@@ -238,7 +267,9 @@ async function serialDisconnect() {
 
   // Close the port.
   await serialPort.close();
-  serialPort = null;
+  if(!keepPort) {
+    serialPort = null;
+  }
 
   showInfoMsg("Disconnected from serial device.");
   return true;
