@@ -126,43 +126,44 @@ async function clickSerialConnect() {
 
 // Handler for click on firmware download button
 async function clickFwDownload() {
-    // Open a dialog first to let the user confirm the download before starting it
-    const confirmedFwDownload = window.confirm("Firmware download is quite slow and will take several minutes. " +
-        "Firmware download may fail. It may render your RCX (temporarily) unusable." +
-        "\n\nI know what I am doing and want to continue.");
+  // Open a dialog first to let the user confirm the download before starting it
+  const confirmedFwDownload = window.confirm("Firmware download is quite slow and will take several minutes. " +
+    "Firmware download may fail. It may render your RCX (temporarily) unusable." +
+    "\n\nI know what I am doing and want to continue.");
 
-    if(confirmedFwDownload) {
-        console.log("Firmware download request confirmed.");
-        showInfoMsg("Firmware download request confirmed.");
+  if(confirmedFwDownload) {
+    console.log("Firmware download request confirmed.");
+    showInfoMsg("Firmware download request confirmed.");
 
-        // TODO: add mechanism to choose between different firmware versions
+    // TODO: add mechanism to choose between different firmware versions
 
-        let stubName = "fastdl stub";
-        let success = await downloadFirmware(stubName, firmdl3FastdlStubData);
+    // TODO: make fast download work (via firmdl3 stub)
+/*
+    let stubName = "fastdl stub";
+    let success = await downloadFirmware(stubName, firmdl3FastdlStubData);
 
-        if(success) {
-          // TODO: change baud rate
-          showInfoMsg("Changing baud rate...");
-          await serialSetSpeed();
-
-          //let firmwareName = "LEGO RCX firmware";
-          //success = await downloadFirmware(firmwareName, firm0332Data);
-
-          success = await downloadFirmware(stubName, firmdl3FastdlStubData);
-
-          if(success) {
-              showInfoMsg("✅ " + capitalize(stubName) + " download complete. 🎉");
-          }
-        }
-
-        if(!success) {
-            showErrorMsg("Failed to download firmware. Make sure the RCX is switched on " +
-                "and in line of sight of the IR tower. Please retry!");
-        }
-        showInfoMsg("Please disconnect and re-connect!");
+    if(success) {
+      await serialSetSpeed(true);
+      await downloadFirmware(firmwareName, firm0332Data);
+      await serialSetSpeed(false);
     }
-    else {
-        console.log("Firmware download request aborted.");
-        showInfoMsg("Firmware download request aborted.");
+*/
+
+    let firmwareName = "RCX firmware";
+    success = await downloadFirmware(firmwareName, firm0332Data);
+
+    if(success) {
+      showInfoMsg("✅ " + capitalize(firmwareName) + " download complete. 🎉");
     }
+
+    if(!success) {
+        showErrorMsg("Failed to download firmware. Make sure the RCX is switched on " +
+            "and in line of sight of the IR tower. Please retry!");
+    }
+
+    showInfoMsg("Please disconnect and re-connect!");
+  } else {
+      console.log("Firmware download request aborted.");
+      showInfoMsg("Firmware download request aborted.");
+  }
 }
