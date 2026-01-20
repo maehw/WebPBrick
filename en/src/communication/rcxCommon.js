@@ -221,7 +221,9 @@ function encodeCommand(opcode, params) {
 
     // fill parameter bytes and calculate checksum for the current command while doing so
     let checksum = txOpcode;
-    console.log("[PRMS] " + array2hex(new Uint8Array(params)));
+    if(params.length > 0) {
+      console.log("[PRMS] " + array2hex(new Uint8Array(params)));
+    }
     for(let i = 0; i<params.length; i++) {
         checksum += params[i];
 
@@ -258,37 +260,53 @@ function calculateFirmwareChecksum(firmwareData) {
 
 // Send command to send RCX into boot mode
 async function goIntoBootMode() {
+    console.log("Going into boot mode.");
     let {success, payload} = await transceiveCommand(OpCode.GoIntoBootMode, oddPrimes);
     return success;
 }
 
 // Send command to unlock RCX' firmware
 async function unlockFirmware() {
-    let {success, payload} = await transceiveCommand(OpCode.UnlockFirmware, unlockFirmwareMagic);
+    // ignoring the reply as unlock usually works even though the command reply is not verified correctly
+    let {success, payload} = await transceiveCommand(OpCode.UnlockFirmware, unlockFirmwareMagic, 500, true);
     return success;
 }
 
-// Download firmware to RCX programmable brick
-async function downloadFirmware() {
-    // TODO: add mechanism to choose between different firmware versions
-    //let firmwareData = firm0309Data; // official LEGO firmware (v03.09)
-    //let firmwareData = firm0328Data; // official LEGO firmware (v03.28)
-    let firmwareData = firm0332Data; // official LEGO firmware (v03.32)
-    //let firmwareData = firmPbForthData;
-    //let firmwareData = firmLeJosData;
-    //let firmwareData = firmOhmmeterData; // 3rd-party firmware
+function capitalize(s)
+{
+    return String(s[0]).toUpperCase() + String(s).slice(1);
+}
 
+// Download firmware to RCX programmable brick
+async function downloadFirmware(description="firmware", firmwareData=[]) {
     // prepare download
     const firmwareSize = firmwareData.length;
-    showInfoMsg("🧮 Firmware size in bytes: " + firmwareSize);
+    showInfoMsg("🧮 " + capitalize(description) + " size in bytes: " + firmwareSize);
 
     const firmwareChecksum = calculateFirmwareChecksum(firmwareData);
-    showInfoMsg("🧮 Calculated firmware checksum: 0x" + firmwareChecksum.toString(16).padStart(4, '0').toUpperCase());
+    showInfoMsg("🧮 Calculated " + description + " checksum: 0x" + firmwareChecksum.toString(16).padStart(4, '0').toUpperCase());
 
-    // ping
-    let success = await goIntoBootMode(); // ignore result, maybe echo reply is cut off?!
-    if(!success) {
-        showErrorMsg("Unable to enter boot mode. Please retry!");
+    let success = false;
+    let numPings = 0;
+    while(!success && (numPings < 3)) {
+      success = await ping();
+      numPings++;
+    }
+
+    if(success) {
+        success = await goIntoBootMode();
+        if(!success) {
+            showErrorMsg("Unable to enter boot mode on first try. Retrying...");
+
+            let success = await goIntoBootMode();
+            if(!success) {
+                showErrorMsg("Unable to enter boot mode.");
+            }
+        }
+    } else {
+        showErrorMsg("No communication with RCX possible.\n" +
+                     "RCX needs to be switched on and placed close to the IR tower and also in line of sight.\n" +
+                     "Please try again.");
     }
 
     if(success) {
@@ -297,12 +315,12 @@ async function downloadFirmware() {
         success = await beginFirmwareDownload(firmwareChecksum);
 
         if(!success) {
-            showErrorMsg("Unable to begin firmware download.");
+            showErrorMsg("Unable to begin " + description + " download.");
         }
     }
 
     if(success) {
-        showInfoMsg("🐌 Began firmware download...");
+        showInfoMsg("🐌 Began " + description + " download...");
 
         // continue download in blocks of N bytes
         const blockSize = 20;
@@ -311,7 +329,7 @@ async function downloadFirmware() {
         //const extendedTimeout = true; // timeout depends on block size (data transfer duration)
         const numBlocks = Math.ceil(firmwareSize/blockSize);
         console.log("Calculated " + numBlocks + " blocks to download.");
-        showInfoMsg("🧱 Calculated " + numBlocks + " firmware blocks to download.");
+        showInfoMsg("🧱 Calculated " + numBlocks + " " + description + " blocks to download.");
         let downloadSuccess = true;
         let downloadedBlock = false;
         for(let blockCount = 1; blockCount <= numBlocks; blockCount++) {
@@ -337,7 +355,7 @@ async function downloadFirmware() {
                     downloadedBlock = await downloadBlock(blockCount, blockData, extendedTimeout);
                     if(downloadedBlock) {
                         const progress = blockCount/numBlocks;
-                        showInfoMsg("⏳ Successfully downloaded firmware block " + blockCount + "/" + numBlocks +
+                        showInfoMsg("⏳ Successfully downloaded " + description + " block " + blockCount + "/" + numBlocks +
                                     " ("+ Math.round(progress*1000)/10 + " %)");
 
                         break; // no need to retry any longer
@@ -357,7 +375,7 @@ async function downloadFirmware() {
             }
             else {
                 const progress = blockCount/numBlocks;
-                showInfoMsg("⏳ Successfully downloaded firmware block " + blockCount + "/" + numBlocks +
+                showInfoMsg("⏳ Successfully downloaded " + description + " block " + blockCount + "/" + numBlocks +
                             " ("+ Math.round(progress*1000)/10 + " %)");
             }
         }
@@ -367,11 +385,11 @@ async function downloadFirmware() {
     }
 
     if(success) {
-        showInfoMsg("⌛️ Finalizing firmware...");
+        showInfoMsg("⌛️ Finalizing " + description + " download...");
 
         success = await unlockFirmware();
         if(!success) {
-            showErrorMsg("May have failed to unlock firmware.");
+            showErrorMsg("May have failed to unlock " + description + ".");
         }
     }
 
@@ -677,6 +695,7 @@ async function playSystemSound(sound) {
 }
 
 async function ping(playSound = false) {
+    console.log("Ping...");
     let {success, payload} = await transceiveCommand(OpCode.Ping);
 
     if(success) {

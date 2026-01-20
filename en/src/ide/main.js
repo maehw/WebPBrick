@@ -184,9 +184,13 @@ async function clickSerialConnect() {
     success = await serialConnect();
 
     if(success) {
-      enableDownloadBtn();
-      serialConnectBtn.innerHTML = '🔗 Serial Disconnect';
-      serialConnected = true;
+      success = await checkFirmwareAndBattery();
+
+      if(success) {
+        enableDownloadBtn();
+        serialConnectBtn.innerHTML = '🔗 Serial Disconnect';
+        serialConnected = true;
+      }
     }
   } else {
     success = await serialDisconnect();
@@ -198,35 +202,6 @@ async function clickSerialConnect() {
     }
   }
 }
-
-/*
-// Handler for click on firmware download button
-async function clickFwDownload() {
-    // Open a dialog first to let the user confirm the download before starting it
-    const confirmedFwDownload = window.confirm("Firmware download is quite slow and will take several minutes. " +
-        "Firmware download may fail. It may render your RCX (temporarily) unusable." +
-        "\n\nI know what I am doing and want to continue.");
-
-    if(confirmedFwDownload) {
-        console.log("Firmware download request confirmed.");
-        showInfoMsg("Firmware download request confirmed.");
-
-        const success = await downloadFirmware();
-        if(success) {
-            showInfoMsg("✅ Firmware download complete. 🎉");
-        }
-        else {
-            showErrorMsg("Failed to download firmware. Make sure the RCX is switched on " +
-                "and in line of sight of the IR tower. Please retry!");
-        }
-        showInfoMsg("Please disconnect and re-connect!");
-    }
-    else {
-        console.log("Firmware download request aborted.");
-        showInfoMsg("Firmware download request aborted.");
-    }
-}
-*/
 
 // Handler for click on program download button
 async function clickProgramDownload() {
@@ -247,6 +222,7 @@ async function clickProgramDownload() {
             showInfoMsg("️✅ Download of program succeeded! 🎉 " +
                 "Press the green 'Run' button 🟢▶️ on the RCX to start execution of the program!");
 
+/*
             success = await playSystemSound(SystemSound.FastSweepUp);
 
             if(success) {
@@ -255,6 +231,7 @@ async function clickProgramDownload() {
             else {
                 showErrorMsg("Unable to play system sound.");
             }
+*/
         }
         else {
             showErrorMsg("Download of program may have failed.");

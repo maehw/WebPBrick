@@ -1,0 +1,45 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>RCX firmware download</title>
+  <link rel="stylesheet" href="styles.css">
+</head>
+<body>
+  <div class="toolbar">
+    <div class="left-buttons">
+      <button id="serialConnectBtn">🔗 Serial Connect</button>
+      <button id="downloadFirmwareBtn">⬇️ Download firmware to RCX ❗️</button>
+      <a href="../ide/index.html" target="_blank">↗️ Try the WebIDE</a>
+      <a href="../nqc/blocknqc/index.html" target="_blank">↗️🧱 Try BlockNQC</a>
+    </div>
+    <button id="clearLogBtn">🧹 Clear log</button>
+  </div>
+  <div id="wasm-not-supported" class="not-supported">
+    Sorry, <b>WebAssembly (WASM)</b> is not supported by this browser. You won't be able to compile your NQC code using the WebNQC compiler. Details: <a href="https://caniuse.com/wasm">https://caniuse.com/wasm</a>
+  </div>
+  <div id="webserial-not-supported" class="not-supported">
+    Sorry, <b>Web Serial</b> is not supported by this browser. You won't be able to use a LEGO® serial tower. Details: <a href="https://caniuse.com/web-serial">https://caniuse.com/web-serial</a>
+  </div>
+  <div id="webusb-not-supported" class="not-supported">
+    Sorry, <b>WebUSB</b> is not supported by this browser. You won't be able to use a LEGO® USB tower. Details: <a href="https://caniuse.com/webusb">https://caniuse.com/webusb</a>
+  </div>
+  <div class="split">
+    <textarea id="logArea" class="log" readonly></textarea>
+  </div>
+  <footer>
+  <p>LEGO® is a trademark of the LEGO Group of companies which does not sponsor, authorize or endorse this site.</p>
+  <div class="footer-links">
+    <a href="https://github.com/maehw/WebPBrick/discussions">HELP?!</a> | <a href="https://github.com/maehw/WebPBrick">Source code</a> | <a href="https://github.com/maehw/WebPBrick/blob/main/CHANGELOG.md">Version: 0.2.0</a>
+  </div>
+  </footer>
+  <script src="../firmware/official/firm0332.js" defer></script>
+  <script src="../firmware/thirdParty/firmdl3_fastdl.js" defer></script>
+  <script src="main.js"></script>
+  <script type="text/javascript" src="../communication/rcxCommon.js"></script>
+  <script type="text/javascript" src="../communication/rcxSerial.js"></script>
+  <script src="../fileFormats/KaitaiStream.js" defer></script>
+  <script src="../fileFormats/legoRcxi.js" defer></script>
+</body>
+</html>
