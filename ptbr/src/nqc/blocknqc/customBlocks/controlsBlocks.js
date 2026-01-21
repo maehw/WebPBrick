@@ -39,7 +39,10 @@ Blockly.defineBlocksWithJsonArray([
       "nextStatement": null,
       "colour": controlsCategoryCol,
       "tooltip": "",
-      "helpUrl": ""
+      "helpUrl": "",
+      "extensions": [
+        'wait_floatduration_range_validation',
+      ]
     },
     // Block for waiting for a specific amount of time (in multiple of 1/100 seconds)
     {
@@ -57,6 +60,26 @@ Blockly.defineBlocksWithJsonArray([
       "nextStatement": null,
       "colour": controlsCategoryCol,
       "tooltip": "",
-      "helpUrl": ""
+      "helpUrl": "",
+      "extensions": [
+        'wait_duration_range_validation',
+      ]
     },
 ]);
+
+Blockly.Extensions.register('wait_floatduration_range_validation', function() {
+  this.setOnChange(function(changeEvent) {
+    if (changeEvent instanceof Blockly.Events.BlockChange) {
+      checkFloatInputRange(this, 'DURATION', 2, 0, 655.35);
+    }
+  });
+});
+
+Blockly.Extensions.register('wait_duration_range_validation', function() {
+  this.setOnChange(function(changeEvent) {
+    if (changeEvent instanceof Blockly.Events.BlockChange) {
+      checkIntegerInputRange(this, 'DURATION', 0, 65535);
+    }
+  });
+});
+

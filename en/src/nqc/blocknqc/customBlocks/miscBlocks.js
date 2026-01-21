@@ -260,3 +260,4 @@ Blockly.Extensions.register('datalog_value_range_validation', function() {
     }
   });
 });
+

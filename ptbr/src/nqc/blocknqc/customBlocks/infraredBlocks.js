@@ -65,7 +65,10 @@ Blockly.defineBlocksWithJsonArray([
       "nextStatement": null,
       "colour": infraredCategoryCol,
       "tooltip": "",
-      "helpUrl": ""
+      "helpUrl": "",
+      "extensions": [
+        'message_range_validation',
+      ]
     },
     // Block for clearing IR message
     {
@@ -89,3 +92,11 @@ Blockly.defineBlocksWithJsonArray([
       "helpUrl": "",
     },
 ]);
+
+Blockly.Extensions.register('message_range_validation', function() {
+  this.setOnChange(function(changeEvent) {
+    if (changeEvent instanceof Blockly.Events.BlockChange) {
+      checkIntegerInputRange(this, 'MESSAGE', 0, 255);
+    }
+  });
+});

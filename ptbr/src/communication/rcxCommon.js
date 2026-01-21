@@ -440,7 +440,7 @@ async function downloadProgram(programNumber, rcxBinary) {
     }
 
     if(success) {
-        showInfoMsg("🛠️ Preparando para baixa o programa...");
+        showInfoMsg("🛠️ Preparando para baixa o programa #" + programNumber + "...");
 
         success = await selectProgram(programNumber);
 
@@ -742,11 +742,11 @@ async function getBatteryLevel() {
 }
 
 async function selectProgram(programNumber) {
-    if(programNumber < 0 || programNumber > 5) {
+    if(programNumber < 1 || programNumber > 5) {
         // parameter error: out of valid range
         return false;
     }
-    const {success, payload} = await transceiveCommand(OpCode.SelectProgram, [programNumber]);
+    const {success, payload} = await transceiveCommand(OpCode.SelectProgram, [programNumber - 1]);
 
     if(success) {
         console.log("Programa selecionado #" + programNumber + ".");

@@ -55,23 +55,6 @@ body, html {
   height: calc(100% - 100px); /* Leave some space for the footer overlay */
 }
 
-.code-wrapper {
-  position: relative;
-  flex: 2;
-  overflow: auto; /* Allow code editor to scroll */
-}
-
-.code {
-  width: 100%; /* Take up full width of code wrapper */
-  height: 100%; /* Take up full height of code wrapper */
-  resize: none;
-  border: none;
-  padding: 10px;
-  padding-left: 50px; /* Adjust padding to make space for line numbers */
-  box-sizing: border-box;
-  margin-top: -1px; /* Move the code editor 1px up */
-}
-
 .log {
   flex: 1.5;
   border: 1px solid #ccc;
@@ -80,22 +63,6 @@ body, html {
   margin-top: 0px;
   border-top: 0px;
   background-color: #f0f0f0; /* Light gray background color */
-}
-
-.line-numbers {
-  position: absolute;
-  top: 0;
-  left: 0;
-  width: 3em; /* Adjusted width for three-digit numbers */
-  height: 100%;
-  border-right: 1px solid #ccc;
-  padding: 10px;
-  box-sizing: border-box;
-  background-color: #f7f7f7; /* Adjust background color */
-  overflow: hidden;
-  pointer-events: none;
-  color: #666; /* Adjust line number color */
-  text-align: right; /* Align line numbers to the right */
 }
 
 .not-supported {
@@ -136,17 +103,4 @@ footer {
 
 .footer-links a:last-child {
   margin-right: 30px;
-}
-
-#programNumber {
-  border: none;
-  background-color: #ffdb00;
-  color: #333;
-  border: none;
-  padding: 0px 2px;
-  margin-right: 10px;
-}
-
-.left-buttons #downloadBtn {
-  margin-right: 0px;
 }
