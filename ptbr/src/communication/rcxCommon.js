@@ -1,6 +1,6 @@
 /*
  * WebPBrick
- * Copyright (C) 2024 maehw
+ * Copyright (C) 2024-2026 maehw
  *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -221,7 +221,9 @@ function encodeCommand(opcode, params) {
 
     // fill parameter bytes and calculate checksum for the current command while doing so
     let checksum = txOpcode;
-    console.log("[PRMS] " + array2hex(new Uint8Array(params)));
+    if(params.length > 0) {
+      console.log("[PRMS] " + array2hex(new Uint8Array(params)));
+    }
     for(let i = 0; i<params.length; i++) {
         checksum += params[i];
 
@@ -258,37 +260,53 @@ function calculateFirmwareChecksum(firmwareData) {
 
 // Send command to send RCX into boot mode
 async function goIntoBootMode() {
+    console.log("Going into boot mode.");
     let {success, payload} = await transceiveCommand(OpCode.GoIntoBootMode, oddPrimes);
     return success;
 }
 
 // Send command to unlock RCX' firmware
 async function unlockFirmware() {
-    let {success, payload} = await transceiveCommand(OpCode.UnlockFirmware, unlockFirmwareMagic);
+    // ignoring the reply as unlock usually works even though the command reply is not verified correctly
+    let {success, payload} = await transceiveCommand(OpCode.UnlockFirmware, unlockFirmwareMagic, 1500, true);
     return success;
 }
 
-// Download firmware to RCX programmable brick
-async function downloadFirmware() {
-    // TODO: add mechanism to choose between different firmware versions
-    //let firmwareData = firm0309Data; // official LEGO firmware (v03.09)
-    //let firmwareData = firm0328Data; // official LEGO firmware (v03.28)
-    let firmwareData = firm0332Data; // official LEGO firmware (v03.32)
-    //let firmwareData = firmPbForthData;
-    //let firmwareData = firmLeJosData;
-    //let firmwareData = firmOhmmeterData; // 3rd-party firmware
+function capitalize(s)
+{
+    return String(s[0]).toUpperCase() + String(s).slice(1);
+}
 
+// Download firmware to RCX programmable brick
+async function downloadFirmware(description="firmware", firmwareData=[]) {
     // prepare download
     const firmwareSize = firmwareData.length;
-    showInfoMsg("🧮 Tamanho do firmware em bytes: " + firmwareSize);
+    showInfoMsg("🧮 Tamanho do " + capitalize(description) + " em bytes: " + firmwareSize);
 
     const firmwareChecksum = calculateFirmwareChecksum(firmwareData);
-    showInfoMsg("🧮 Checksum de firmware calculado: 0x" + firmwareChecksum.toString(16).padStart(4, '0').toUpperCase());
+    showInfoMsg("🧮 Checksum de " + capitalize(description) + " calculado: 0x" + firmwareChecksum.toString(16).padStart(4, '0').toUpperCase());
 
-    // ping
-    let success = await goIntoBootMode(); // ignore result, maybe echo reply is cut off?!
-    if(!success) {
-        showErrorMsg("Não é possível entrar no modo de boot. Por favor, tente novamente!");
+    let success = false;
+    let numPings = 0;
+    while(!success && (numPings < 3)) {
+      success = await ping();
+      numPings++;
+    }
+
+    if(success) {
+        success = await goIntoBootMode();
+        if(!success) {
+            showErrorMsg("Não é possível entrar no modo de boot on first try. Retrying...");
+
+            let success = await goIntoBootMode();
+            if(!success) {
+                showErrorMsg("Não é possível entrar no modo.");
+            }
+        }
+    } else {
+        showErrorMsg("No communication with RCX possible.\n" +
+                     "RCX needs to be switched on and placed close to the IR tower and also in line of sight.\n" +
+                     "Please try again.");
     }
 
     if(success) {
@@ -314,6 +332,9 @@ async function downloadFirmware() {
         showInfoMsg("🧱 Calculado " + numBlocks + " blocos de firmware para baixar.");
         let downloadSuccess = true;
         let downloadedBlock = false;
+
+        startDownloadTime = performance.timeOrigin + performance.now();
+
         for(let blockCount = 1; blockCount <= numBlocks; blockCount++) {
             let blockData = firmwareData.slice((blockCount-1)*blockSize, blockCount*blockSize);
             downloadedBlock = await downloadBlock(blockCount, blockData, extendedTimeout);
@@ -331,13 +352,14 @@ async function downloadFirmware() {
                 }
 
                 let retry = 0;
-                const maxRetries = 5;
+                const maxRetries = 10;
                 for(retry = 1; retry <= maxRetries; retry++) {
-                    await sleep(300); // wait for short duration before retry (transmission conditions may improve!)
+                    await sleep(retry * 100); // wait for short duration before retry (transmission conditions may improve!)
                     downloadedBlock = await downloadBlock(blockCount, blockData, extendedTimeout);
                     if(downloadedBlock) {
                         const progress = blockCount/numBlocks;
-                        showInfoMsg("⏳ bloco do firmware baixado com sucesso " + blockCount + "/" + numBlocks +
+                        showInfoMsg("⏳ [" + (duration/1000).toFixed(1) + "s] Bloco do " +
+                                    description + " baixado com sucesso " + blockCount + "/" + numBlocks +
                                     " ("+ Math.round(progress*1000)/10 + " %)");
 
                         break; // no need to retry any longer
@@ -357,7 +379,10 @@ async function downloadFirmware() {
             }
             else {
                 const progress = blockCount/numBlocks;
-                showInfoMsg("⏳ bloco do firmware baixado com sucesso " + blockCount + "/" + numBlocks +
+                const currentTime = performance.timeOrigin + performance.now();
+                const duration = currentTime - startDownloadTime;
+                showInfoMsg("⏳ [" + (duration/1000).toFixed(1) + "s] Bloco do " +
+                            description + " baixado com sucesso " + blockCount + "/" + numBlocks +
                             " ("+ Math.round(progress*1000)/10 + " %)");
             }
         }
@@ -367,11 +392,11 @@ async function downloadFirmware() {
     }
 
     if(success) {
-        showInfoMsg("⌛️ Finalizando firmware...");
+        showInfoMsg("⌛️ Finalizando " + description + "...");
 
         success = await unlockFirmware();
         if(!success) {
-            showErrorMsg("Talvez houve uma falha ao desbloquear o firmware.");
+            showErrorMsg("Talvez houve uma falha ao desbloquear o " + description + ".");
         }
     }
 
@@ -725,8 +750,7 @@ async function selectProgram(programNumber) {
 
     if(success) {
         console.log("Programa selecionado #" + programNumber + ".");
-    }
-    else {
+    } else {
         console.log("Não é possível selecionar o programa #" + programNumber + ".");
     }
 
@@ -738,8 +762,7 @@ async function stopRunningTasks() {
 
     if(success) {
         console.log("Interrompida a execução de tarefas no programa selecionado atualmente e liberado os recursos de acesso adquiridos.");
-    }
-    else {
+    } else {
         console.log("Não é possível parar de executar tarefas no programa selecionado no momento.");
     }
 
