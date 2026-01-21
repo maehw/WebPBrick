@@ -26,6 +26,7 @@ const clearLogBtn = document.getElementById('clearLogBtn');
 const codeArea = document.getElementById('codeArea');
 const logArea = document.getElementById('logArea');
 const lineNumbers = document.querySelector('.line-numbers');
+const programNumberSelection = document.getElementById('programNumber');
 
 let codeModified = true; // code modified after build?
 let serialConnected = false;
@@ -184,9 +185,32 @@ async function clickSerialConnect() {
     success = await serialConnect();
 
     if(success) {
-      enableDownloadBtn();
-      serialConnectBtn.innerHTML = '🔗 Desconetar torre serial';
-      serialConnected = true;
+      success = await ping();
+
+      if(!success) {
+        showErrorMsg("No communication with RCX possible.\n" +
+               "RCX needs to be switched on and placed close to the IR tower and also in line of sight.\n" +
+               "Please try again.");
+      } else {
+        showInfoMsg("🔗 Communication working, RCX is alive!");
+
+        fwVersion = await checkFirmware();
+
+        if(fwVersion == null) {
+            showErrorMsg("Unable to determine firmware version.");
+        } else {
+          if(fwVersion == '0.0') {
+            showErrorMsg("Firmware version '0.0' indicates that currently no firmware is loaded into RAM. " +
+              "Download of programs to the RCX is not possible.");
+          } else {
+            await checkBatteryLevel();
+
+            enableDownloadBtn();
+            serialConnectBtn.innerHTML = '🔗 Desconetar torre serial';
+            serialConnected = true;
+          }
+        }
+      }
     }
   } else {
     success = await serialDisconnect();
@@ -198,35 +222,6 @@ async function clickSerialConnect() {
     }
   }
 }
-
-/*
-// Handler for click on firmware download button
-async function clickFwDownload() {
-    // Open a dialog first to let the user confirm the download before starting it
-    const confirmedFwDownload = window.confirm("Firmware download is quite slow and will take several minutes. " +
-        "Firmware download may fail. It may render your RCX (temporarily) unusable." +
-        "\n\nI know what I am doing and want to continue.");
-
-    if(confirmedFwDownload) {
-        console.log("Firmware download request confirmed.");
-        showInfoMsg("Firmware download request confirmed.");
-
-        const success = await downloadFirmware();
-        if(success) {
-            showInfoMsg("✅ Firmware download complete. 🎉");
-        }
-        else {
-            showErrorMsg("Failed to download firmware. Make sure the RCX is switched on " +
-                "and in line of sight of the IR tower. Please retry!");
-        }
-        showInfoMsg("Please disconnect and re-connect!");
-    }
-    else {
-        console.log("Firmware download request aborted.");
-        showInfoMsg("Firmware download request aborted.");
-    }
-}
-*/
 
 // Handler for click on program download button
 async function clickProgramDownload() {
@@ -241,12 +236,13 @@ async function clickProgramDownload() {
           showInfoMsg("❗ O código foi modificado desde a última vez. Considere reconstruir a versão atual do código!");
         }
 
-        const programNumber = 0; // TODO: make program slot selectable
+        const programNumber= programNumberSelection.value;
         let success = await downloadProgram(programNumber, rcxBinary);
         if(success) {
             showInfoMsg("️✅ Programa baixado com sucesso! 🎉 " +
                 "Precione o botão verde 'Run' 🟢▶️ no RCX para inicar a execução do programa!");
 
+/*
             success = await playSystemSound(SystemSound.FastSweepUp);
 
             if(success) {
@@ -255,6 +251,7 @@ async function clickProgramDownload() {
             else {
                 showErrorMsg("Não foi possível tocar o som do sistema.");
             }
+*/
         }
         else {
             showErrorMsg("O download do programa pode ter falhado.");

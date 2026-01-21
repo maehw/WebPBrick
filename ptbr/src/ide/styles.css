@@ -137,3 +137,16 @@ footer {
 .footer-links a:last-child {
   margin-right: 30px;
 }
+
+#programNumber {
+  border: none;
+  background-color: #ffdb00;
+  color: #333;
+  border: none;
+  padding: 0px 2px;
+  margin-right: 10px;
+}
+
+.left-buttons #downloadBtn {
+  margin-right: 0px;
+}

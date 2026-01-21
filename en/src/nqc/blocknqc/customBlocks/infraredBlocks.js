@@ -100,3 +100,4 @@ Blockly.Extensions.register('message_range_validation', function() {
     }
   });
 });
+
