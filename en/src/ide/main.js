@@ -184,12 +184,31 @@ async function clickSerialConnect() {
     success = await serialConnect();
 
     if(success) {
-      success = await checkFirmwareAndBattery();
+      success = await ping();
 
-      if(success) {
-        enableDownloadBtn();
-        serialConnectBtn.innerHTML = '🔗 Serial Disconnect';
-        serialConnected = true;
+      if(!success) {
+        showErrorMsg("No communication with RCX possible.\n" +
+               "RCX needs to be switched on and placed close to the IR tower and also in line of sight.\n" +
+               "Please try again.");
+      } else {
+        showInfoMsg("🔗 Communication working, RCX is alive!");
+
+        fwVersion = await checkFirmware();
+
+        if(fwVersion == null) {
+            showErrorMsg("Unable to determine firmware version.");
+        } else {
+          if(fwVersion == '0.0') {
+            showErrorMsg("Firmware version '0.0' indicates that currently no firmware is loaded into RAM. " +
+              "Download of programs to the RCX is not possible.");
+          } else {
+            await checkBatteryLevel();
+
+            enableDownloadBtn();
+            serialConnectBtn.innerHTML = '🔗 Serial Disconnect';
+            serialConnected = true;
+          }
+        }
       }
     }
   } else {
