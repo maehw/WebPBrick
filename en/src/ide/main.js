@@ -26,6 +26,7 @@ const clearLogBtn = document.getElementById('clearLogBtn');
 const codeArea = document.getElementById('codeArea');
 const logArea = document.getElementById('logArea');
 const lineNumbers = document.querySelector('.line-numbers');
+const programNumberSelection = document.getElementById('programNumber');
 
 let codeModified = true; // code modified after build?
 let serialConnected = false;
@@ -235,7 +236,7 @@ async function clickProgramDownload() {
           showInfoMsg("❗ Code has been modified after last build. Consider re-building the current version of the code!");
         }
 
-        const programNumber = 0; // TODO: make program slot selectable
+        const programNumber = programNumberSelection.value;
         let success = await downloadProgram(programNumber, rcxBinary);
         if(success) {
             showInfoMsg("️✅ Download of program succeeded! 🎉 " +
