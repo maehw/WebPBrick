@@ -439,7 +439,7 @@ async function downloadProgram(programNumber, rcxBinary) {
     }
 
     if(success) {
-        showInfoMsg("🛠️ Preparing program download...");
+        showInfoMsg("🛠️ Preparing program #" + programNumber + " download...");
 
         success = await selectProgram(programNumber);
 
@@ -742,16 +742,15 @@ async function getBatteryLevel() {
 }
 
 async function selectProgram(programNumber) {
-    if(programNumber < 0 || programNumber > 5) {
+    if(programNumber < 1 || programNumber > 5) {
         // parameter error: out of valid range
         return false;
     }
-    const {success, payload} = await transceiveCommand(OpCode.SelectProgram, [programNumber]);
+    const {success, payload} = await transceiveCommand(OpCode.SelectProgram, [programNumber - 1]);
 
     if(success) {
         console.log("Selected program #" + programNumber + ".");
-    }
-    else {
+    } else {
         console.log("Unable to select program #" + programNumber + ".");
     }
 
@@ -763,8 +762,7 @@ async function stopRunningTasks() {
 
     if(success) {
         console.log("Stopped running tasks in the currently selected program and released acquired access resources.");
-    }
-    else {
+    } else {
         console.log("Unable to stop running tasks in the currently selected program.");
     }
 
