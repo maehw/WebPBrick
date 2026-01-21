@@ -149,18 +149,6 @@ async function serialConnect(fastMode=false) {
         throw e;
       }
     }
-
-	  success = await ping();
-
-	  if(!success) {
-      showErrorMsg("No communication with RCX possible.\n" +
-             "RCX needs to be switched on and placed close to the IR tower and also in line of sight.\n" +
-             "Please try again.");
-	  }
-  }
-
-  if(success) {
-      showInfoMsg("🔗 Communication working, RCX is alive!");
   }
 
   return success;
@@ -182,11 +170,14 @@ async function serialSetSpeed(fastMode=true) {
       success = await serialConnect(fastMode);
     }
   }
+
+  return success;
 }
 
-async function checkFirmwareAndBattery() {
+async function checkFirmware() {
   let success = true; // think positive!
   let versionInfo = null;
+  let fwVersion = null;
 
   versionInfo = await getVersions();
   if(!versionInfo.success) {
@@ -196,40 +187,25 @@ async function checkFirmwareAndBattery() {
 
   if(success) {
       showInfoMsg("ℹ️ ROM version: " + versionInfo.romVersion + ", Firmware version: " + versionInfo.fwVersion);
-      if(versionInfo.fwVersion == '0.0') {
-          showErrorMsg("Firmware version '0.0' indicates that currently no firmware is loaded into RAM. " +
-            "Download of programs to the RCX is not possible.");
-          success = false;
-      }
+      fwVersion = versionInfo.fwVersion;
   }
 
-  if(success) {
-      const batteryLevel = await getBatteryLevel();
-      let msg = "";
-      if(batteryLevel > 0) {
-          if(batteryLevel < 20) {
-              msg = "🪫";
-          }
-          else {
-              msg = "🔋";
-          }
-          msg += " Battery level: " + Math.floor(batteryLevel) + " %";
-          showInfoMsg(msg);
-      }
-  }
+  return fwVersion;
+}
 
-  if(success && versionInfo) {
-      success = await playSystemSound(SystemSound.Beep);
-
-      if(!success) {
-          showErrorMsg("Unable to play system sound.");
-      }
+async function checkBatteryLevel() {
+  const batteryLevel = await getBatteryLevel();
+  let msg = "";
+  if(batteryLevel > 0) {
+    if(batteryLevel < 20) {
+      msg = "🪫";
+    }
+    else {
+      msg = "🔋";
+    }
+    msg += " Battery level: " + Math.floor(batteryLevel) + " %";
+    showInfoMsg(msg);
   }
-  if(success) {
-      showInfoMsg("🎵 Played system sound.");
-  }
-
-    return success;
 }
 
 async function serialReadWithTimeout(timeout) {

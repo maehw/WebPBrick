@@ -358,7 +358,8 @@ async function downloadFirmware(description="firmware", firmwareData=[]) {
                     downloadedBlock = await downloadBlock(blockCount, blockData, extendedTimeout);
                     if(downloadedBlock) {
                         const progress = blockCount/numBlocks;
-                        showInfoMsg("⏳ Successfully downloaded " + description + " block " + blockCount + "/" + numBlocks +
+                        showInfoMsg("⏳ [" + (duration/1000).toFixed(1) + "s] Successfully downloaded " +
+                                    description + " block " + blockCount + "/" + numBlocks +
                                     " ("+ Math.round(progress*1000)/10 + " %)");
 
                         break; // no need to retry any longer
@@ -379,7 +380,8 @@ async function downloadFirmware(description="firmware", firmwareData=[]) {
                 const progress = blockCount/numBlocks;
                 const currentTime = performance.timeOrigin + performance.now();
                 const duration = currentTime - startDownloadTime;
-                showInfoMsg("⏳ [" + (duration/1000).toFixed(1) + "s] Successfully downloaded " + description + " block " + blockCount + "/" + numBlocks +
+                showInfoMsg("⏳ [" + (duration/1000).toFixed(1) + "s] Successfully downloaded " +
+                            description + " block " + blockCount + "/" + numBlocks +
                             " ("+ Math.round(progress*1000)/10 + " %)");
             }
         }
