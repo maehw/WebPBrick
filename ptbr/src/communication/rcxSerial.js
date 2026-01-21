@@ -1,6 +1,6 @@
 /*
  * WebPBrick
- * Copyright (C) 2024 maehw
+ * Copyright (C) 2024-2026 maehw
  *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -101,132 +101,152 @@ async function transceiveCommand(opcode, params = new Uint8Array(), timeout = 50
  * @name Serial connect
  * Opens a Web Serial connection to an RCX programmable brick
  */
-async function serialConnect() {
-    let success = true; // think positive!
-    let versionInfo = null;
+async function serialConnect(fastMode=false) {
+  let success = true; // think positive!
+	let speedText = "slow";
+	if(fastMode) {
+		speedText = "fast";
+	}
 
-    // Request a port and open a connection
-    if(serialPort === null) {
-      try {
-        serialPort = await navigator.serial.requestPort();
+  // Request a port and open a connection
+  if(serialPort === null) {
+    try {
+      serialPort = await navigator.serial.requestPort();
+    }
+    catch(e) {
+      showErrorMsg("Falha ao abrir a porta serial: '" + e.message + "'");
+      success = false;
+    }
+  }
+
+  if(success) {
+    // Wait for the port to open.
+    // Slow mode (default for now): configure 2400 baud, 8-O-1, increase buffer size instead of the default 255 bytes
+    // FIXME: Some buffer does not seem to be consumed or flushed properly?! Waiting for a line break?!
+    let baudRate = 2400;
+	  let parity = "odd";
+    if(fastMode) {
+      // firmdl3 fast mode: increase baud rate and switch to "no parity"
+      baudRate = 4800;
+      parity = "none";
+    }
+    const serialParams = { baudRate: baudRate, parity: parity, bufferSize: 3*32*1024 };
+
+    try {
+      await serialPort.open(serialParams);
+
+      const serialPortInfo = serialPort.getInfo();
+      showInfoMsg("Conectado ao dispositivo serial (baudrate: " + serialParams.baudRate + ").");
+
+      serialReader = serialPort.readable.getReader();
+      serialWriter = serialPort.writable.getWriter();
+    }
+    catch(e) {
+      if((e instanceof DOMException) && e.name == 'InvalidStateError') {
+        // ignore: port has already been opened before, something else must have failed, so let's continue
       }
-      catch(e) {
-        showErrorMsg("Falha ao abrir a porta serial: '" + e.message + "'");
-        success = false;
+      else {
+        throw e;
       }
     }
+  }
+
+  return success;
+}
+
+async function serialSetSpeed(fastMode=true) {
+  let success = true; // think positive!
+
+  // Reconnect on known port with different settings
+  if(serialPort === null) {
+      success = false;
+  } else {
+    showInfoMsg("Disconnecting...");
+    success = await serialDisconnect(true);
 
     if(success) {
-      // Wait for the port to open.
-      // Configure 2400 baud, 8-O-1, increase buffer size instead of the default 255 bytes
-      // FIXME: Some buffer does not seem to be consumed or flushed properly?! Waiting for a line break?!
-      const serialParams = { baudRate: 2400, parity: "odd", bufferSize: 3*32*1024 };
-
-      try {
-        await serialPort.open(serialParams);
-
-        const serialPortInfo = serialPort.getInfo();
-        showInfoMsg("Conectado ao dispositivo serial (baudrate: " + serialParams.baudRate + ").");
-
-        serialReader = serialPort.readable.getReader();
-        serialWriter = serialPort.writable.getWriter();
-      }
-      catch(e) {
-        if((e instanceof DOMException) && e.name == 'InvalidStateError') {
-          // ignore: port has already been opened before, something else must have failed, so let's continue
-        }
-        else {
-          throw e;
-        }
-      }
-
-      success = await ping();
-
-      if(!success) {
-        showErrorMsg("Não é possível se comunicar com o RCX.\n" +
-                     "O RCX precisa estar ligado e ser devidamente colocado próximo à torre infra vermelho, como também na linha de visão da torre.\n" +
-                     "Por favor tente novamente.");
-      }
+    await sleep(500);
+      showInfoMsg("Reconnecting...");
+      success = await serialConnect(fastMode);
     }
+  }
 
-    if(success) {
-        showInfoMsg("🔗 Comunicação funcionando, RCX está respondendo!");
+  return success;
+}
 
-        versionInfo = await getVersions();
-        if(!versionInfo.success) {
-            showErrorMsg("Não foi possível obter a versão da ROM e firmware.");
-            success = false;
-        }
+async function checkFirmware() {
+  let success = true; // think positive!
+  let versionInfo = null;
+  let fwVersion = null;
+
+  versionInfo = await getVersions();
+  if(!versionInfo.success) {
+      showErrorMsg("Failed to retrieve ROM and firmware versions.");
+      success = false;
+  }
+
+  if(success) {
+      showInfoMsg("ℹ️ versão da ROM: " + versionInfo.romVersion + ", versão do Firmware: " + versionInfo.fwVersion);
+      fwVersion = versionInfo.fwVersion;
+  }
+
+  return fwVersion;
+}
+
+async function checkBatteryLevel() {
+  const batteryLevel = await getBatteryLevel();
+  let msg = "";
+  if(batteryLevel > 0) {
+    if(batteryLevel < 20) {
+      msg = "🪫";
     }
-
-    if(success) {
-        showInfoMsg("ℹ️ versão da ROM: " + versionInfo.romVersion + ", versão do Firmware: " + versionInfo.fwVersion);
-        if(versionInfo.fwVersion == '0.0') {
-            showErrorMsg("A versão de firmware '0.0' indica que atualmente nenhum firmware está carregado na memória RAM.");
-            success = false;
-        }
+    else {
+      msg = "🔋";
     }
-
-    if(success) {
-        const batteryLevel = await getBatteryLevel();
-        let msg = "";
-        if(batteryLevel > 0) {
-            if(batteryLevel < 20) {
-                msg = "🪫";
-            }
-            else {
-                msg = "🔋";
-            }
-            msg += " Nível da bateria: " + Math.floor(batteryLevel) + " %";
-            showInfoMsg(msg);
-        }
-    }
-
-    if(success && versionInfo) {
-        success = await playSystemSound(SystemSound.Beep);
-
-        if(!success) {
-            showErrorMsg("Não foi possível tocar o som do sistema.");
-        }
-    }
-    if(success) {
-        showInfoMsg("🎵 Tocado o som do sistema.");
-    }
-
-    return success;
+    msg += " Nível da bateria: " + Math.floor(batteryLevel) + " %";
+    showInfoMsg(msg);
+  }
 }
 
 async function serialReadWithTimeout(timeout) {
-    // inspired by https://github.com/WICG/serial/issues/122
+  // inspired by https://github.com/WICG/serial/issues/122
 
-    let timer = setTimeout(() => {
-        serialReader.releaseLock();
-    }, timeout);
+  let timer = setTimeout(() => {
+      serialReader.releaseLock();
+  }, timeout);
 
-    let result = {done: false, value: new Uint8Array()};
+  let result = {done: false, value: new Uint8Array()};
 
-    try {
-        result = await serialReader.read();
+  try {
+      result = await serialReader.read();
+  }
+  catch (e) {
+    // make sure to detect and handle timeout errors and re-throw other type of exceptions
+    if (e instanceof TypeError) {
+        console.log("Tempo limite esgotado!");
+    } else if (e instanceof DOMException) {
+      if(e.name == 'FramingError') {
+        console.log("Framing error occurred!");
+      } else if (e.name == 'ParityError') {
+        console.log("Parity error occurred!");
+      } else {
+        console.log("Unhandled DOMException!");
+        throw(e);
+      }
+    } else {
+      throw(e);
     }
-    catch (e) {
-        // make sure to detect and handle timeout errors and re-throw other type of exceptions
-        if (e instanceof TypeError) {
-            console.log("Tempo limite esgotado!");
-        }
-        else {
-            throw(e);
-        }
-    }
-    clearTimeout(timer);
+  }
+  clearTimeout(timer);
 
-    return result.value;
+  return result.value;
 }
 
 /**
  * @name Disconnect serial
  * Closes the Web Serial connection.
  */
-async function serialDisconnect() {
+async function serialDisconnect(keepPort=false) {
   if (serialReader) {
     serialReader.releaseLock();
     serialReader = null;
@@ -238,8 +258,11 @@ async function serialDisconnect() {
 
   // Close the port.
   await serialPort.close();
-  serialPort = null;
+  if(!keepPort) {
+    serialPort = null;
+  }
 
   showInfoMsg("Desconectado da torre serial.");
   return true;
 }
+

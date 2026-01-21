@@ -17,6 +17,14 @@
  */
 
 // This JavaScript code is used for serial communication with the RCX programmable brick via a LEGO USB IR Tower.
+//  The USB device
+// - is compliant with USB version 1.1,
+// - has two interrupt endpoints,
+//   (endpoint 1 is used for device-to-host communications,
+//    endpoint 2 is used for host-to-device communications)
+// - implements a vendor-specific device class (no HID or other USB class standards).
+// There's an official document from TLG called "LEGO USB Tower Interface Reference" which
+// describes the vendor-specific requests.
 
 let usbDevice;
 let usbTxEndpoint;
@@ -37,7 +45,7 @@ document.addEventListener('DOMContentLoaded', () => {
 
 const USB_VENDOR_ID = 0x0694;
 const USB_PRODUCT_ID = 0x0001;
-const USB_DEV_CONFIG_ID = 2;
+const USB_DEV_CONFIG_ID = 1;
 const USB_INTERFACE_ID = 0;
 
 function showErrorMsg(msg) {
@@ -48,34 +56,52 @@ function showInfoMsg(msg) {
     log.value += msg + "\n";
 }
 
-// vendor request IDs
-const LTW_REQ_GET_PARM = 0x01;
-const LTW_REQ_SET_PARM = 0x02;
-const LTW_REQ_FLUSH = 0x03;
-const LTW_REQ_SET_TX_SPEED = 0xEF;
-const LTW_REQ_SET_RX_SPEED = 0xF1;
-const LTW_REQ_GET_TX_STATE = 0xF2;
-const LTW_REQ_GET_COPYRIGHT = 0xFE;
-const LTW_REQ_GET_CREDITS = 0xFF;
+// vendor request IDs (used in 1 byte bRequest)
+const LTW_REQ_GET_PARM = 0x01; // get tower parameter for standard IR mode
+const LTW_REQ_SET_PARM = 0x02; // set tower parameter for standard IR mode
+const LTW_REQ_SET_PARM_IRC = 0x12; // set Infrared Remote Control (IRC) tower parameter
+const LTW_REQ_GET_PARM_IRC = 0x11; // get IRC tower parameter
+const LTW_REQ_FLUSH = 0x03; // flush selected communication buffer(s)
+const LTW_REQ_RESET = 0x04; // reset ports and all internal parameters to the default values (used in case of a tower-internal error)
+const LTW_REQ_GET_STAT = 0x05; // get statistics from the IR receiver since the last RESET_STAT command
+const LTW_REQ_RESET_STAT = 0x10; // reset statistics from the IR receiver
+const LTW_REQ_GET_POWER = 0x06; // get the tower power configuration (also available via USB device descriptor)
+const LTW_REQ_SET_LED = 0x09; // set the state of the green ID LED (when set to SW control) or the VLL LED
+const LTW_REQ_GET_LED = 0x08; // get the state of the green ID LED or the VLL LED
+const LTW_REQ_SET_TX_SPEED = 0xEF; // set IR transmit speed (switch baud rate; 1200/2400/4800/9600/19200)
+const LTW_REQ_GET_TX_SPEED = 0xEE; // get IR transmit speed
+const LTW_REQ_SET_RX_SPEED = 0xF1; // set IR receive speed (switch baud rate); when RX/TX speeds differ: SET_TX_SPEED first
+const LTW_REQ_GET_RX_SPEED = 0xF2; // get IR receive speed
+const LTW_REQ_SET_TX_CARRIER_FREQUENCY = 0xF4; // set TX carrier frequency, i.e. 38 kHz (at 2400 baud) or 76 kHz (at 4800 baud)
+const LTW_REQ_GET_TX_CARRIER_FREQUENCY = 0xF3; // get TX carrier frequency
+const LTW_REQ_SET_TX_CARRIER_DUTY_CYCLE = 0xF6; // set TX carrier duty cycle
+const LTW_REQ_GET_TX_CARRIER_DUTY_CYCLE = 0xF5; // unused; get TX duty cycle
+const LTW_REQ_GET_CAPS = 0xFC; // get list of the tower capabilities according to the requested link type
+const LTW_REQ_GET_VERSION = 0xFD; // get tower firmware version information
+const LTW_REQ_GET_TX_STATE = 0xF2; // get state of the transmitter (ready/busy)
+const LTW_REQ_GET_COPYRIGHT = 0xFE; // get copyright information
+const LTW_REQ_GET_CREDITS = 0xFF; // get credits list
 
-// error codes
-const LTW_REQERR_SUCCESS = 0x00;
-const LTW_REQERR_BADPARM = 0x01;
-const LTW_REQERR_BUSY = 0x02;
-const LTW_REQERR_NOPOWER = 0x03;
-const LTW_REQERR_WRONGMODE = 0x04;
-const LTW_INTERNAL_ERROR = 0xFE;
-const LTW_REQERR_BADREQUEST = 0xFF;
+// error codes (used as 1 byte bErrCode)
+const LTW_REQERR_SUCCESS = 0x00; // request succeeded
+const LTW_REQERR_BADPARM = 0x01; // bad vendor parameter and/or value
+const LTW_REQERR_BUSY = 0x02; // tower is busy
+const LTW_REQERR_NOPOWER = 0x03; // not enough power to carry out the requested operation
+const LTW_REQERR_WRONGMODE = 0x04; // not in the right mode to execute this request
+const LTW_INTERNAL_ERROR = 0xFE; // internal error in the tower
+const LTW_REQERR_BADREQUEST = 0xFF; // bad request
 
 
-// parameter IDs
+// parameter IDs (used as LOBYTE part of the 2 byte wValue)
 const LTW_PARM_MODE = 0x01; // tower mode
 const LTW_PARM_RANGE = 0x02; // transmission range: Short, Medium (default) or Long
 const LTW_PARM_ERRDETECT = 0x03; // error detection on IR receiver
-const LTW_PARM_ERRSTATUS = 0x04; // Current internal error status of the tower (default: no error)
-const LTW_PARM_ENDIAN = 0x97; // Vendor request word format: Little Endian (PC/Windows standard; default) or Big Endian (Apple/Motorola standard)
+const LTW_PARM_ERRSTATUS = 0x04; // current internal error status of the tower (default: no error)
+const LTW_PARM_ENDIAN = 0x97; // vendor request word format: Little Endian (PC/Windows standard; default) or Big Endian (Apple/Motorola standard)
 const LTW_PARM_ID_LED_MODE = 0x98; // Indicator LED control: Firmware-controlled (default) or Host controlled
 const LTW_PARM_ERROR_SIGNAL = 0x99; // Signal indicator LED on when serious internal error occurs: On (default)/Off
+// const LTW_PARM_IRC_PACKETSIZE = ... // Packet size (in bytes) for Infrared Remote Control (IRC) protocol for LEGO cars
+// const LTW_PARM_IRC_DELAY_TX = ... // Transmit delay (in ms) in between IRC packets
 
 // parameter value IDs
 const SPEED_COMM_BAUD_1200 = 0x0004;
@@ -155,8 +181,8 @@ async function clickUsbConnect() {
 async function usbConnect() {
   // Request a USB device and open a connection.
 
-  // dive deeper?
-  // https://hackernoon.com/exploring-the-webusb-api-connecting-to-usb-devices-and-printing-with-tspltspl2
+  // Calling the requestDevice() method triggers the user agent's pairing flow.
+  // It returns a Promise that resolves with an instance of USBDevice if the specified device is found.
   usbDevice = await navigator.usb.requestDevice({ filters: [{ vendorId: USB_VENDOR_ID, productId: USB_PRODUCT_ID }] });
   usbTxEndpoint = null;
   usbRxEndpoint = null;
@@ -168,8 +194,9 @@ async function usbConnect() {
 
   let success = true;
 
+  // Check for known USB descriptor values
   if((usbDevice.manufacturerName == "LEGO Group") &&
-     (usbDevice.productName == "LEGO Torre USB") &&
+     (usbDevice.productName == "LEGO USB Tower") &&
      (usbDevice.deviceClass == 255) &&
      (usbDevice.configurations.length == 4)) {
 
@@ -198,7 +225,12 @@ async function usbConnect() {
         success = await resetUsbTower();
 
         if(!success) {
-            showErrorMsg("Não foi possível reiniciar a torre USB.");
+            showErrorMsg("UNão foi possível reiniciar a torre USB.");
+        }
+
+        statisticsSuccess = await getStatistics();
+        if(!statisticsSuccess) {
+            showErrorMsg("Unable to receive IR tower statistics.");
         }
       }
       else {
@@ -242,20 +274,24 @@ async function usbConnect() {
     if(success) {
         showInfoMsg("🔗 Interface USB selecionada #" + USB_INTERFACE_ID);
 
+/*
         success = await setUsbTowerTxSpeed(rxTxSpeed);
         if(!success) {
             showErrorMsg("Não foi possível definir a velocidade TX.");
         }
+*/
     }
 
+/*
     if(success) {
         showInfoMsg("🔗 Definir velocidade TX.");
 
         success = await setUsbTowerRxSpeed(rxTxSpeed);
         if(!success) {
-            showErrorMsg("Não foi possível definir a velocidade RX.");
+          showErrorMsg("Não foi possível definir a velocidade RX.");
         }
     }
+*/
 
     if(success) {
         showInfoMsg("🔗 Definir velocidade RX.");
@@ -270,7 +306,15 @@ async function usbConnect() {
             showErrorMsg("Não é possível esvaziar os buffers da torre USB.");
         }
         else {
-            success = await ping();
+            // try again
+            do {
+              success = await ping();
+
+              statisticsSuccess = await getStatistics();
+              if(!statisticsSuccess) {
+                  showErrorMsg("Unable to receive IR tower statistics.");
+              }
+            } while (!success);
         }
     }
 
@@ -329,17 +373,52 @@ async function usbConnect() {
     return success;
 }
 
+async function getStatistics() {
+  // request statistics from IR tower
+  const setup = {requestType: "vendor", recipient: "device", request: LTW_REQ_GET_STAT, value: 0, index: 0};
+  const length = 12;
+
+  let result = await usbDevice.controlTransferIn(setup, length);
+  let success = true;
+
+  if(result.status == 'ok') {
+    const statReply = new Uint8Array(result.data.buffer);
+    const size = to16bit(statReply, false);
+
+    if(size == 12) {
+      const errCode = statReply[2];
+      if(errCode == 0) {
+        const rxByteCount = to16bit(statReply, false, 4);
+        const overrunErrCount = to16bit(statReply, false, 6);
+        const noiseCount = to16bit(statReply, false, 8);
+        const frameErrCount = to16bit(statReply, false, 10);
+        console.log(rxByteCount + " bytes received, " + overrunErrCount + " overruns, " +
+          noiseCount + " wrong bits (noise), " + frameErrCount + " frame errors");
+      }
+      else {
+        success = false;
+        console.log("Error code: " + errorCodeToString(errCode));
+      }
+    } else {
+      success = false;
+    }
+  } else {
+    success = false;
+  }
+
+  return success;
+}
+
 async function getUsbTowerFwVersion() {
   // request firmware version
-  const GET_VERSION_REQUEST = 0xFD;
-  const setup = {requestType: "vendor", recipient: "device", request: GET_VERSION_REQUEST, value: 0, index: 0};
+  const setup = {requestType: "vendor", recipient: "device", request: LTW_REQ_GET_VERSION, value: 0, index: 0};
   const length = 8;
 
-  result = await usbDevice.controlTransferIn(setup, length);
+  let result = await usbDevice.controlTransferIn(setup, length);
   let version = "";
 
   if(result.status == 'ok') {
-    versionReply = new Uint8Array(result.data.buffer);
+    const versionReply = new Uint8Array(result.data.buffer);
     const size = to16bit(versionReply, false);
 
     if(size == 8) {
@@ -361,19 +440,18 @@ async function getUsbTowerFwVersion() {
 
 async function resetUsbTower() {
   // request reset (green LED should light up)
-  const RESET_REQUEST = 0x04;
-  const setup = {requestType: "vendor", recipient: "device", request: RESET_REQUEST, value: 0, index: 0};
+  const setup = {requestType: "vendor", recipient: "device", request: LTW_REQ_RESET, value: 0, index: 0};
   const length = 4;
 
-  result = await usbDevice.controlTransferIn(setup, length);
+  let result = await usbDevice.controlTransferIn(setup, length);
   let success = true;
 
   if(result.status == 'ok') {
-    versionReply = new Uint8Array(result.data.buffer);
-    const size = to16bit(versionReply, false);
+    const resetReply = new Uint8Array(result.data.buffer);
+    const size = to16bit(resetReply, false);
 
     if(size == 4) {
-      const errCode = versionReply[2];
+      const errCode = resetReply[2];
       if(errCode == 0) {
         console.log("reinicio realizado.");
       }
@@ -397,20 +475,20 @@ async function setUsbTowerTxSpeed(speed) {
   // request to set TX speed
   const setup = {requestType: "vendor", recipient: "device", request: LTW_REQ_SET_TX_SPEED, value: speed, index: 0};
   const length = 6;
-  result = await usbDevice.controlTransferIn(setup, length);
+  const result = await usbDevice.controlTransferIn(setup, length);
 
   let success = true;
 
   if(result.status == 'ok') {
-    reply = new Uint8Array(result.data.buffer);
+    const reply = new Uint8Array(result.data.buffer);
     const size = to16bit(reply, false);
 
     if(size == 6) {
       const errCode = reply[2];
       if(errCode == 0) {
         const value = reply[3];
-        const speed = to16bit(reply, false, 4);
-        success = ((value == 0) && (speed == SPEED_COMM_BAUD_2400));
+        const speedResponse = to16bit(reply, false, 4);
+        success = ((value == 0) && (speedResponse == SPEED_COMM_BAUD_2400));
         console.log("Definir velocidade TX.");
       }
       else {
@@ -438,16 +516,16 @@ async function setUsbTowerRxSpeed(speed) {
   let success = true;
 
   if(result.status == 'ok') {
-    reply = new Uint8Array(result.data.buffer);
+    const reply = new Uint8Array(result.data.buffer);
     const size = to16bit(reply, false);
 
     if(size == 6) {
       const errCode = reply[2];
       if(errCode == 0) {
         const value = reply[3];
-        const speed = to16bit(reply, false, 4);
+        const speedResponse = to16bit(reply, false, 4);
         success = ((value == 0) && (speed == SPEED_COMM_BAUD_2400));
-        console.log("Definir velocidade RX.");
+        console.log("Definir velocidade RX to #" + speedResponse + ".");
       }
       else {
         console.log("Código de erro: " + errorCodeToString(errCode));
@@ -592,12 +670,12 @@ async function transceiveCommand(opcode, params = new Uint8Array(), timeout = 50
     const maxFailedInXfers = 50;
 
     if(success) {
-        // console.log("OUT transfer successful.");
+        console.log("OUT transfer successful.");
 
         while(!valid && (failedInXfers < maxFailedInXfers)) {
             let inXferSuccess;
             try {
-                const usbInRequest = Promise.race([
+                let usbInRequest = Promise.race([
                   usbDevice.transferIn(usbRxEndpoint, 8),
                   new Promise((resolve, reject) => {
                     setTimeout(() => reject(), 50);
