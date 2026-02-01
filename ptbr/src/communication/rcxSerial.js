@@ -181,7 +181,7 @@ async function serialConnect(fastMode=false) {
   return success;
 }
 
-async function serialSetSpeed(fastMode=true) {
+async function serialReconnect() {
   let success = true; // think positive!
 
   // Reconnect on known port with different settings
@@ -273,7 +273,7 @@ async function serialReadWithTimeout(timeout) {
   }
   clearTimeout(timer);
 
-  return result.value;
+  return result;
 }
 
 /**

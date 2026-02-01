@@ -335,6 +335,8 @@ async function downloadFirmware(description="firmware", firmwareData=[]) {
 
         startDownloadTime = performance.timeOrigin + performance.now();
 
+        let numFailedBlocks = 0;
+
         for(let blockCount = 1; blockCount <= numBlocks; blockCount++) {
             let blockData = firmwareData.slice((blockCount-1)*blockSize, blockCount*blockSize);
             downloadedBlock = await downloadBlock(blockCount, blockData, extendedTimeout);
@@ -350,7 +352,6 @@ async function downloadFirmware(description="firmware", firmwareData=[]) {
                         showInfoMsg("⏳ [" + (duration/1000).toFixed(1) + "s] Bloco do " +
                                     description + " baixado com sucesso " + blockCount + "/" + numBlocks +
                                     " ("+ Math.round(progress*1000)/10 + " %)");
-
 
                     numFailedBlocks = 0; // reset number of failed blocks
                     break; // no need to retry any longer
@@ -694,6 +695,7 @@ async function playSystemSound(sound) {
 }
 
 async function ping(playSound = false) {
+    console.log("Ping...");
     let {success, payload} = await transceiveCommand(OpCode.Ping);
 
     if(success) {
