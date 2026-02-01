@@ -81,6 +81,7 @@ async function transceiveCommand(opcode, params = new Uint8Array(), timeout = 34
         console.log("[RPL] missing echo");
         hasGlitchyEcho = rxMsg.join(',').slice(1).startsWith(txMsg.join(',')); // FIXME: do not use lazy string comparison but something more efficient
         if(!hasGlitchyEcho) {
+            console.log("[RPL] not even a glitchy echo");
             return {success: false, payload: null};
         }
     }
