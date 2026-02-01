@@ -248,6 +248,7 @@ async function serialReadWithTimeout(timeout) {
 
   try {
       result = await serialReader.read();
+      result.channelError = false;
   }
   catch (e) {
     // make sure to detect and handle timeout errors and re-throw other type of exceptions
@@ -267,7 +268,7 @@ async function serialReadWithTimeout(timeout) {
         throw(e);
       }
     } else {
-        result.channelError = false;
+      result.channelError = false;
       throw(e);
     }
   }
