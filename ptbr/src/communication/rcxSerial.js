@@ -30,7 +30,8 @@ let serialWriter = null;
 // define various control elements
 const log = document.getElementById('logArea');
 
-async function transceiveCommand(opcode, params = new Uint8Array(), timeout = 500, ignoreReply = false) {
+// timeout of 350 ms calculated for current 2400 baud configuration and flight time of "download firmware" command including its payload
+async function transceiveCommand(opcode, params = new Uint8Array(), timeout = 340, ignoreReply = false) {
     const txMsg = encodeCommand(opcode, params);
 
     if(txMsg.length == 0) {
@@ -46,8 +47,22 @@ async function transceiveCommand(opcode, params = new Uint8Array(), timeout = 50
     await serialWriter.write(txMsg);
 
     await sleep(timeout);
-    let rxMsg = await serialReadWithTimeout(timeout);
+    let serialReadResult = await serialReadWithTimeout(timeout);
+    let rxMsg = serialReadResult.value;
+
     console.log("[RXM]", array2hex(rxMsg));
+
+    // UART parity and frame error handling: try reconnecting
+    // this is "glitch handling": a glitch may have falsely been detected as UART word,
+    // let's clear the hardware(!) buffer and make sure we re-sync on the next start bit correctly
+    if(serialReadResult.channelError) {
+        console.log("Attempting serial reconnect.");
+        let reconnectResult = await serialReconnect();
+        if(!reconnectResult) {
+            console.log("Serial reconnect attempt failed.");
+            return {success: false, payload: null};
+        }
+    }
 
     if(ignoreReply) {
         console.log("[RPL] ignoring reply");
@@ -61,12 +76,22 @@ async function transceiveCommand(opcode, params = new Uint8Array(), timeout = 50
 
     // check if RX message starts with echo of TX message
     const hasEcho = rxMsg.join(',').startsWith(txMsg.join(',')); // FIXME: do not use lazy string comparison but something more efficient
+    let hasGlitchyEcho = false;
     if(!hasEcho) {
-        return {success: false, payload: null};
+        console.log("[RPL] missing echo");
+        hasGlitchyEcho = rxMsg.join(',').slice(1).startsWith(txMsg.join(',')); // FIXME: do not use lazy string comparison but something more efficient
+        if(!hasGlitchyEcho) {
+            console.log("[RPL] not even a glitchy echo");
+            return {success: false, payload: null};
+        }
     }
 
     // throw away the echo part at the beginning as it does not contain any info (remove redundancy)
     rxMsg = rxMsg.slice(txMsg.length);
+    if(hasGlitchyEcho) {
+        // remove one more byte from response
+        rxMsg = rxMsg.slice(1);
+    }
 
     // check if reply also starts with preamble
     const hasPreamble = rxMsg.join(',').startsWith(preamble.join(',')); // FIXME: do not use lazy string comparison but something more efficient
@@ -133,9 +158,11 @@ async function serialConnect(fastMode=false) {
     const serialParams = { baudRate: baudRate, parity: parity, bufferSize: 3*32*1024 };
 
     try {
+      console.log("Trying to open serial port.");
       await serialPort.open(serialParams);
 
       const serialPortInfo = serialPort.getInfo();
+      console.log("Conectado ao dispositivo serial (baudrate: " + serialParams.baudRate + ").");
       showInfoMsg("Conectado ao dispositivo serial (baudrate: " + serialParams.baudRate + ").");
 
       serialReader = serialPort.readable.getReader();
@@ -161,13 +188,15 @@ async function serialSetSpeed(fastMode=true) {
   if(serialPort === null) {
       success = false;
   } else {
+    console.log("Disconnecting...");
     showInfoMsg("Disconnecting...");
     success = await serialDisconnect(true);
 
     if(success) {
-    await sleep(500);
+      console.log("Reconnecting...");
       showInfoMsg("Reconnecting...");
-      success = await serialConnect(fastMode);
+      // Does not take care of current mode (i.e. fast or not)
+      success = await serialConnect();
     }
   }
 
@@ -224,16 +253,21 @@ async function serialReadWithTimeout(timeout) {
     // make sure to detect and handle timeout errors and re-throw other type of exceptions
     if (e instanceof TypeError) {
         console.log("Tempo limite esgotado!");
+        result.channelError = false;
     } else if (e instanceof DOMException) {
       if(e.name == 'FramingError') {
         console.log("Framing error occurred!");
+        result.channelError = true;
       } else if (e.name == 'ParityError') {
         console.log("Parity error occurred!");
+        result.channelError = true;
       } else {
         console.log("Unhandled DOMException!");
+        result.channelError = false;
         throw(e);
       }
     } else {
+        result.channelError = false;
       throw(e);
     }
   }

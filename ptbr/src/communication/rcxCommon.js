@@ -342,42 +342,34 @@ async function downloadFirmware(description="firmware", firmwareData=[]) {
                 console.log("Erro de download durante o bloco #" + blockCount + ", tentando novamente...");
                 showErrorMsg("Erro de download durante o bloco #" + blockCount + ", tentando novamente...");
 
-                // maybe, we have to wake something up again!
-                let success = await wakeup();
-                if(!success) {
-                    showErrorMsg("Não é possível se comunicar com o RCX.\n" +
-                                 "O RCX precisa ser ligado e colocado perto da torre infra vermelho.");
-                    downloadSuccess = false;
-                    break;
-                }
+                // calling `await wakeup()` here has made things worse in the past
 
-                let retry = 0;
-                const maxRetries = 10;
-                for(retry = 1; retry <= maxRetries; retry++) {
-                    await sleep(retry * 100); // wait for short duration before retry (transmission conditions may improve!)
-                    downloadedBlock = await downloadBlock(blockCount, blockData, extendedTimeout);
-                    if(downloadedBlock) {
-                        const progress = blockCount/numBlocks;
+                downloadedBlock = await downloadBlock(blockCount, blockData, extendedTimeout);
+                if(downloadedBlock) {
+                    const progress = blockCount/numBlocks;
                         showInfoMsg("⏳ [" + (duration/1000).toFixed(1) + "s] Bloco do " +
                                     description + " baixado com sucesso " + blockCount + "/" + numBlocks +
                                     " ("+ Math.round(progress*1000)/10 + " %)");
 
-                        break; // no need to retry any longer
-                    }
-                    else {
-                        const retryText = "Erro de Download durante a nova tentativa #" + retry +
-                                          " do bloco #" + blockCount + "...";
-                        console.log(retryText);
-                        showErrorMsg(retryText);
+
+                    numFailedBlocks = 0; // reset number of failed blocks
+                    break; // no need to retry any longer
+                }
+                else {
+                    numFailedBlocks++;
+                    if(numFailedBlocks < 3) {
+                        console.log("Skipping block.");
+                        // maybe we just missed the reply, let's simply continue with the next block
+                        showInfoMsg("⏳ Unsure about block " + blockCount + "/" + numBlocks +
+                            "; skipping to next block");
+                    } else {
+                        console.log("Abortando Download.");
+                        showErrorMsg("Abortando Download.");
+                        downloadSuccess = false;
+                        break;
                     }
                 }
-                if(!downloadedBlock) {
-                    console.log("Abortando Download.");
-                    downloadSuccess = false;
-                    break;
-                }
-            }
-            else {
+            } else {
                 const progress = blockCount/numBlocks;
                 const currentTime = performance.timeOrigin + performance.now();
                 const duration = currentTime - startDownloadTime;
