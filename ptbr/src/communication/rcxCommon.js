@@ -359,10 +359,10 @@ async function downloadFirmware(description="firmware", firmwareData=[]) {
                 else {
                     numFailedBlocks++;
                     if(numFailedBlocks < 3) {
-                        console.log("Skipping block.");
+                        console.log("Pulando Bloco.");
                         // maybe we just missed the reply, let's simply continue with the next block
-                        showInfoMsg("⏳ Unsure about block " + blockCount + "/" + numBlocks +
-                            "; skipping to next block");
+                        showInfoMsg("⏳ Incerto sobre o bloco " + blockCount + "/" + numBlocks +
+                            "; pulandop para o próximo bloco");
                     } else {
                         console.log("Abortando Download.");
                         showErrorMsg("Abortando Download.");

@@ -56,10 +56,10 @@ async function transceiveCommand(opcode, params = new Uint8Array(), timeout = 34
     // this is "glitch handling": a glitch may have falsely been detected as UART word,
     // let's clear the hardware(!) buffer and make sure we re-sync on the next start bit correctly
     if(serialReadResult.channelError) {
-        console.log("Attempting serial reconnect.");
+        console.log("Tentando se reconectar a conexão serial.");
         let reconnectResult = await serialReconnect();
         if(!reconnectResult) {
-            console.log("Serial reconnect attempt failed.");
+            console.log("Falha ao reconectar a conexão serial.");
             return {success: false, payload: null};
         }
     }
@@ -158,7 +158,7 @@ async function serialConnect(fastMode=false) {
     const serialParams = { baudRate: baudRate, parity: parity, bufferSize: 3*32*1024 };
 
     try {
-      console.log("Trying to open serial port.");
+      console.log("Tentando abrir porta serial.");
       await serialPort.open(serialParams);
 
       const serialPortInfo = serialPort.getInfo();
@@ -188,13 +188,13 @@ async function serialReconnect() {
   if(serialPort === null) {
       success = false;
   } else {
-    console.log("Disconnecting...");
-    showInfoMsg("Disconnecting...");
+    console.log("Desconectando...");
+    showInfoMsg("Desconectando...");
     success = await serialDisconnect(true);
 
     if(success) {
-      console.log("Reconnecting...");
-      showInfoMsg("Reconnecting...");
+      console.log("Reconectando...");
+      showInfoMsg("Reconectando...");
       // Does not take care of current mode (i.e. fast or not)
       success = await serialConnect();
     }
