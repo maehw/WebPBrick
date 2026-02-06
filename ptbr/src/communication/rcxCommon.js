@@ -335,6 +335,8 @@ async function downloadFirmware(description="firmware", firmwareData=[]) {
 
         startDownloadTime = performance.timeOrigin + performance.now();
 
+        let numFailedBlocks = 0;
+
         for(let blockCount = 1; blockCount <= numBlocks; blockCount++) {
             let blockData = firmwareData.slice((blockCount-1)*blockSize, blockCount*blockSize);
             downloadedBlock = await downloadBlock(blockCount, blockData, extendedTimeout);
@@ -342,39 +344,31 @@ async function downloadFirmware(description="firmware", firmwareData=[]) {
                 console.log("Erro no download durante o bloco #" + blockCount + ", tentando novamente...");
                 showErrorMsg("Erro no download durante o bloco #" + blockCount + ", tentando novamente...");
 
-                // maybe, we have to wake something up again!
-                let success = await wakeup();
-                if(!success) {
-                    showErrorMsg("Não foi possível se comunicar com o bloco RCX.\n" +
-                                 "O bloco RCX precisa ser ligado e colocado perto da torre infravermelho.");
-                    downloadSuccess = false;
-                    break;
-                }
+                // calling `await wakeup()` here has made things worse in the past
 
-                let retry = 0;
-                const maxRetries = 10;
-                for(retry = 1; retry <= maxRetries; retry++) {
-                    await sleep(retry * 100); // wait for short duration before retry (transmission conditions may improve!)
-                    downloadedBlock = await downloadBlock(blockCount, blockData, extendedTimeout);
-                    if(downloadedBlock) {
-                        const progress = blockCount/numBlocks;
-                        showInfoMsg("⏳ [" + (duration/1000).toFixed(1) + "s] baixados com sucesso " +
-                                    description + " bloco " + blockCount + "/" + numBlocks +
+                downloadedBlock = await downloadBlock(blockCount, blockData, extendedTimeout);
+                if(downloadedBlock) {
+                    const progress = blockCount/numBlocks;
+                        showInfoMsg("⏳ [" + (duration/1000).toFixed(1) + "s] Bloco do " +
+                                    description + " baixado com sucesso " + blockCount + "/" + numBlocks +
                                     " ("+ Math.round(progress*1000)/10 + " %)");
 
-                        break; // no need to retry any longer
-                    }
-                    else {
-                        const retryText = "Erro de download durante a tentativa de reenvio #" + retry +
-                                          " do bloco #" + blockCount + "...";
-                        console.log(retryText);
-                        showErrorMsg(retryText);
-                    }
+                    numFailedBlocks = 0; // reset number of failed blocks
+                    break; // no need to retry any longer
                 }
-                if(!downloadedBlock) {
-                    console.log("Abortando download.");
-                    downloadSuccess = false;
-                    break;
+                else {
+                    numFailedBlocks++;
+                    if(numFailedBlocks < 3) {
+                        console.log("Skipping block.");
+                        // maybe we just missed the reply, let's simply continue with the next block
+                        showInfoMsg("⏳ Unsure about block " + blockCount + "/" + numBlocks +
+                            "; skipping to next block");
+                    } else {
+                        console.log("Abortando Download.");
+                        showErrorMsg("Abortando Download.");
+                        downloadSuccess = false;
+                        break;
+                    }
                 }
             } else {
                 const progress = blockCount/numBlocks;
