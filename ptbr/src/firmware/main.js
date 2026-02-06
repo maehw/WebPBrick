@@ -363,7 +363,7 @@ async function downloadFirmwareFast(description="firmware", firmwareData=[]) {
 // Handler for click on firmware download button
 async function clickFwDownload() {
   // Open a dialog first to let the user confirm the download before starting it
-  const confirmedFwDownload = window.confirm("O dowload do firmware é lento, e levará diversos minutos. (+ ou - 12 minutos) " +
+  const confirmedFwDownload = window.confirm("O dowload do firmware é lento, e levará diversos minutos. (+ ou - 7 minutos) " +
     "O download do firmware pode falhar. Pode tornar seu RCX (temporariamente) inutilizável." +
     "\n\nEu sei o que estou fazendo e quero continuar.");
 
