@@ -34,7 +34,7 @@ async function transceiveCommand(opcode, params = new Uint8Array(), timeout = 50
     const txMsg = encodeCommand(opcode, params);
 
     if(txMsg.length == 0) {
-        console.log("[TXM] Erro de codificação, número errado de parâmetros");
+        console.log("[TXM] erro de codificação, número errado de paramêtros");
         return {success: false, payload: null};
     }
     if(txMsg.length < preamble.length) {
@@ -50,7 +50,7 @@ async function transceiveCommand(opcode, params = new Uint8Array(), timeout = 50
     console.log("[RXM]", array2hex(rxMsg));
 
     if(ignoreReply) {
-        console.log("[RPL] ignoring reply");
+        console.log("[RPL] ignorando resposta");
         return {success: true, payload: null};
     }
 
@@ -75,18 +75,18 @@ async function transceiveCommand(opcode, params = new Uint8Array(), timeout = 50
     }
 
     const reply = extractReply(rxMsg);
-    console.log("[RPL] valid? " + reply.valid + ", payload: " + array2hex(reply.payload));
+    console.log("[RPL] valido? " + reply.valid + ", payload: " + array2hex(reply.payload));
 
     // check reply payload
     if(!reply.valid) {
         // let's hand the payload also back, there may be special handling on higher level
-        console.log("[CMD] message decode error");
+        console.log("[CMD] erro de decodificação de mensagem");
         return {success: false, payload: reply.payload};
     }
     else {
         // does the first reply payload byte match as a complement to the command opcode?
         if((reply.payload[0] ^ opcode) != 0xFF) {
-            console.log("[CMD] invalid reply");
+            console.log("[CMD] resposta invalida");
             // let's hand the payload also back, there may be special handling on higher level
             return {success: false, payload: reply.payload};
         }
@@ -136,7 +136,7 @@ async function serialConnect(fastMode=false) {
       await serialPort.open(serialParams);
 
       const serialPortInfo = serialPort.getInfo();
-      showInfoMsg("Conectado ao dispositivo serial (baudrate: " + serialParams.baudRate + ").");
+      showInfoMsg("Conectado ao dispositivo serial " + speedText + " modo (baudrate: " + serialParams.baudRate + "; paridade: " + serialParams.parity + ").");
 
       serialReader = serialPort.readable.getReader();
       serialWriter = serialPort.writable.getWriter();
@@ -161,12 +161,12 @@ async function serialSetSpeed(fastMode=true) {
   if(serialPort === null) {
       success = false;
   } else {
-    showInfoMsg("Disconnecting...");
+    showInfoMsg("Desconectando...");
     success = await serialDisconnect(true);
 
     if(success) {
     await sleep(500);
-      showInfoMsg("Reconnecting...");
+      showInfoMsg("Reconectando...");
       success = await serialConnect(fastMode);
     }
   }
@@ -181,12 +181,12 @@ async function checkFirmware() {
 
   versionInfo = await getVersions();
   if(!versionInfo.success) {
-      showErrorMsg("Failed to retrieve ROM and firmware versions.");
+      showErrorMsg("Falha ao recuperar as versões da ROM e do firmware.");
       success = false;
   }
 
   if(success) {
-      showInfoMsg("ℹ️ versão da ROM: " + versionInfo.romVersion + ", versão do Firmware: " + versionInfo.fwVersion);
+      showInfoMsg("ℹ️ Versão da ROM: " + versionInfo.romVersion + ", Versão do Firmware: " + versionInfo.fwVersion);
       fwVersion = versionInfo.fwVersion;
   }
 
@@ -223,12 +223,12 @@ async function serialReadWithTimeout(timeout) {
   catch (e) {
     // make sure to detect and handle timeout errors and re-throw other type of exceptions
     if (e instanceof TypeError) {
-        console.log("Tempo limite esgotado!");
+        console.log("Ocorreu um erro no tempo de intervalo!");
     } else if (e instanceof DOMException) {
       if(e.name == 'FramingError') {
-        console.log("Framing error occurred!");
+        console.log("Uma falha no enquadramento ocorreu!");
       } else if (e.name == 'ParityError') {
-        console.log("Parity error occurred!");
+        console.log("Uma falha de paridade ocorreu!");
       } else {
         console.log("Unhandled DOMException!");
         throw(e);
@@ -262,7 +262,7 @@ async function serialDisconnect(keepPort=false) {
     serialPort = null;
   }
 
-  showInfoMsg("Desconectado da torre serial.");
+  showInfoMsg("Desconectado do dispositivo serial.");
   return true;
 }
 

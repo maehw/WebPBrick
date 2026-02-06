@@ -188,20 +188,20 @@ async function clickSerialConnect() {
       success = await ping();
 
       if(!success) {
-        showErrorMsg("No communication with RCX possible.\n" +
-               "RCX needs to be switched on and placed close to the IR tower and also in line of sight.\n" +
-               "Please try again.");
+        showErrorMsg("Não foi possível se comunicar com o bloco RCX.\n" +
+               "O bloco RCX precisa estar ligado e perto da torre infravermelho, também como no campo de visão da torre.\n" +
+               "Por favor, tente novamente.");
       } else {
-        showInfoMsg("🔗 Communication working, RCX is alive!");
+        showInfoMsg("🔗 Comunicação funcionando, O bloco RCX está respondendo!");
 
         fwVersion = await checkFirmware();
 
         if(fwVersion == null) {
-            showErrorMsg("Unable to determine firmware version.");
+            showErrorMsg("Não foi possível determinar a versão do firmware.");
         } else {
           if(fwVersion == '0.0') {
-            showErrorMsg("Firmware version '0.0' indicates that currently no firmware is loaded into RAM. " +
-              "Download of programs to the RCX is not possible.");
+            showErrorMsg("Versão do firmware '0.0' indica que atualmente nenhum firmware está carregado na memória RAM. " +
+              "O download de programas para o bloco RCX não é possível.");
           } else {
             await checkBatteryLevel();
 
