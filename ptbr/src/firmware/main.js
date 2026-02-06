@@ -49,15 +49,15 @@ document.addEventListener('DOMContentLoaded', () => {
   if(!('serial' in navigator)) {
     // show hidden error banner, deactivate connect button and log to console
     webSerialNotSupported.style.display = "block";
-    console.log("Web Serial not supported.");
+    console.log("Web Serial não suportado.");
     disableSerialConnectBtn();
   }
 
   const wasmNotSupported = document.getElementById('wasm-not-supported');
   if(!wasmSupported) {
     // show hidden error banner, deactivate connect button and log to console
-    wasmNotSupported.style.display = "block";
-    console.log("WebAssembly (WASM) not supported.");
+    wasmNotSupported.style.display = "bloco";
+    console.log("WebAssembly (WASM) não suportado.");
     disableCompileBtn();
   }
 
@@ -111,27 +111,27 @@ async function clickSerialConnect() {
       success = await ping();
 
       if(!success) {
-        showErrorMsg("No communication with RCX possible.\n" +
-               "RCX needs to be switched on and placed close to the IR tower and also in line of sight.\n" +
-               "Please try again.");
+        showErrorMsg("Não foi possível se comunicar com o bloco RCX.\n" +
+               "O bloco RCX precisa estar ligado e posicionado próximo à torre IR e também em linha de visão.\n" +
+               "Por favor, tente novamente.");
       } else {
-        showInfoMsg("🔗 Communication working, RCX is alive!");
+        showInfoMsg("🔗 Comunicação funcionando, RCX está respondendo!");
 
         fwVersion = await checkFirmware();
 
         if(fwVersion == null) {
-            showErrorMsg("Unable to determine firmware version.");
+            showErrorMsg("Não foi possível determinar a versão do firmware.");
         } else {
           if(fwVersion == '0.0') {
-            showErrorMsg("Firmware version '0.0' indicates that currently no firmware is loaded into RAM. " +
-              "Download of programs to the RCX is not possible. Good that you are here!");
+            showErrorMsg("A versão do firmware '0.0' indica que atualmente nenhum firmware está carregado na memória RAM. " +
+              "Download de programas para o RCX não é possível. É bom que você esteja aqui!");
             // will work anyways, because that's why they're here!
           }
 
           await checkBatteryLevel();
 
           enableDownloadFirmwareBtn();
-          serialConnectBtn.innerHTML = '🔗 Serial Disconnect';
+          serialConnectBtn.innerHTML = '🔗 Desconectar Serial';
           serialConnected = true;
         }
       }
@@ -141,7 +141,7 @@ async function clickSerialConnect() {
 
     if(success) {
       disableDownloadFirmwareBtn();
-      serialConnectBtn.innerHTML = '🔗 Serial Connect';
+      serialConnectBtn.innerHTML = '🔗 Conectar Serial';
       serialConnected = false;
     }
   }
@@ -166,7 +166,7 @@ function encodeCommandFast(opcode, params) {
     // (see also the list of OpCodes from above)
     const paramLen = opcode & 0x07;
     if((paramLen != params.length) && (OpCode.ContinueDownload != opcode) && (OpCode.RemoteCommand != opcode)) {
-        console.log("Wrong number of parameters!");
+        console.log("Número errado de parâmetros!");
         // wrong number of parameters
         return emptyMsg;
     }
@@ -216,7 +216,7 @@ function extractReplyFast(rxMsg, quiet=false) {
     if(rxMsg.length < 1) {
         // expect at least 1 byte for the checksum
         if(!quiet) {
-            console.log("[XTRF] message too short: " + rxMsg.length);
+            console.log("[XTRF] mensagem muito curta: " + rxMsg.length);
         }
         return {valid: false, payload: rxMsg};
     }
@@ -243,7 +243,7 @@ async function transceiveCommandFast(opcode, params = new Uint8Array(), timeout 
     const txMsg = encodeCommandFast(opcode, params);
 
     if(txMsg.length == 0) {
-        console.log("[TXMF] encoding error, wrong number of parameters");
+        console.log("[TXMF] erro de codificação, número errado de paramêtros");
         return {success: false, payload: null};
     }
     if(txMsg.length < preambleFast.length) {
@@ -259,7 +259,7 @@ async function transceiveCommandFast(opcode, params = new Uint8Array(), timeout 
     console.log("[RXMF]", array2hex(rxMsg));
 
     if(ignoreReply) {
-        console.log("[RPLF] ignoring reply");
+        console.log("[RPLF] ignorando resposta");
         return {success: true, payload: null};
     }
 
@@ -285,37 +285,37 @@ async function transceiveCommandFast(opcode, params = new Uint8Array(), timeout 
     }
 
     const reply = extractReplyFast(rxMsg);
-    console.log("[RPLF] valid? " + reply.valid + ", payload: " + array2hex(reply.payload));
+    console.log("[RPLF] valido? " + reply.valid + ", payload: " + array2hex(reply.payload));
 
     // check reply payload
     if(!reply.valid) {
         // let's hand the payload also back, there may be special handling on higher level
-        console.log("[CMDF] message decode error");
+        console.log("[CMDF] erro de decodificação da mensagem");
         return {success: false, payload: reply.payload};
     }
     else {
         // does the first reply payload byte match as a complement to the command opcode?
         if((reply.payload[0] ^ opcode) != 0xFF) {
-            console.log("[CMDF] invalid reply");
+            console.log("[CMDF] resposta invalida");
             // let's hand the payload also back, there may be special handling on higher level
             return {success: false, payload: reply.payload};
         }
         else {
-            console.log("[CMDF] success");
+            console.log("[CMDF] sucesso");
             return {success: true, payload: reply.payload};
         }
     }
 }
 
 async function pingFast() {
-  console.log("Ping (fast)...");
+  console.log("Ping (rápido)...");
   let {success, payload} = await transceiveCommandFast(OpCode.Ping);
 
   if(success) {
-    console.log("Programmable brick is alive.");
+    console.log("O bloco prográmavel está respondendo.");
   }
   else {
-    console.log("Programmable brick is not alive.");
+    console.log("O bloco prográmavel não está respondendo.");
   }
 
   return success;
@@ -323,7 +323,7 @@ async function pingFast() {
 
 // Send command to send RCX into boot mode
 async function goIntoBootModeFast() {
-    console.log("Going into boot mode (fast).");
+    console.log("Entrando no modo de boot (rápido).");
     let {success, payload} = await transceiveCommandFast(OpCode.GoIntoBootMode, oddPrimes);
     return success;
 }
@@ -332,10 +332,10 @@ async function goIntoBootModeFast() {
 async function downloadFirmwareFast(description="firmware", firmwareData=[]) {
     // prepare download
     const firmwareSize = firmwareData.length;
-    showInfoMsg("🧮 " + capitalize(description) + " size in bytes: " + firmwareSize);
+    showInfoMsg("🧮 " + capitalize(description) + " tamanho em bytes: " + firmwareSize);
 
     const firmwareChecksum = calculateFirmwareChecksum(firmwareData);
-    showInfoMsg("🧮 Calculated " + description + " checksum: 0x" + firmwareChecksum.toString(16).padStart(4, '0').toUpperCase());
+    showInfoMsg("🧮 Calculados " + description + " checksum: 0x" + firmwareChecksum.toString(16).padStart(4, '0').toUpperCase());
 
     let success = false;
     let numPings = 0;
@@ -345,7 +345,7 @@ async function downloadFirmwareFast(description="firmware", firmwareData=[]) {
     }
 
     if(success) {
-      showInfoMsg("Attempting to enter boot mode.");
+      showInfoMsg("Tentando entrar no modo de boot.");
 
       success = false;
       let numBootModeAttempts = 0;
@@ -363,13 +363,13 @@ async function downloadFirmwareFast(description="firmware", firmwareData=[]) {
 // Handler for click on firmware download button
 async function clickFwDownload() {
   // Open a dialog first to let the user confirm the download before starting it
-  const confirmedFwDownload = window.confirm("Firmware download is quite slow and will take several minutes. " +
-    "Firmware download may fail. It may render your RCX (temporarily) unusable." +
-    "\n\nI know what I am doing and want to continue.");
+  const confirmedFwDownload = window.confirm("O dowload do firmware é lento, e levará diversos minutos. (+ ou - 12 minutos) " +
+    "O download do firmware pode falhar. Pode tornar seu RCX (temporariamente) inutilizável." +
+    "\n\nEu sei o que estou fazendo e quero continuar.");
 
   if(confirmedFwDownload) {
-    console.log("Firmware download request confirmed.");
-    showInfoMsg("Firmware download request confirmed.");
+    console.log("Pedido para baixar o firmware confirmado.");
+    showInfoMsg("Pedido para baixar o firmware confirmado.");
 
     // TODO: add mechanism to choose between different firmware versions
 
@@ -392,17 +392,17 @@ async function clickFwDownload() {
 */
 
     if(success) {
-      showInfoMsg("✅ " + capitalize(firmwareName) + " download complete. 🎉");
+      showInfoMsg("✅ " + capitalize(firmwareName) + " download completo. 🎉");
     }
 
     if(!success) {
-        showErrorMsg("Failed to download firmware. Make sure the RCX is switched on " +
-            "and in line of sight of the IR tower. Please retry!");
+        showErrorMsg("Falha ao baixar o firmware. Certifique-se de que o RCX está ligado " +
+            "e dentro da linha de visão da torre IR. Por favor, tente novamente!");
     }
 
-    showInfoMsg("Please disconnect and re-connect!");
+    showInfoMsg("Por favor, desconecte e reconecte!");
   } else {
-      console.log("Firmware download request aborted.");
-      showInfoMsg("Firmware download request aborted.");
+      console.log("Pedido para baixar o firmware abortado.");
+      showInfoMsg("Pedido para baixar o firmware abortado.");
   }
 }
