@@ -35,7 +35,7 @@ async function transceiveCommand(opcode, params = new Uint8Array(), timeout = 34
     const txMsg = encodeCommand(opcode, params);
 
     if(txMsg.length == 0) {
-        console.log("[TXM] Erro de codificação, número errado de parâmetros");
+        console.log("[TXM] erro de codificação, número errado de parâmetros");
         return {success: false, payload: null};
     }
     if(txMsg.length < preamble.length) {
@@ -56,16 +56,16 @@ async function transceiveCommand(opcode, params = new Uint8Array(), timeout = 34
     // this is "glitch handling": a glitch may have falsely been detected as UART word,
     // let's clear the hardware(!) buffer and make sure we re-sync on the next start bit correctly
     if(serialReadResult.channelError) {
-        console.log("Attempting serial reconnect.");
+        console.log("Tentando se reconectar a conexão serial.");
         let reconnectResult = await serialReconnect();
         if(!reconnectResult) {
-            console.log("Serial reconnect attempt failed.");
+            console.log("Falha ao reconectar a conexão serial.");
             return {success: false, payload: null};
         }
     }
 
     if(ignoreReply) {
-        console.log("[RPL] ignoring reply");
+        console.log("[RPL] ignorando resposta");
         return {success: true, payload: null};
     }
 
@@ -100,18 +100,18 @@ async function transceiveCommand(opcode, params = new Uint8Array(), timeout = 34
     }
 
     const reply = extractReply(rxMsg);
-    console.log("[RPL] valid? " + reply.valid + ", payload: " + array2hex(reply.payload));
+    console.log("[RPL] valido? " + reply.valid + ", payload: " + array2hex(reply.payload));
 
     // check reply payload
     if(!reply.valid) {
         // let's hand the payload also back, there may be special handling on higher level
-        console.log("[CMD] message decode error");
+        console.log("[CMD] erro de decodificação de mensagem");
         return {success: false, payload: reply.payload};
     }
     else {
         // does the first reply payload byte match as a complement to the command opcode?
         if((reply.payload[0] ^ opcode) != 0xFF) {
-            console.log("[CMD] invalid reply");
+            console.log("[CMD] resposta invalida");
             // let's hand the payload also back, there may be special handling on higher level
             return {success: false, payload: reply.payload};
         }
@@ -158,7 +158,7 @@ async function serialConnect(fastMode=false) {
     const serialParams = { baudRate: baudRate, parity: parity, bufferSize: 3*32*1024 };
 
     try {
-      console.log("Trying to open serial port.");
+      console.log("Tentando abrir porta serial.");
       await serialPort.open(serialParams);
 
       const serialPortInfo = serialPort.getInfo();
@@ -188,13 +188,13 @@ async function serialReconnect() {
   if(serialPort === null) {
       success = false;
   } else {
-    console.log("Disconnecting...");
-    showInfoMsg("Disconnecting...");
+    console.log("Desconectando...");
+    showInfoMsg("Desconectando...");
     success = await serialDisconnect(true);
 
     if(success) {
-      console.log("Reconnecting...");
-      showInfoMsg("Reconnecting...");
+      console.log("Reconectando...");
+      showInfoMsg("Reconectando...");
       // Does not take care of current mode (i.e. fast or not)
       success = await serialConnect();
     }
@@ -210,12 +210,12 @@ async function checkFirmware() {
 
   versionInfo = await getVersions();
   if(!versionInfo.success) {
-      showErrorMsg("Failed to retrieve ROM and firmware versions.");
+      showErrorMsg("Falha ao recuperar as versões da ROM e do firmware.");
       success = false;
   }
 
   if(success) {
-      showInfoMsg("ℹ️ versão da ROM: " + versionInfo.romVersion + ", versão do Firmware: " + versionInfo.fwVersion);
+      showInfoMsg("ℹ️ Versão da ROM: " + versionInfo.romVersion + ", Versão do Firmware: " + versionInfo.fwVersion);
       fwVersion = versionInfo.fwVersion;
   }
 
@@ -297,7 +297,7 @@ async function serialDisconnect(keepPort=false) {
     serialPort = null;
   }
 
-  showInfoMsg("Desconectado da torre serial.");
+  showInfoMsg("Desconectado do dispositivo serial.");
   return true;
 }
 
