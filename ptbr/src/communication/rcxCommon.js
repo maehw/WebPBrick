@@ -362,7 +362,7 @@ async function downloadFirmware(description="firmware", firmwareData=[]) {
                         console.log("Pulando Bloco.");
                         // maybe we just missed the reply, let's simply continue with the next block
                         showInfoMsg("⏳ Incerto sobre o bloco " + blockCount + "/" + numBlocks +
-                            "; pulandop para o próximo bloco");
+                            "; pulando para o próximo bloco");
                     } else {
                         console.log("Abortando Download.");
                         showErrorMsg("Abortando Download.");
@@ -699,13 +699,13 @@ async function ping(playSound = false) {
     let {success, payload} = await transceiveCommand(OpCode.Ping);
 
     if(success) {
-        console.log("O bloco prográmavel está respondendo.");
+        console.log("O bloco programável está respondendo.");
         if(playSound) {
             await playSystemSound(SystemSound.FastSweepUp);
         }
     }
     else {
-        console.log("O bloco prográmavel não está respondendo.");
+        console.log("O bloco programável não está respondendo.");
         if(playSound) {
             await playSystemSound(SystemSound.Error);
         }
