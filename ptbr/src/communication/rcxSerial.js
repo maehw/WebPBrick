@@ -35,7 +35,7 @@ async function transceiveCommand(opcode, params = new Uint8Array(), timeout = 34
     const txMsg = encodeCommand(opcode, params);
 
     if(txMsg.length == 0) {
-        console.log("[TXM] erro de codificação, número errado de paramêtros");
+        console.log("[TXM] erro de codificação, número errado de parâmetros");
         return {success: false, payload: null};
     }
     if(txMsg.length < preamble.length) {
