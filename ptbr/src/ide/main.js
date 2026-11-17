@@ -304,16 +304,17 @@ async function clickUsbConnect() {
 
 // Handler for click on program download button
 async function clickProgramDownload() {
-    if(rcxBinary === null) {
-        showErrorMsg("Nenhum programa para ser baixado. Você precisa construir o código em NQC primeiro!");
+    // build first when there's no binary yet or when the code has been modified after the last build
+    if((rcxBinary === null) || codeModified) {
+        showInfoMsg("🧱 Construindo a versão atual do código antes do download...");
+        await clickConvert();
+    }
+
+    if((rcxBinary === null) || codeModified) {
+        showErrorMsg("Nenhum programa para ser baixado. A construção do código NQC falhou!");
     }
     else {
         showInfoMsg("Solicitação para baixar o programa recebida..");
-
-        // show an info message if the code has been touched after last build in the meantime
-        if(codeModified) {
-          showInfoMsg("❗ O código foi modificado desde a última vez. Considere reconstruir a versão atual do código!");
-        }
 
         const programNumber= programNumberSelection.value;
         let success = await downloadProgram(programNumber, rcxBinary);

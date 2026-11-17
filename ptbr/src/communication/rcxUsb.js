@@ -366,11 +366,12 @@ async function usbConnect() {
         showInfoMsg("Conectado à torre USB (versão do firmware da torre: " + version + ").");
       }
 
-      // let the tower use its full transmission power; the connection is still usable if this fails
+      // Ask for the long transmission range. The tower refuses it (LTW_REQERR_NOPOWER) in its low power
+      // configuration, which is the only one usable on Windows, and then stays at medium range.
       if(success) {
         const rangeSet = await setUsbTowerParameter(LTW_PARM_RANGE, LTW_RANGE_LONG);
         if(!rangeSet) {
-          showInfoMsg("Não foi possível definir o alcance de transmissão da torre USB, continuando com a configuração atual.");
+          console.log("USB tower keeps its current transmission range.");
         }
       }
     }
