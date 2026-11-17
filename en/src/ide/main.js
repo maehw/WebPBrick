@@ -21,6 +21,7 @@
 // define various control elements
 const compileBtn = document.getElementById('compileBtn');
 const serialConnectBtn = document.getElementById('serialConnectBtn');
+const usbConnectBtn = document.getElementById('usbConnectBtn');
 const downloadBtn = document.getElementById('downloadBtn');
 const clearLogBtn = document.getElementById('clearLogBtn');
 const codeArea = document.getElementById('codeArea');
@@ -30,6 +31,7 @@ const programNumberSelection = document.getElementById('programNumber');
 
 let codeModified = true; // code modified after build?
 let serialConnected = false;
+let usbConnected = false;
 
 // Helper to check if browser supports WASM
 const wasmSupported = (() => {
@@ -57,6 +59,14 @@ document.addEventListener('DOMContentLoaded', () => {
     disableSerialConnectBtn();
   }
 
+  const webUsbNotSupported = document.getElementById('webusb-not-supported');
+  if(!('usb' in navigator)) {
+    // show hidden error banner, deactivate connect button and log to console
+    webUsbNotSupported.style.display = "block";
+    console.log("WebUSB not supported.");
+    disableUsbConnectBtn();
+  }
+
   const wasmNotSupported = document.getElementById('wasm-not-supported');
   if(!wasmSupported) {
     // show hidden error banner, deactivate connect button and log to console
@@ -66,6 +76,7 @@ document.addEventListener('DOMContentLoaded', () => {
   }
 
   serialConnectBtn.addEventListener('click', clickSerialConnect);
+  usbConnectBtn.addEventListener('click', clickUsbConnect);
   downloadBtn.addEventListener('click', clickProgramDownload);
 });
 
@@ -158,6 +169,11 @@ function enableSerialConnectBtn() {
   serialConnectBtn.style.color = ''; // Reset text color
 }
 
+function disableUsbConnectBtn() {
+  usbConnectBtn.disabled = true; // Disable USB connection button
+  usbConnectBtn.style.color = 'gray'; // Change text color to indicate missing functionality support
+}
+
 clearLogBtn.addEventListener('click', () => {
   logArea.value = ''; // Clear log
 });
@@ -219,6 +235,69 @@ async function clickSerialConnect() {
       disableDownloadBtn();
       serialConnectBtn.innerHTML = '🔗 Serial Connect';
       serialConnected = false;
+    }
+  }
+}
+
+/**
+ * @name clickUsbConnect
+ * Click handler for the USB connect/disconnect button.
+ */
+async function clickUsbConnect() {
+  let success = true;
+
+  if (!usbConnected) {
+    if(serialConnected) {
+      showErrorMsg("Already connected via serial tower. Please disconnect first.");
+      return;
+    }
+
+    success = await usbConnect();
+
+    if(success) {
+      success = await ping();
+
+      if(!success) {
+        showErrorMsg("No communication with RCX possible.\n" +
+               "RCX needs to be switched on and placed close to the IR tower and also in line of sight.\n" +
+               "Please try again.");
+      } else {
+        showInfoMsg("🔗 Communication working, RCX is alive!");
+
+        fwVersion = await checkFirmware();
+
+        if(fwVersion == null) {
+            showErrorMsg("Unable to determine firmware version.");
+        } else {
+          if(fwVersion == '0.0') {
+            showErrorMsg("Firmware version '0.0' indicates that currently no firmware is loaded into RAM. " +
+              "Download of programs to the RCX is not possible.");
+          } else {
+            await checkBatteryLevel();
+
+            enableDownloadBtn();
+            usbConnectBtn.innerHTML = '🔗 USB Disconnect';
+            usbConnected = true;
+            disableSerialConnectBtn(); // only one IR tower at a time
+          }
+        }
+      }
+
+      if(!usbConnected) {
+        // give the tower back, so that the next attempt starts from scratch
+        await usbDisconnect(true);
+      }
+    }
+  } else {
+    success = await usbDisconnect();
+
+    if(success) {
+      disableDownloadBtn();
+      usbConnectBtn.innerHTML = '🔗 USB Connect';
+      usbConnected = false;
+      if('serial' in navigator) {
+        enableSerialConnectBtn();
+      }
     }
   }
 }
