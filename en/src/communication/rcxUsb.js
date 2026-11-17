@@ -152,12 +152,13 @@ async function usbTowerRequest(request, value = 0, length = 8) {
   const setup = {requestType: "vendor", recipient: "device", request: request, value: value, index: 0};
   const result = await usbDevice.controlTransferIn(setup, length);
 
-  if((result.status != 'ok') || (result.data === undefined) || (result.data.byteLength < 4)) {
-    console.log("USB tower request " + array2hex([request]) + " failed.");
+  if((result.status != 'ok') || (result.data === undefined) || (result.data.byteLength < 3)) {
+    console.log("USB tower request " + array2hex([request]) + " failed, status: " + result.status);
     return null;
   }
 
   const reply = new Uint8Array(result.data.buffer, result.data.byteOffset, result.data.byteLength);
+  console.log("USB tower request " + array2hex([request]) + " (value " + value + ") reply: " + array2hex(reply));
   const errCode = reply[2];
   if(errCode != LTW_REQERR_SUCCESS) {
     console.log("USB tower request " + array2hex([request]) + " failed, error code: " + errorCodeToString(errCode));
@@ -296,12 +297,11 @@ async function usbConnect() {
         showInfoMsg("Connected to USB tower (tower firmware version: " + version + ").");
       }
 
-      // make sure the tower talks to the RCX (and not VLL or IRC) and uses its full transmission power
+      // let the tower use its full transmission power; the connection is still usable if this fails
       if(success) {
-        success = await setUsbTowerParameter(LTW_PARM_MODE, LTW_MODE_IR) &&
-                  await setUsbTowerParameter(LTW_PARM_RANGE, LTW_RANGE_LONG);
-        if(!success) {
-          showErrorMsg("Unable to configure USB tower.");
+        const rangeSet = await setUsbTowerParameter(LTW_PARM_RANGE, LTW_RANGE_LONG);
+        if(!rangeSet) {
+          showInfoMsg("Unable to set the USB tower's transmission range, continuing with its current setting.");
         }
       }
     }
