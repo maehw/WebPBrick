@@ -48,6 +48,7 @@ const USB_PACKET_SIZE = 8; // maximum packet size of both interrupt endpoints
 const USB_IR_BYTE_TIME = 4.6; // milliseconds needed to transfer one byte via IR at 2400 baud (8-O-1)
 const USB_QUIET_TIME = 40; // a reply is considered complete when no more bytes arrive for this time (in ms)
 const USB_MAX_ATTEMPTS = 3; // how often a command is sent until the RCX replies
+let usbIrByteTime = USB_IR_BYTE_TIME; // depends on the IR speed which is currently set
 
 // Location of the Windows driver setup script; it's stored next to this file, wherever the page is.
 const usbDriverSetupUrl = new URL('windows/lego-usb-tower-winusb-setup.cmd',
@@ -293,6 +294,30 @@ function showUsbDriverHelp() {
 }
 
 /**
+ * Switch the IR speed of the tower: fast is 4800 baud, normal is 2400 baud.
+ * The parity stays odd, as the tower cannot send without a parity bit.
+ */
+async function usbSetFastSpeed(fast) {
+  const speed = fast ? SPEED_COMM_BAUD_4800 : SPEED_COMM_BAUD_2400;
+  let success = false;
+
+  try {
+    // the transmit speed has to be set first
+    success = (await usbTowerRequest(LTW_REQ_SET_TX_SPEED, speed, 8) !== null) &&
+              (await usbTowerRequest(LTW_REQ_SET_RX_SPEED, speed, 8) !== null);
+  }
+  catch(e) {
+    console.log("Unable to set the USB tower's IR speed: " + e.message);
+  }
+
+  if(success) {
+    usbIrByteTime = fast ? (USB_IR_BYTE_TIME / 2) : USB_IR_BYTE_TIME;
+  }
+
+  return success;
+}
+
+/**
  * @name Connect USB device
  * Opens a WebUSB connection to a LEGO USB IR Tower
  */
@@ -366,6 +391,11 @@ async function usbConnect() {
         showInfoMsg("Conectado à torre USB (versão do firmware da torre: " + version + ").");
       }
 
+      // the tower keeps its IR speed while it is plugged in, make sure it is the normal one
+      if(success) {
+        await usbSetFastSpeed(false);
+      }
+
       // Ask for the long transmission range. The tower refuses it (LTW_REQERR_NOPOWER) in its low power
       // configuration, which is the only one usable on Windows, and then stays at medium range.
       if(success) {
@@ -387,7 +417,7 @@ async function usbConnect() {
 
   if(success) {
     // from now on, commands for the RCX go through the USB tower
-    setTransceiver(usbTransceiveCommand);
+    setTransceiver(usbTransceiveCommand, usbSetFastSpeed, true);
   }
 
   return success;
@@ -480,7 +510,8 @@ function usbExtractReply(rxMsg, opcode) {
   const replyOpcode = (~opcode) & 0xFF;
 
   for(let start = 0; start + 1 < rxMsg.length; start++) {
-    if((rxMsg[start] == replyOpcode) && (rxMsg[start + 1] == opcode)) {
+    // (the fast protocol has no complement bytes, there the reply's checksum has to do)
+    if((rxMsg[start] == replyOpcode) && (fastProtocol || (rxMsg[start + 1] == opcode))) {
       const reply = extractReply(concatBuffers(preamble, rxMsg.slice(start)), true);
       if(reply.valid) {
         return reply.payload;
@@ -501,7 +532,7 @@ async function usbTransceiveCommand(opcode, params = new Uint8Array(), timeout =
     if(txMsg.length < preamble.length) {
         return {success: false, payload: null};
     }
-    opcode = txMsg[preamble.length]; // take opcode from transmit messages as toggle bit may have been set
+    opcode = txMsg[getOpcodeOffset()]; // take opcode from transmit messages as toggle bit may have been set
 
     if((usbDevice === null) || !usbDevice.opened) {
         console.log("[TXM] USB tower is not connected");
@@ -509,7 +540,7 @@ async function usbTransceiveCommand(opcode, params = new Uint8Array(), timeout =
     }
 
     // Time to wait for the reply to begin: flight time of the command plus the given timeout.
-    const replyTimeout = txMsg.length * USB_IR_BYTE_TIME + timeout;
+    const replyTimeout = txMsg.length * usbIrByteTime + timeout;
 
     try {
         // When there's no valid reply, the very same message is sent again. The RCX detects the repetition

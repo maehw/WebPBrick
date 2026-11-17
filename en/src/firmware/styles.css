@@ -104,3 +104,12 @@ footer {
 .footer-links a:last-child {
   margin-right: 30px;
 }
+
+.toolbar-option {
+  display: flex;
+  align-items: center;
+  gap: 4px;
+  margin: 0 10px;
+  color: white;
+  white-space: nowrap;
+}
