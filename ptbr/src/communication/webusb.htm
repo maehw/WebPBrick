@@ -2,17 +2,47 @@
 <html lang="pt">
 <head>
     <meta charset="UTF-8">
-    <title>WebUSB PoC</title>
+    <title>Página de teste WebUSB</title>
 </head>
 <body>
 <div align="center">
-    <button id="usbConnectBtn">Abrir dispositivo USBe</button>
-    <button id="downloadFirmwareBtn">⬇️ Baixar programa para o RCX ❗️</button>
+    <button id="usbConnectBtn">Abrir dispositivo USB</button>
+    <button id="beepBtn" disabled>Bipe</button>
 </div>
 <textarea id="logArea" rows="40" cols="120" readonly></textarea>
 <div align="center" style="color: #2A2A2A;"><small>LEGO® é uma marca registrada do Grupo de Empresas LEGO, que não patrocina, autoriza nem endossa este site.</small></div>
 <script type="text/javascript" src="rcxCommon.js"></script>
 <script type="text/javascript" src="rcxUsb.js"></script>
-<script src="../firmware/official/firm0332.js" defer></script>
+<script type="text/javascript">
+  // Minimal test of the USB tower connection: open the tower, talk to the RCX and let it beep.
+  const usbConnectBtn = document.getElementById('usbConnectBtn');
+  const beepBtn = document.getElementById('beepBtn');
+  let usbConnected = false;
+
+  usbConnectBtn.addEventListener('click', async () => {
+    if(!usbConnected) {
+      usbConnected = await usbConnect();
+      if(usbConnected) {
+        if(await ping()) {
+          showInfoMsg("🔗 Comunicação funcionando, RCX está respondendo!");
+          await checkFirmware();
+          await checkBatteryLevel();
+        } else {
+          showErrorMsg("Não foi possível se comunicar com o bloco RCX.");
+        }
+      }
+    } else {
+      await usbDisconnect();
+      usbConnected = false;
+    }
+    usbConnectBtn.innerHTML = usbConnected ? 'Fechar dispositivo USB' : 'Abrir dispositivo USB';
+    beepBtn.disabled = !usbConnected;
+  });
+
+  beepBtn.addEventListener('click', async () => {
+    const {success, payload} = await playSystemSound(SystemSound.FastSweepUp);
+    showInfoMsg(success ? "🎵 Tocado som do sistema." : "Não foi possível tocar o som do sistema.");
+  });
+</script>
 </body>
 </html>
