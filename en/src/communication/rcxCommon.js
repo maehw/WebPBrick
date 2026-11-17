@@ -361,49 +361,23 @@ async function downloadFirmware(description="firmware", firmwareData=[]) {
 
         startDownloadTime = performance.timeOrigin + performance.now();
 
-        let numFailedBlocks = 0;
-
         for(let blockCount = 1; blockCount <= numBlocks; blockCount++) {
             let blockData = firmwareData.slice((blockCount-1)*blockSize, blockCount*blockSize);
             downloadedBlock = await downloadBlock(blockCount, blockData, extendedTimeout);
             if(!downloadedBlock) {
-                console.log("Download error during block #" + blockCount + ", retrying...");
-                showErrorMsg("Download error during block #" + blockCount + ", retrying...");
-
-                // calling `await wakeup()` here has made things worse in the past
-
-                downloadedBlock = await downloadBlock(blockCount, blockData, extendedTimeout);
-                if(downloadedBlock) {
-                    const progress = blockCount/numBlocks;
-                    showInfoMsg("⏳ [" + (duration/1000).toFixed(1) + "s] Successfully downloaded " +
-                                description + " block " + blockCount + "/" + numBlocks +
-                                " ("+ Math.round(progress*1000)/10 + " %)");
-
-                    numFailedBlocks = 0; // reset number of failed blocks
-                    break; // no need to retry any longer
-                }
-                else {
-                    numFailedBlocks++;
-                    if(numFailedBlocks < 3) {
-                        console.log("Skipping block.");
-                        // maybe we just missed the reply, let's simply continue with the next block
-                        showInfoMsg("⏳ Unsure about block " + blockCount + "/" + numBlocks +
-                            "; skipping to next block");
-                    } else {
-                        console.log("Aborting download.");
-                        showErrorMsg("Aborting download.");
-                        downloadSuccess = false;
-                        break;
-                    }
-                }
-            } else {
-                const progress = blockCount/numBlocks;
-                const currentTime = performance.timeOrigin + performance.now();
-                const duration = currentTime - startDownloadTime;
-                showInfoMsg("⏳ [" + (duration/1000).toFixed(1) + "s] Successfully downloaded " +
-                            description + " block " + blockCount + "/" + numBlocks +
-                            " ("+ Math.round(progress*1000)/10 + " %)");
+                // the block has already been repeated several times, see downloadBlock()
+                console.log("Download error during block #" + blockCount + ". Aborting download.");
+                showErrorMsg("Download error during block #" + blockCount + ". Aborting download.");
+                downloadSuccess = false;
+                break;
             }
+
+            const progress = blockCount/numBlocks;
+            const currentTime = performance.timeOrigin + performance.now();
+            const duration = currentTime - startDownloadTime;
+            showInfoMsg("⏳ [" + (duration/1000).toFixed(1) + "s] Successfully downloaded " +
+                        description + " block " + blockCount + "/" + numBlocks +
+                        " ("+ Math.round(progress*1000)/10 + " %)");
         }
         // in contrast to program task download it does not look like there was a block #0 at the end
 
@@ -631,7 +605,9 @@ async function downloadTask(taskNumber, taskData) {
     return downloadSuccess;
 }
 
-async function downloadBlock(blockCount, blockData, extendedTimeout = false) {
+// Send one block of a download to the RCX.
+// Returns whether the block has been accepted and whether the RCX has replied at all.
+async function sendBlock(blockCount, blockData, extendedTimeout = false) {
     const blockSize = blockData.length;
     const blockParamHeader = new Uint8Array([getLoByte(blockCount),
                                              getHiByte(blockCount),
@@ -649,6 +625,7 @@ async function downloadBlock(blockCount, blockData, extendedTimeout = false) {
         console.log("Extended timeout to " + timeout);
     }
     let {success, payload} = await transceiveCommand(OpCode.ContinueDownload, params);
+    const replied = success; // a valid reply has been received, whatever it says
 
     if(success) {
         switch (payload[1]) {
@@ -673,7 +650,32 @@ async function downloadBlock(blockCount, blockData, extendedTimeout = false) {
         }
     }
 
-    return success;
+    return {success: success, replied: replied};
+}
+
+const maxBlockAttempts = 5; // how often a block is sent until the RCX has accepted it
+
+/**
+  * Download one block to the RCX and repeat it when that has failed.
+  *
+  * No (valid) reply: either the block or the reply got lost. The very same message is sent again,
+  * i.e. with the same toggle bit. The RCX ignores a message it has already seen but replies again,
+  * so the block is not stored twice.
+  * Reply with an error status (e.g. block checksum error): the RCX has received a damaged block.
+  * The block is sent again as a new message, i.e. with the next toggle bit.
+  */
+async function downloadBlock(blockCount, blockData, extendedTimeout = false) {
+    let result = await sendBlock(blockCount, blockData, extendedTimeout);
+
+    for(let attempt = 2; !result.success && (attempt <= maxBlockAttempts); attempt++) {
+        console.log("Download error during block #" + blockCount + ", repeating it... (" + attempt + "/" + maxBlockAttempts + ")");
+        if(!result.replied) {
+            encodeCommand.toggleBit = !encodeCommand.toggleBit; // use the toggle bit of the last message again
+        }
+        result = await sendBlock(blockCount, blockData, extendedTimeout);
+    }
+
+    return result.success;
 }
 
 async function playTone(frequency, duration) {

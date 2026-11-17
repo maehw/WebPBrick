@@ -366,11 +366,12 @@ async function usbConnect() {
         showInfoMsg("Connected to USB tower (tower firmware version: " + version + ").");
       }
 
-      // let the tower use its full transmission power; the connection is still usable if this fails
+      // Ask for the long transmission range. The tower refuses it (LTW_REQERR_NOPOWER) in its low power
+      // configuration, which is the only one usable on Windows, and then stays at medium range.
       if(success) {
         const rangeSet = await setUsbTowerParameter(LTW_PARM_RANGE, LTW_RANGE_LONG);
         if(!rangeSet) {
-          showInfoMsg("Unable to set the USB tower's transmission range, continuing with its current setting.");
+          console.log("USB tower keeps its current transmission range.");
         }
       }
     }

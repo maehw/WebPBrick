@@ -304,16 +304,17 @@ async function clickUsbConnect() {
 
 // Handler for click on program download button
 async function clickProgramDownload() {
-    if(rcxBinary === null) {
-        showErrorMsg("No program to download. Need to build the NQC code first!");
+    // build first when there's no binary yet or when the code has been modified after the last build
+    if((rcxBinary === null) || codeModified) {
+        showInfoMsg("🧱 Building the current version of the code before the download...");
+        await clickConvert();
+    }
+
+    if((rcxBinary === null) || codeModified) {
+        showErrorMsg("No program to download. Building the NQC code has failed!");
     }
     else {
         showInfoMsg("Program download requested.");
-
-        // show an info message if the code has been touched after last build in the meantime
-        if(codeModified) {
-          showInfoMsg("❗ Code has been modified after last build. Consider re-building the current version of the code!");
-        }
 
         const programNumber = programNumberSelection.value;
         let success = await downloadProgram(programNumber, rcxBinary);
