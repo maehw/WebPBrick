@@ -49,6 +49,10 @@ const USB_IR_BYTE_TIME = 4.6; // milliseconds needed to transfer one byte via IR
 const USB_QUIET_TIME = 40; // a reply is considered complete when no more bytes arrive for this time (in ms)
 const USB_MAX_ATTEMPTS = 3; // how often a command is sent until the RCX replies
 
+// Location of the Windows driver setup script; it's stored next to this file, wherever the page is.
+const usbDriverSetupUrl = new URL('windows/lego-usb-tower-winusb-setup.cmd',
+                                  document.currentScript ? document.currentScript.src : document.baseURI).href;
+
 // vendor request IDs (used in 1 byte bRequest)
 const LTW_REQ_GET_PARM = 0x01; // get tower parameter for standard IR mode
 const LTW_REQ_SET_PARM = 0x02; // set tower parameter for standard IR mode
@@ -226,6 +230,68 @@ async function flushUsbTowerBuffers(txBuffer = true, rxBuffer = true) {
   return (reply !== null);
 }
 
+function isWindows() {
+  if(navigator.userAgentData && navigator.userAgentData.platform) {
+    return navigator.userAgentData.platform == "Windows";
+  }
+  return /Win/.test(navigator.platform);
+}
+
+/**
+ * Explain what to do when the tower cannot be opened on Windows.
+ *
+ * A web page cannot install a driver itself. All it can do is offer the setup script for download,
+ * which selects the WinUSB driver that is already part of Windows for the tower.
+ * The dialog is built here, so that every page which uses the USB tower gets it.
+ */
+function showUsbDriverHelp() {
+  let dialog = document.getElementById('usbDriverHelp');
+
+  if(dialog === null) {
+    dialog = document.createElement('dialog');
+    dialog.id = 'usbDriverHelp';
+    dialog.style.maxWidth = '34em';
+    dialog.style.textAlign = 'left';
+    dialog.style.lineHeight = '1.4';
+    dialog.innerHTML =
+      '<h3 style="margin-top: 0;">The USB tower could not be opened</h3>' +
+      '<p>There are two usual reasons on Windows:</p>' +
+      '<p><b>1. Another program is using the tower.</b> Close it and try again.</p>' +
+      '<p><b>2. The tower does not use the WinUSB driver yet.</b> The browser needs this driver, ' +
+      'which is part of Windows but has to be selected for the tower once:</p>' +
+      '<ol>' +
+      '<li>Download the <a id="usbDriverHelpLink" download>driver setup script</a>. ' +
+      'The browser may ask whether to keep the file.</li>' +
+      '<li>Leave the tower plugged in and open the downloaded file. Windows may show "Windows protected your PC" ' +
+      '(choose "More info", then "Run anyway") and asks for administrator rights.</li>' +
+      '<li>Come back here and try again.</li>' +
+      '</ol>' +
+      '<p><small>The script downloads nothing; it selects the "WinUsb Device" driver from Microsoft, like the ' +
+      'Device Manager can do by hand. Alternatively, use <a href="https://zadig.akeo.ie" target="_blank" rel="noopener">Zadig</a>: ' +
+      '"Options", "List All Devices", pick "LEGO USB Tower", choose "WinUSB" and install.</small></p>' +
+      '<div style="text-align: right;">' +
+      '<button id="usbDriverHelpRetryBtn">Try again</button> ' +
+      '<button id="usbDriverHelpCloseBtn">Close</button>' +
+      '</div>';
+    document.body.appendChild(dialog);
+
+    document.getElementById('usbDriverHelpLink').href = usbDriverSetupUrl;
+    document.getElementById('usbDriverHelpCloseBtn').addEventListener('click', () => dialog.close());
+    document.getElementById('usbDriverHelpRetryBtn').addEventListener('click', () => {
+      dialog.close();
+      // start over with the page's own connect button, if there is one
+      const connectBtn = document.getElementById('usbConnectBtn');
+      if(connectBtn !== null) {
+        connectBtn.click();
+      }
+    });
+  }
+
+  if(!dialog.open) {
+    dialog.showModal();
+  }
+}
+
 /**
  * @name Connect USB device
  * Opens a WebUSB connection to a LEGO USB IR Tower
@@ -280,6 +346,9 @@ async function usbConnect() {
       showErrorMsg("Failed to open USB tower: '" + e.message + "'\n" +
                    "Make sure that no other program is using the tower. " +
                    "On Windows, the tower needs the WinUSB driver to be usable from the browser.");
+      if(isWindows()) {
+        showUsbDriverHelp();
+      }
       await usbDisconnect(true);
       success = false;
     }
