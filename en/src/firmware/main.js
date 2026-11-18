@@ -20,12 +20,14 @@
 
 // define various control elements
 const serialConnectBtn = document.getElementById('serialConnectBtn');
+const usbConnectBtn = document.getElementById('usbConnectBtn');
 const downloadFirmwareBtn = document.getElementById('downloadFirmwareBtn');
 const clearLogBtn = document.getElementById('clearLogBtn');
 const logArea = document.getElementById('logArea');
 const preambleFast = new Uint8Array([0xFF]); // all messages in fast mode begin with this byte
 
 let serialConnected = false;
+let usbConnected = false;
 
 // Helper to check if browser supports WASM
 const wasmSupported = (() => {
@@ -53,6 +55,14 @@ document.addEventListener('DOMContentLoaded', () => {
     disableSerialConnectBtn();
   }
 
+  const webUsbNotSupported = document.getElementById('webusb-not-supported');
+  if(!('usb' in navigator)) {
+    // show hidden error banner, deactivate connect button and log to console
+    webUsbNotSupported.style.display = "block";
+    console.log("WebUSB not supported.");
+    disableUsbConnectBtn();
+  }
+
   const wasmNotSupported = document.getElementById('wasm-not-supported');
   if(!wasmSupported) {
     // show hidden error banner, deactivate connect button and log to console
@@ -62,6 +72,7 @@ document.addEventListener('DOMContentLoaded', () => {
   }
 
   serialConnectBtn.addEventListener('click', clickSerialConnect);
+  usbConnectBtn.addEventListener('click', clickUsbConnect);
   downloadFirmwareBtn.addEventListener('click', clickFwDownload);
 });
 
@@ -79,6 +90,11 @@ function disableSerialConnectBtn() {
 function enableSerialConnectBtn() {
   serialConnectBtn.disabled = false; // Enable serial connection button
   serialConnectBtn.style.color = ''; // Reset text color
+}
+
+function disableUsbConnectBtn() {
+  usbConnectBtn.disabled = true; // Disable USB connection button
+  usbConnectBtn.style.color = 'gray'; // Change text color to indicate missing functionality support
 }
 
 clearLogBtn.addEventListener('click', () => {
@@ -143,6 +159,70 @@ async function clickSerialConnect() {
       disableDownloadFirmwareBtn();
       serialConnectBtn.innerHTML = '🔗 Serial Connect';
       serialConnected = false;
+    }
+  }
+}
+
+/**
+ * @name clickUsbConnect
+ * Click handler for the USB connect/disconnect button.
+ */
+async function clickUsbConnect() {
+  let success = true;
+
+  if (!usbConnected) {
+    if(serialConnected) {
+      showErrorMsg("Already connected via serial tower. Please disconnect first.");
+      return;
+    }
+
+    success = await usbConnect();
+
+    if(success) {
+      success = await ping();
+
+      if(!success) {
+        showErrorMsg("No communication with RCX possible.\n" +
+               "RCX needs to be switched on and placed close to the IR tower and also in line of sight.\n" +
+               "Please try again.");
+      } else {
+        showInfoMsg("🔗 Communication working, RCX is alive!");
+
+        fwVersion = await checkFirmware();
+
+        if(fwVersion == null) {
+            showErrorMsg("Unable to determine firmware version.");
+        } else {
+          if(fwVersion == '0.0') {
+            showErrorMsg("Firmware version '0.0' indicates that currently no firmware is loaded into RAM. " +
+              "Download of programs to the RCX is not possible. Good that you are here!");
+            // will work anyways, because that's why they're here!
+          }
+
+          await checkBatteryLevel();
+
+          enableDownloadFirmwareBtn();
+          usbConnectBtn.innerHTML = '🔗 USB Disconnect';
+          usbConnected = true;
+          disableSerialConnectBtn(); // only one IR tower at a time
+        }
+      }
+
+      if(!usbConnected) {
+        // give the tower back, so that the next attempt starts from scratch
+        await usbDisconnect(true);
+      }
+    }
+  } else {
+    success = await usbDisconnect();
+
+    if(success) {
+      disableDownloadFirmwareBtn();
+      usbConnectBtn.innerHTML = '🔗 USB Connect';
+      usbConnected = false;
+      if('serial' in navigator) {
+        enableSerialConnectBtn();
+      }
     }
   }
 }

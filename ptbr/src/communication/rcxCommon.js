@@ -121,6 +121,32 @@ const DownloadStatus = {
 	DownloadNotActive:  6
 }
 
+// define various control elements
+const log = document.getElementById('logArea');
+
+// The transport (serial tower or USB tower) which is currently used to exchange messages with the RCX.
+// A transport registers its own transceive function when it connects, see setTransceiver().
+let activeTransceiver = null;
+
+/**
+  * Select the function which sends a command to the RCX and receives its reply.
+  * It is called with (opcode, params, timeout, ignoreReply) and
+  * shall return {success: <bool>, payload: <Uint8Array or null>}.
+  */
+function setTransceiver(transceiver) {
+    activeTransceiver = transceiver;
+}
+
+// Send a command to the RCX and receive its reply - independent of the IR tower type.
+// When timeout is left out, the default of the transport in use applies.
+async function transceiveCommand(opcode, params = new Uint8Array(), timeout = undefined, ignoreReply = false) {
+    if(activeTransceiver === null) {
+        console.log("[TXM] não conectado a nenhuma torre IR");
+        return {success: false, payload: null};
+    }
+    return await activeTransceiver(opcode, params, timeout, ignoreReply);
+}
+
 // Logging helper functions
 function showErrorMsg(msg) {
     log.value += "❌️ " + msg + "\n";
@@ -688,6 +714,40 @@ async function getVersions() {
     }
 
     return {success: success, romVersion: romVersion, fwVersion: fwVersion};
+}
+
+async function checkFirmware() {
+  let success = true; // think positive!
+  let versionInfo = null;
+  let fwVersion = null;
+
+  versionInfo = await getVersions();
+  if(!versionInfo.success) {
+      showErrorMsg("Falha ao recuperar as versões da ROM e do firmware.");
+      success = false;
+  }
+
+  if(success) {
+      showInfoMsg("ℹ️ Versão da ROM: " + versionInfo.romVersion + ", Versão do Firmware: " + versionInfo.fwVersion);
+      fwVersion = versionInfo.fwVersion;
+  }
+
+  return fwVersion;
+}
+
+async function checkBatteryLevel() {
+  const batteryLevel = await getBatteryLevel();
+  let msg = "";
+  if(batteryLevel > 0) {
+    if(batteryLevel < 20) {
+      msg = "🪫";
+    }
+    else {
+      msg = "🔋";
+    }
+    msg += " Nível da bateria: " + Math.floor(batteryLevel) + " %";
+    showInfoMsg(msg);
+  }
 }
 
 async function playSystemSound(sound) {
