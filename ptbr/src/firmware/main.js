@@ -20,12 +20,14 @@
 
 // define various control elements
 const serialConnectBtn = document.getElementById('serialConnectBtn');
+const usbConnectBtn = document.getElementById('usbConnectBtn');
 const downloadFirmwareBtn = document.getElementById('downloadFirmwareBtn');
 const clearLogBtn = document.getElementById('clearLogBtn');
 const logArea = document.getElementById('logArea');
-const preambleFast = new Uint8Array([0xFF]); // all messages in fast mode begin with this byte
+const fastDownloadCb = document.getElementById('fastDownloadCb');
 
 let serialConnected = false;
+let usbConnected = false;
 
 // Helper to check if browser supports WASM
 const wasmSupported = (() => {
@@ -53,6 +55,14 @@ document.addEventListener('DOMContentLoaded', () => {
     disableSerialConnectBtn();
   }
 
+  const webUsbNotSupported = document.getElementById('webusb-not-supported');
+  if(!('usb' in navigator)) {
+    // show hidden error banner, deactivate connect button and log to console
+    webUsbNotSupported.style.display = "block";
+    console.log("WebUSB não suportado.");
+    disableUsbConnectBtn();
+  }
+
   const wasmNotSupported = document.getElementById('wasm-not-supported');
   if(!wasmSupported) {
     // show hidden error banner, deactivate connect button and log to console
@@ -62,6 +72,7 @@ document.addEventListener('DOMContentLoaded', () => {
   }
 
   serialConnectBtn.addEventListener('click', clickSerialConnect);
+  usbConnectBtn.addEventListener('click', clickUsbConnect);
   downloadFirmwareBtn.addEventListener('click', clickFwDownload);
 });
 
@@ -79,6 +90,11 @@ function disableSerialConnectBtn() {
 function enableSerialConnectBtn() {
   serialConnectBtn.disabled = false; // Enable serial connection button
   serialConnectBtn.style.color = ''; // Reset text color
+}
+
+function disableUsbConnectBtn() {
+  usbConnectBtn.disabled = true; // Disable USB connection button
+  usbConnectBtn.style.color = 'gray'; // Change text color to indicate missing functionality support
 }
 
 clearLogBtn.addEventListener('click', () => {
@@ -148,216 +164,67 @@ async function clickSerialConnect() {
 }
 
 /**
-  * Returns a Uint8Array() message ready for transmission.
-  * The toggle bit is toggled after every function call.
-  */
-function encodeCommandFast(opcode, params) {
-    const emptyMsg = new Uint8Array();
-    let txOpcode = opcode; // copy opcode, optionally set toggle bit later
+ * @name clickUsbConnect
+ * Click handler for the USB connect/disconnect button.
+ */
+async function clickUsbConnect() {
+  let success = true;
 
-    // TODO: this is a workaround to have something like 'static' in C, there may be a better way
-    // This is making use of a function just being an object in JavaScript.
-    if ( typeof encodeCommand.toggleBit == 'undefined' ) {
-        encodeCommand.toggleBit = false; // initialize to false
+  if (!usbConnected) {
+    if(serialConnected) {
+      showErrorMsg("Já conectado pela torre serial. Por favor, desconecte primeiro.");
+      return;
     }
 
-    // check lower nibble of opcode to match number of parameters ...
-    // except when the download command is used because there's a variable length of parameter bytes
-    // (see also the list of OpCodes from above)
-    const paramLen = opcode & 0x07;
-    if((paramLen != params.length) && (OpCode.ContinueDownload != opcode) && (OpCode.RemoteCommand != opcode)) {
-        console.log("Número errado de parâmetros!");
-        // wrong number of parameters
-        return emptyMsg;
-    }
-
-    // one more bytes for opcode, one more byte for checksum
-    let cmdMsg = new Uint8Array(preambleFast.length + 1 + params.length + 1);
-
-    // fill with preamble
-    cmdMsg.set(preambleFast, 0);
-
-    // set toggle bit every second time
-    txOpcode |= (encodeCommand.toggleBit << 3);
-    console.log("[OPT] " + array2hex(new Uint8Array([txOpcode])) +
-                       " (original: " + array2hex(new Uint8Array([opcode])) + ")");
-    // toggle the toggle bit for the next op
-    encodeCommand.toggleBit = !encodeCommand.toggleBit;
-
-    // fill with opcode
-    cmdMsg.set([txOpcode], preambleFast.length);
-
-    // fill parameter bytes and calculate checksum for the current command while doing so
-    let checksum = txOpcode;
-    if(params.length > 0) {
-      console.log("[PRMS] " + array2hex(new Uint8Array(params)));
-    }
-    for(let i = 0; i<params.length; i++) {
-        checksum += params[i];
-
-        cmdMsg.set([params[i]], preambleFast.length + 1 + i);
-    }
-    checksum %= 256;
-
-    // set the checksum as part of the message
-    cmdMsg.set([checksum], cmdMsg.length - 1);
-
-    return cmdMsg;
-}
-
-
-/**
-  * On error returns received message without payload, but with complement bytes for further analysis
-  */
-function extractReplyFast(rxMsg, quiet=false) {
-    // throw away the preamble at the beginning as it does not contain any info (remove more redundancy)
-    rxMsg = rxMsg.slice(preamble.length);
-
-    if(rxMsg.length < 1) {
-        // expect at least 1 byte for the checksum
-        if(!quiet) {
-            console.log("[XTRF] mensagem muito curta: " + rxMsg.length);
-        }
-        return {valid: false, payload: rxMsg};
-    }
-
-    // verify checksum and check complements
-    let checksum = 0;
-    for(let i=0; i<rxMsg.length - 1; i += 1) {
-        checksum += rxMsg[i];
-    }
-    checksum %= 256;
-
-    // check if received checksum matches calculated checksum
-    if(rxMsg[rxMsg.length - 1] != checksum) {
-        return {valid: false, payload: rxMsg};
-    }
-
-    // throw away checksum byte
-    let replyPayload = rxMsg.slice(-1);
-
-    return {valid: true, payload: replyPayload};
-}
-
-async function transceiveCommandFast(opcode, params = new Uint8Array(), timeout = 500, ignoreReply = false) {
-    const txMsg = encodeCommandFast(opcode, params);
-
-    if(txMsg.length == 0) {
-        console.log("[TXMF] erro de codificação, número errado de paramêtros");
-        return {success: false, payload: null};
-    }
-    if(txMsg.length < preambleFast.length) {
-        return {success: false, payload: null};
-    }
-    opcode = txMsg[preambleFast.length]; // take opcode from transmit messages as toggle bit may have been set
-
-    console.log("[TXMF]", array2hex(txMsg));
-    await serialWriter.write(txMsg);
-
-    await sleep(timeout);
-    let rxMsg = await serialReadWithTimeout(timeout);
-    console.log("[RXMF]", array2hex(rxMsg));
-
-    if(ignoreReply) {
-        console.log("[RPLF] ignorando resposta");
-        return {success: true, payload: null};
-    }
-
-    if(rxMsg.length < txMsg.length) {
-        // RX message is so short that it cannot even include an echo
-        return {success: false, payload: null};
-    }
-
-    // check if RX message starts with echo of TX message
-    const hasEcho = rxMsg.join(',').startsWith(txMsg.join(',')); // FIXME: do not use lazy string comparison but something more efficient
-    if(!hasEcho) {
-        return {success: false, payload: null};
-    }
-
-    // throw away the echo part at the beginning as it does not contain any info (remove redundancy)
-    rxMsg = rxMsg.slice(txMsg.length);
-
-    // check if reply also starts with preamble
-    // NOTE: the regular 3 byte preamble is used in the reply!
-    const hasPreamble = rxMsg.join(',').startsWith(preamble.join(',')); // FIXME: do not use lazy string comparison but something more efficient
-    if(!hasPreamble) {
-        return {success: false, payload: null};
-    }
-
-    const reply = extractReplyFast(rxMsg);
-    console.log("[RPLF] valido? " + reply.valid + ", payload: " + array2hex(reply.payload));
-
-    // check reply payload
-    if(!reply.valid) {
-        // let's hand the payload also back, there may be special handling on higher level
-        console.log("[CMDF] erro de decodificação da mensagem");
-        return {success: false, payload: reply.payload};
-    }
-    else {
-        // does the first reply payload byte match as a complement to the command opcode?
-        if((reply.payload[0] ^ opcode) != 0xFF) {
-            console.log("[CMDF] resposta invalida");
-            // let's hand the payload also back, there may be special handling on higher level
-            return {success: false, payload: reply.payload};
-        }
-        else {
-            console.log("[CMDF] sucesso");
-            return {success: true, payload: reply.payload};
-        }
-    }
-}
-
-async function pingFast() {
-  console.log("Ping (rápido)...");
-  let {success, payload} = await transceiveCommandFast(OpCode.Ping);
-
-  if(success) {
-    console.log("O bloco prográmavel está respondendo.");
-  }
-  else {
-    console.log("O bloco prográmavel não está respondendo.");
-  }
-
-  return success;
-}
-
-// Send command to send RCX into boot mode
-async function goIntoBootModeFast() {
-    console.log("Entrando no modo de boot (rápido).");
-    let {success, payload} = await transceiveCommandFast(OpCode.GoIntoBootMode, oddPrimes);
-    return success;
-}
-
-// Download firmware to RCX programmable brick
-async function downloadFirmwareFast(description="firmware", firmwareData=[]) {
-    // prepare download
-    const firmwareSize = firmwareData.length;
-    showInfoMsg("🧮 " + capitalize(description) + " tamanho em bytes: " + firmwareSize);
-
-    const firmwareChecksum = calculateFirmwareChecksum(firmwareData);
-    showInfoMsg("🧮 Calculados " + description + " checksum: 0x" + firmwareChecksum.toString(16).padStart(4, '0').toUpperCase());
-
-    let success = false;
-    let numPings = 0;
-    while(!success && (numPings < 3)) {
-      success = await pingFast();
-      numPings++;
-    }
+    success = await usbConnect();
 
     if(success) {
-      showInfoMsg("Tentando entrar no modo de boot.");
+      success = await ping();
 
-      success = false;
-      let numBootModeAttempts = 0;
-      while(!success && (numBootModeAttempts < 5)) {
-        success = await goIntoBootModeFast();
-        numBootModeAttempts++;
+      if(!success) {
+        showErrorMsg("Não foi possível se comunicar com o bloco RCX.\n" +
+               "O bloco RCX precisa estar ligado e posicionado próximo à torre IR e também em linha de visão.\n" +
+               "Por favor, tente novamente.");
+      } else {
+        showInfoMsg("🔗 Comunicação funcionando, RCX está respondendo!");
+
+        fwVersion = await checkFirmware();
+
+        if(fwVersion == null) {
+            showErrorMsg("Não foi possível determinar a versão do firmware.");
+        } else {
+          if(fwVersion == '0.0') {
+            showErrorMsg("A versão do firmware '0.0' indica que atualmente nenhum firmware está carregado na memória RAM. " +
+              "Download de programas para o RCX não é possível. É bom que você esteja aqui!");
+            // will work anyways, because that's why they're here!
+          }
+
+          await checkBatteryLevel();
+
+          enableDownloadFirmwareBtn();
+          usbConnectBtn.innerHTML = '🔗 Desconectar USB';
+          usbConnected = true;
+          disableSerialConnectBtn(); // only one IR tower at a time
+        }
+      }
+
+      if(!usbConnected) {
+        // give the tower back, so that the next attempt starts from scratch
+        await usbDisconnect(true);
       }
     }
+  } else {
+    success = await usbDisconnect();
 
-    // TODO: tbc
-
-    return success;
+    if(success) {
+      disableDownloadFirmwareBtn();
+      usbConnectBtn.innerHTML = '🔗 Conectar USB';
+      usbConnected = false;
+      if('serial' in navigator) {
+        enableSerialConnectBtn();
+      }
+    }
+  }
 }
 
 // Handler for click on firmware download button
@@ -374,22 +241,12 @@ async function clickFwDownload() {
     // TODO: add mechanism to choose between different firmware versions
 
     let firmwareName = "RCX firmware";
-    success = await downloadFirmware(firmwareName, firm0332Data);
-
-/*
-    // TODO: make fast download work (via firmdl3 stub)
-//    let stubName = "fastdl stub";
-//    let success = await downloadFirmware(stubName, firmdl3FastdlStubData);
-    if(success) {
-      success = await serialSetSpeed(true);
-
-      if(success) {
-        success = await downloadFirmwareFast(firmwareName, firm0332Data);
-
-        await serialSetSpeed(false);
-      }
+    if(fastDownloadCb.checked && fastDownloadSupported()) {
+      // quad-rate download via firmdl3's fast download stub
+      success = await downloadFirmwareFast(firmwareName, firm0332Data, firmdl3FastdlStubData);
+    } else {
+      success = await downloadFirmware(firmwareName, firm0332Data);
     }
-*/
 
     if(success) {
       showInfoMsg("✅ " + capitalize(firmwareName) + " download completo. 🎉");

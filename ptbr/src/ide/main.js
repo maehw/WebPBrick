@@ -21,6 +21,7 @@
 // define various control elements
 const compileBtn = document.getElementById('compileBtn');
 const serialConnectBtn = document.getElementById('serialConnectBtn');
+const usbConnectBtn = document.getElementById('usbConnectBtn');
 const downloadBtn = document.getElementById('downloadBtn');
 const clearLogBtn = document.getElementById('clearLogBtn');
 const codeArea = document.getElementById('codeArea');
@@ -30,6 +31,7 @@ const programNumberSelection = document.getElementById('programNumber');
 
 let codeModified = true; // code modified after build?
 let serialConnected = false;
+let usbConnected = false;
 
 // Helper to check if browser supports WASM
 const wasmSupported = (() => {
@@ -57,6 +59,14 @@ document.addEventListener('DOMContentLoaded', () => {
     disableSerialConnectBtn();
   }
 
+  const webUsbNotSupported = document.getElementById('webusb-not-supported');
+  if(!('usb' in navigator)) {
+    // show hidden error banner, deactivate connect button and log to console
+    webUsbNotSupported.style.display = "block";
+    console.log("WebUSB não suportado.");
+    disableUsbConnectBtn();
+  }
+
   const wasmNotSupported = document.getElementById('wasm-not-supported');
   if(!wasmSupported) {
     // show hidden error banner, deactivate connect button and log to console
@@ -66,6 +76,7 @@ document.addEventListener('DOMContentLoaded', () => {
   }
 
   serialConnectBtn.addEventListener('click', clickSerialConnect);
+  usbConnectBtn.addEventListener('click', clickUsbConnect);
   downloadBtn.addEventListener('click', clickProgramDownload);
 });
 
@@ -158,6 +169,11 @@ function enableSerialConnectBtn() {
   serialConnectBtn.style.color = ''; // Reset text color
 }
 
+function disableUsbConnectBtn() {
+  usbConnectBtn.disabled = true; // Disable USB connection button
+  usbConnectBtn.style.color = 'gray'; // Change text color to indicate missing functionality support
+}
+
 clearLogBtn.addEventListener('click', () => {
   logArea.value = ''; // Clear log
 });
@@ -223,18 +239,82 @@ async function clickSerialConnect() {
   }
 }
 
+/**
+ * @name clickUsbConnect
+ * Click handler for the USB connect/disconnect button.
+ */
+async function clickUsbConnect() {
+  let success = true;
+
+  if (!usbConnected) {
+    if(serialConnected) {
+      showErrorMsg("Já conectado pela torre serial. Por favor, desconecte primeiro.");
+      return;
+    }
+
+    success = await usbConnect();
+
+    if(success) {
+      success = await ping();
+
+      if(!success) {
+        showErrorMsg("Não foi possível se comunicar com o bloco RCX.\n" +
+               "O bloco RCX precisa estar ligado e perto da torre infravermelho, também como no campo de visão da torre.\n" +
+               "Por favor, tente novamente.");
+      } else {
+        showInfoMsg("🔗 Comunicação funcionando, O bloco RCX está respondendo!");
+
+        fwVersion = await checkFirmware();
+
+        if(fwVersion == null) {
+            showErrorMsg("Não foi possível determinar a versão do firmware.");
+        } else {
+          if(fwVersion == '0.0') {
+            showErrorMsg("Versão do firmware '0.0' indica que atualmente nenhum firmware está carregado na memória RAM. " +
+              "O download de programas para o bloco RCX não é possível.");
+          } else {
+            await checkBatteryLevel();
+
+            enableDownloadBtn();
+            usbConnectBtn.innerHTML = '🔗 Desconectar torre USB';
+            usbConnected = true;
+            disableSerialConnectBtn(); // only one IR tower at a time
+          }
+        }
+      }
+
+      if(!usbConnected) {
+        // give the tower back, so that the next attempt starts from scratch
+        await usbDisconnect(true);
+      }
+    }
+  } else {
+    success = await usbDisconnect();
+
+    if(success) {
+      disableDownloadBtn();
+      usbConnectBtn.innerHTML = '🔗 Conectar torre USB';
+      usbConnected = false;
+      if('serial' in navigator) {
+        enableSerialConnectBtn();
+      }
+    }
+  }
+}
+
 // Handler for click on program download button
 async function clickProgramDownload() {
-    if(rcxBinary === null) {
-        showErrorMsg("Nenhum programa para ser baixado. Você precisa construir o código em NQC primeiro!");
+    // build first when there's no binary yet or when the code has been modified after the last build
+    if((rcxBinary === null) || codeModified) {
+        showInfoMsg("🧱 Construindo a versão atual do código antes do download...");
+        await clickConvert();
+    }
+
+    if((rcxBinary === null) || codeModified) {
+        showErrorMsg("Nenhum programa para ser baixado. A construção do código NQC falhou!");
     }
     else {
         showInfoMsg("Solicitação para baixar o programa recebida..");
-
-        // show an info message if the code has been touched after last build in the meantime
-        if(codeModified) {
-          showInfoMsg("❗ O código foi modificado desde a última vez. Considere reconstruir a versão atual do código!");
-        }
 
         const programNumber= programNumberSelection.value;
         let success = await downloadProgram(programNumber, rcxBinary);

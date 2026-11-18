@@ -50,6 +50,10 @@ python3 -m http.server 8080
 
 Open your web browser and navigate to http://localhost:8080/src/ide/
 
+### LEGO USB IR Tower on Windows
+
+A browser can only open the USB tower when it uses the WinUSB driver, which is part of Windows but is not selected for the tower automatically. When the tower cannot be opened, the IDE offers a setup script for download ([lego-usb-tower-winusb-setup.cmd](./en/src/communication/windows/lego-usb-tower-winusb-setup.cmd)) which selects that driver; it needs administrator rights once. [Zadig](https://zadig.akeo.ie) does the job as well. Only one program can use the tower at a time.
+
 
 ## Licenses
 

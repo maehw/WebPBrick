@@ -121,6 +121,40 @@ const DownloadStatus = {
 	DownloadNotActive:  6
 }
 
+// define various control elements
+const log = document.getElementById('logArea');
+
+// The transport (serial tower or USB tower) which is currently used to exchange messages with the RCX.
+// A transport registers its own transceive function when it connects, see setTransceiver().
+let activeTransceiver = null;
+let activeSpeedSwitcher = null; // switches the IR tower between normal and fast speed, if it can
+let activeKeepsParity = false; // does the IR tower send a parity bit at fast speed, too?
+
+/**
+  * Select the function which sends a command to the RCX and receives its reply.
+  * It is called with (opcode, params, timeout, ignoreReply) and
+  * shall return {success: <bool>, payload: <Uint8Array or null>}.
+  *
+  * An IR tower which can change its speed also passes a function for that: it is called with
+  * true (fast, 4800 baud) or false (normal, 2400 baud) and shall return whether that has worked.
+  */
+function setTransceiver(transceiver, speedSwitcher = null, keepsParity = false) {
+    activeTransceiver = transceiver;
+    activeSpeedSwitcher = speedSwitcher;
+    activeKeepsParity = keepsParity;
+    fastProtocol = false;
+}
+
+// Send a command to the RCX and receive its reply - independent of the IR tower type.
+// When timeout is left out, the default of the transport in use applies.
+async function transceiveCommand(opcode, params = new Uint8Array(), timeout = undefined, ignoreReply = false) {
+    if(activeTransceiver === null) {
+        console.log("[TXM] not connected to any IR tower");
+        return {success: false, payload: null};
+    }
+    return await activeTransceiver(opcode, params, timeout, ignoreReply);
+}
+
 // Logging helper functions
 function showErrorMsg(msg) {
     log.value += "❌️ " + msg + "\n";
@@ -216,6 +250,15 @@ function encodeCommand(opcode, params) {
     // toggle the toggle bit for the next op
     encodeCommand.toggleBit = !encodeCommand.toggleBit;
 
+    if(fastProtocol) {
+        // fast protocol: a single preamble byte, no complements, one checksum byte
+        let fastChecksum = txOpcode;
+        for(let i = 0; i<params.length; i++) {
+            fastChecksum += params[i];
+        }
+        return new Uint8Array([...preambleFast, txOpcode, ...params, fastChecksum % 256]);
+    }
+
     // fill with opcode and its complement
     cmdMsg.set([txOpcode, ~txOpcode], preamble.length);
 
@@ -278,7 +321,7 @@ function capitalize(s)
 }
 
 // Download firmware to RCX programmable brick
-async function downloadFirmware(description="firmware", firmwareData=[]) {
+async function downloadFirmware(description="firmware", firmwareData=[], blockSize=20) {
     // prepare download
     const firmwareSize = firmwareData.length;
     showInfoMsg("🧮 " + capitalize(description) + " size in bytes: " + firmwareSize);
@@ -323,10 +366,7 @@ async function downloadFirmware(description="firmware", firmwareData=[]) {
         showInfoMsg("🐌 Began " + description + " download...");
 
         // continue download in blocks of N bytes
-        const blockSize = 20;
         const extendedTimeout = false; // timeout depends on block size (data transfer duration)
-        //const blockSize = 200; // TODO: make it work with bigger block sizes
-        //const extendedTimeout = true; // timeout depends on block size (data transfer duration)
         const numBlocks = Math.ceil(firmwareSize/blockSize);
         console.log("Calculated " + numBlocks + " blocks to download.");
         showInfoMsg("🧱 Calculated " + numBlocks + " " + description + " blocks to download.");
@@ -335,49 +375,23 @@ async function downloadFirmware(description="firmware", firmwareData=[]) {
 
         startDownloadTime = performance.timeOrigin + performance.now();
 
-        let numFailedBlocks = 0;
-
         for(let blockCount = 1; blockCount <= numBlocks; blockCount++) {
             let blockData = firmwareData.slice((blockCount-1)*blockSize, blockCount*blockSize);
             downloadedBlock = await downloadBlock(blockCount, blockData, extendedTimeout);
             if(!downloadedBlock) {
-                console.log("Download error during block #" + blockCount + ", retrying...");
-                showErrorMsg("Download error during block #" + blockCount + ", retrying...");
-
-                // calling `await wakeup()` here has made things worse in the past
-
-                downloadedBlock = await downloadBlock(blockCount, blockData, extendedTimeout);
-                if(downloadedBlock) {
-                    const progress = blockCount/numBlocks;
-                    showInfoMsg("⏳ [" + (duration/1000).toFixed(1) + "s] Successfully downloaded " +
-                                description + " block " + blockCount + "/" + numBlocks +
-                                " ("+ Math.round(progress*1000)/10 + " %)");
-
-                    numFailedBlocks = 0; // reset number of failed blocks
-                    break; // no need to retry any longer
-                }
-                else {
-                    numFailedBlocks++;
-                    if(numFailedBlocks < 3) {
-                        console.log("Skipping block.");
-                        // maybe we just missed the reply, let's simply continue with the next block
-                        showInfoMsg("⏳ Unsure about block " + blockCount + "/" + numBlocks +
-                            "; skipping to next block");
-                    } else {
-                        console.log("Aborting download.");
-                        showErrorMsg("Aborting download.");
-                        downloadSuccess = false;
-                        break;
-                    }
-                }
-            } else {
-                const progress = blockCount/numBlocks;
-                const currentTime = performance.timeOrigin + performance.now();
-                const duration = currentTime - startDownloadTime;
-                showInfoMsg("⏳ [" + (duration/1000).toFixed(1) + "s] Successfully downloaded " +
-                            description + " block " + blockCount + "/" + numBlocks +
-                            " ("+ Math.round(progress*1000)/10 + " %)");
+                // the block has already been repeated several times, see downloadBlock()
+                console.log("Download error during block #" + blockCount + ". Aborting download.");
+                showErrorMsg("Download error during block #" + blockCount + ". Aborting download.");
+                downloadSuccess = false;
+                break;
             }
+
+            const progress = blockCount/numBlocks;
+            const currentTime = performance.timeOrigin + performance.now();
+            const duration = currentTime - startDownloadTime;
+            showInfoMsg("⏳ [" + (duration/1000).toFixed(1) + "s] Successfully downloaded " +
+                        description + " block " + blockCount + "/" + numBlocks +
+                        " ("+ Math.round(progress*1000)/10 + " %)");
         }
         // in contrast to program task download it does not look like there was a block #0 at the end
 
@@ -392,6 +406,117 @@ async function downloadFirmware(description="firmware", firmwareData=[]) {
             showErrorMsg("May have failed to unlock " + description + ".");
         }
     }
+
+    return success;
+}
+
+// Fast protocol (as used by firmdl3 and NQC for "quad-rate" firmware download): double baud rate
+// and no complement bytes. The ROM of the RCX only understands it after a small stub has been
+// downloaded and started like a firmware; it then stays in this mode until it's switched off.
+const preambleFast = new Uint8Array([0xFF]); // all messages in fast mode begin with this byte
+const fastBlockSize = 200; // firmware block size used in fast mode
+let fastProtocol = false; // are messages currently encoded and decoded for the fast protocol?
+
+// Position of the opcode within a message that has been encoded for transmission
+function getOpcodeOffset() {
+    return fastProtocol ? preambleFast.length : preamble.length;
+}
+
+// Can the connected IR tower switch to the speed of the fast protocol?
+function fastDownloadSupported() {
+    return (activeSpeedSwitcher !== null);
+}
+
+// Switch IR tower and message format between normal and fast mode
+async function setFastMode(fast) {
+    let success = false;
+    if(activeSpeedSwitcher !== null) {
+        success = await activeSpeedSwitcher(fast);
+    }
+    fastProtocol = fast && success;
+    return success;
+}
+
+/**
+  * The stub switches the RCX to 4800 baud without parity bit. An IR tower which always sends a
+  * parity bit (the USB tower) needs the RCX to keep its odd parity: the instruction which clears
+  * the parity enable bit of the serial mode register ("bclr #5,@0xd8:8") is replaced by two NOPs.
+  * Returns null if that instruction cannot be found.
+  */
+function makeFastStub(stubData, keepParity) {
+    const stub = new Uint8Array(stubData);
+    if(keepParity) {
+        const clearParityEnable = [0x7F, 0xD8, 0x72, 0x50];
+        let position = -1;
+        for(let i = 0; (i + clearParityEnable.length <= stub.length) && (position < 0); i += 2) {
+            if(clearParityEnable.every((value, index) => stub[i + index] == value)) {
+                position = i;
+            }
+        }
+        if(position < 0) {
+            return null;
+        }
+        stub.fill(0x00, position, position + clearParityEnable.length);
+    }
+    return stub;
+}
+
+// Download firmware to RCX programmable brick at quad-rate
+async function downloadFirmwareFast(description="firmware", firmwareData=[], stubData=[]) {
+    if(!fastDownloadSupported()) {
+        return await downloadFirmware(description, firmwareData);
+    }
+
+    const stub = makeFastStub(stubData, activeKeepsParity);
+    if(stub === null) {
+        showErrorMsg("The fast download stub does not look as expected, cannot adapt it to this IR tower.");
+        return false;
+    }
+
+    let success = false;
+    let numPings = 0;
+    while(!success && (numPings < 2)) {
+      success = await ping();
+      numPings++;
+    }
+
+    if(success) {
+        // the stub is downloaded and started like a firmware, at normal speed
+        success = await downloadFirmware("fast download stub", stub);
+        if(!success) {
+            return false;
+        }
+        await new Promise((resolve) => setTimeout(resolve, 300));
+    } else {
+        // an earlier attempt may have left the RCX in fast mode
+        showInfoMsg("No answer at normal speed. Checking whether the RCX is already in fast mode...");
+    }
+
+    showInfoMsg("⚡ Switching to fast mode (4800 baud, no complement bytes)...");
+    success = await setFastMode(true);
+    if(!success) {
+        showErrorMsg("Unable to switch the IR tower to fast mode.");
+    }
+
+    if(success) {
+        success = false;
+        numPings = 0;
+        while(!success && (numPings < 3)) {
+          success = await ping();
+          numPings++;
+        }
+        if(!success) {
+            showErrorMsg("The RCX does not answer in fast mode. Switch the RCX off and on again, then retry (or untick the fast download).");
+        }
+    }
+
+    if(success) {
+        showInfoMsg("⚡ RCX answers in fast mode.");
+        success = await downloadFirmware(description, firmwareData, fastBlockSize);
+    }
+
+    // the started firmware talks at normal speed again
+    await setFastMode(false);
 
     return success;
 }
@@ -520,6 +645,21 @@ function extractReply(rxMsg, quiet=false) {
     // throw away the preamble at the beginning as it does not contain any info (remove more redundancy)
     rxMsg = rxMsg.slice(preamble.length);
 
+    if(fastProtocol) {
+        // fast protocol: no complements, the last byte is the checksum of all bytes before
+        if(rxMsg.length < 2) {
+            return {valid: false, payload: rxMsg};
+        }
+        let fastChecksum = 0;
+        for(let i=0; i<rxMsg.length - 1; i++) {
+            fastChecksum += rxMsg[i];
+        }
+        if(rxMsg[rxMsg.length - 1] != (fastChecksum % 256)) {
+            return {valid: false, payload: rxMsg};
+        }
+        return {valid: true, payload: rxMsg.slice(0, rxMsg.length - 1)};
+    }
+
     if(rxMsg.length < 2) {
         // expect at least 2 bytes for the checksum
         if(!quiet) {
@@ -605,7 +745,9 @@ async function downloadTask(taskNumber, taskData) {
     return downloadSuccess;
 }
 
-async function downloadBlock(blockCount, blockData, extendedTimeout = false) {
+// Send one block of a download to the RCX.
+// Returns whether the block has been accepted and whether the RCX has replied at all.
+async function sendBlock(blockCount, blockData, extendedTimeout = false) {
     const blockSize = blockData.length;
     const blockParamHeader = new Uint8Array([getLoByte(blockCount),
                                              getHiByte(blockCount),
@@ -623,6 +765,7 @@ async function downloadBlock(blockCount, blockData, extendedTimeout = false) {
         console.log("Extended timeout to " + timeout);
     }
     let {success, payload} = await transceiveCommand(OpCode.ContinueDownload, params);
+    const replied = success; // a valid reply has been received, whatever it says
 
     if(success) {
         switch (payload[1]) {
@@ -647,7 +790,32 @@ async function downloadBlock(blockCount, blockData, extendedTimeout = false) {
         }
     }
 
-    return success;
+    return {success: success, replied: replied};
+}
+
+const maxBlockAttempts = 5; // how often a block is sent until the RCX has accepted it
+
+/**
+  * Download one block to the RCX and repeat it when that has failed.
+  *
+  * No (valid) reply: either the block or the reply got lost. The very same message is sent again,
+  * i.e. with the same toggle bit. The RCX ignores a message it has already seen but replies again,
+  * so the block is not stored twice.
+  * Reply with an error status (e.g. block checksum error): the RCX has received a damaged block.
+  * The block is sent again as a new message, i.e. with the next toggle bit.
+  */
+async function downloadBlock(blockCount, blockData, extendedTimeout = false) {
+    let result = await sendBlock(blockCount, blockData, extendedTimeout);
+
+    for(let attempt = 2; !result.success && (attempt <= maxBlockAttempts); attempt++) {
+        console.log("Download error during block #" + blockCount + ", repeating it... (" + attempt + "/" + maxBlockAttempts + ")");
+        if(!result.replied) {
+            encodeCommand.toggleBit = !encodeCommand.toggleBit; // use the toggle bit of the last message again
+        }
+        result = await sendBlock(blockCount, blockData, extendedTimeout);
+    }
+
+    return result.success;
 }
 
 async function playTone(frequency, duration) {
@@ -688,6 +856,40 @@ async function getVersions() {
     }
 
     return {success: success, romVersion: romVersion, fwVersion: fwVersion};
+}
+
+async function checkFirmware() {
+  let success = true; // think positive!
+  let versionInfo = null;
+  let fwVersion = null;
+
+  versionInfo = await getVersions();
+  if(!versionInfo.success) {
+      showErrorMsg("Failed to retrieve ROM and firmware versions.");
+      success = false;
+  }
+
+  if(success) {
+      showInfoMsg("ℹ️ ROM version: " + versionInfo.romVersion + ", Firmware version: " + versionInfo.fwVersion);
+      fwVersion = versionInfo.fwVersion;
+  }
+
+  return fwVersion;
+}
+
+async function checkBatteryLevel() {
+  const batteryLevel = await getBatteryLevel();
+  let msg = "";
+  if(batteryLevel > 0) {
+    if(batteryLevel < 20) {
+      msg = "🪫";
+    }
+    else {
+      msg = "🔋";
+    }
+    msg += " Battery level: " + Math.floor(batteryLevel) + " %";
+    showInfoMsg(msg);
+  }
 }
 
 async function playSystemSound(sound) {

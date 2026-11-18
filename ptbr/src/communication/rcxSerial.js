@@ -27,11 +27,8 @@ let serialPort = null;
 let serialReader = null;
 let serialWriter = null;
 
-// define various control elements
-const log = document.getElementById('logArea');
-
 // timeout of 350 ms calculated for current 2400 baud configuration and flight time of "download firmware" command including its payload
-async function transceiveCommand(opcode, params = new Uint8Array(), timeout = 340, ignoreReply = false) {
+async function serialTransceiveCommand(opcode, params = new Uint8Array(), timeout = 340, ignoreReply = false) {
     const txMsg = encodeCommand(opcode, params);
 
     if(txMsg.length == 0) {
@@ -167,6 +164,9 @@ async function serialConnect(fastMode=false) {
 
       serialReader = serialPort.readable.getReader();
       serialWriter = serialPort.writable.getWriter();
+
+      // from now on, commands for the RCX go through the serial tower
+      setTransceiver(serialTransceiveCommand);
     }
     catch(e) {
       if((e instanceof DOMException) && e.name == 'InvalidStateError') {
@@ -201,40 +201,6 @@ async function serialReconnect() {
   }
 
   return success;
-}
-
-async function checkFirmware() {
-  let success = true; // think positive!
-  let versionInfo = null;
-  let fwVersion = null;
-
-  versionInfo = await getVersions();
-  if(!versionInfo.success) {
-      showErrorMsg("Falha ao recuperar as versões da ROM e do firmware.");
-      success = false;
-  }
-
-  if(success) {
-      showInfoMsg("ℹ️ Versão da ROM: " + versionInfo.romVersion + ", Versão do Firmware: " + versionInfo.fwVersion);
-      fwVersion = versionInfo.fwVersion;
-  }
-
-  return fwVersion;
-}
-
-async function checkBatteryLevel() {
-  const batteryLevel = await getBatteryLevel();
-  let msg = "";
-  if(batteryLevel > 0) {
-    if(batteryLevel < 20) {
-      msg = "🪫";
-    }
-    else {
-      msg = "🔋";
-    }
-    msg += " Nível da bateria: " + Math.floor(batteryLevel) + " %";
-    showInfoMsg(msg);
-  }
 }
 
 async function serialReadWithTimeout(timeout) {
